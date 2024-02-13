@@ -1,0 +1,6 @@
+greet_at  # unused variable (customer_engine/workflows/hello_word.py:15)
+name  # unused variable (customer_engine/workflows/hello_word.py:19)
+age  # unused variable (customer_engine/workflows/hello_word.py:20)
+_.run  # unused method (customer_engine/workflows/hello_word.py:22)
+events  # unused variable (customer_engine/workflows/hello_word.py:23)
+state_changes  # unused variable (customer_engine/workflows/hello_word.py:23)

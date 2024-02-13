@@ -1,4 +1,4 @@
-from __future__ import annotations
+from __future__ import annotations  # noqa: D100
 
 import datetime
 from dataclasses import dataclass
@@ -11,16 +11,16 @@ from customer_engine.core import global_config
 
 
 @dataclass(frozen=True)
-class HelloWorldResponse(Response):
+class HelloWorldResponse(Response):  # noqa: D101
     greet_at: datetime.datetime
 
 
-class HelloWorld(Command[Response, TextClause]):
+class HelloWorld(Command[Response, TextClause]):  # noqa: D101
     name: str
     age: int
 
-    async def run(
-        self, state_changes: list[TextClause], events: list[DomainEvent]
+    async def run(  # noqa: D102
+        self, state_changes: list[TextClause], events: list[DomainEvent]  # noqa: ARG002
     ) -> Response:
         with global_config.db_engine.connect() as conn:
             conn.execute(sqlalchemy.text("SELECT 1"))
