@@ -12,11 +12,25 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
 authors = [{ name = "Author name", email = "author@email.com" }]
-dependencies = ["lego-workflows < 0.1.0"]
+dependencies = [
+    "lego-workflows < 0.1.0",
+    "sqlalchemy-libsql",
+    "python-dotenv < 2",
+    "fastapi < 1",
+    "uvicorn[standard] < 1",
+    "httpx < 1",
+    "gunicorn < 22",
+    "mashumaro < 4",
+]
+
+[project.urls]
+Documentation = "https://github.com/pymtech-co/whatsapp_customer_engine#readme"
+Issues = "https://github.com/pymtech-co/whatsapp_customer_engine/issues"
+Source = "https://github.com/pymtech-co/whatsapp_customer_engine"
 
 
 [project.optional-dependencies]
-dev = ["pyrgo < 3"]
+dev = ["pyrgo < 3", "pytest-asyncio", "types-toml"]
 
 [project.scripts]
 custeng = "customer_engine.cli:cli"
@@ -66,6 +80,7 @@ select = ["ALL"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*.py" = ["INP001", "S101", "D"]
+"scripts/*.py" = ["INP001"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["customer_engine"]
@@ -83,6 +98,7 @@ testpaths = ["tests"]
 xfail_strict = true
 addopts = ["--import-mode=importlib", "--strict-markers"]
 markers = ["integration: mark integration tests.", "unit: mark unittest."]
+asyncio_mode = "auto"
 
 [tool.mypy]
 follow_imports = "normal"
@@ -98,3 +114,6 @@ disallow_untyped_decorators = true
 disallow_untyped_calls = true
 disallow_untyped_defs = true
 explicit_package_bases = true
+
+[tool.pyrgo]
+extra-paths = ["scripts"]
