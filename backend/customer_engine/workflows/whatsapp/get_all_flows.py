@@ -2,11 +2,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
 
-import orjson
 from lego_workflows.components import Command, DomainEvent, Response
-from sqlalchemy import Connection, Row, TextClause, text
+from sqlalchemy import Connection, TextClause, text
 
 from customer_engine.core.whatsapp_flows import WhatsAppFlow
 
@@ -36,20 +34,13 @@ class GetAllWhatsAppFlowsCommand(Command[GetAllWhatsAppFlowsResponse, TextClause
             SELECT
                 flow_id,
                 name,
-                description,
-                metadata
+                description
             FROM whatsapp_flows"""
             )
         ).fetchall()
 
-        existing_workflows: list[WhatsAppFlow] = [
-            _parse_row(workflow) for workflow in all_workflows
-        ]
-
-        return GetAllWhatsAppFlowsResponse(flows=existing_workflows)
-
-
-def _parse_row(row: Row[Any]) -> WhatsAppFlow:
-    row_data = row._asdict()
-    row_data["metadata"] = orjson.loads(row_data["metadata"])
-    return WhatsAppFlow.from_dict(row_data)
+        return GetAllWhatsAppFlowsResponse(
+            flows=[
+                WhatsAppFlow.from_dict(workflow._asdict()) for workflow in all_workflows
+            ]
+        )

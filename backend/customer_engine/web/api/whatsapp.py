@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import datetime
-from typing import Any
 
 import lego_workflows
 from fastapi import APIRouter
@@ -18,7 +17,6 @@ class RegisterWhatsAppFlow(BaseModel):  # noqa: D101
     flow_id: str
     name: str = Field(max_length=40)
     description: str = Field(max_length=200)
-    metadata: dict[str, Any] = Field(max_length=10)
 
 
 class RegisterWhatsAppFlowResponse(BaseModel):  # noqa: D101
@@ -39,7 +37,6 @@ async def register_whatsapp_flow(
                 name=req.name,
                 description=req.description,
                 conn=conn,
-                metadata=req.metadata,
             ),
             transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
         )
@@ -53,7 +50,6 @@ class GetWhatsAppFlowResponse(BaseModel):
     flow_id: str
     name: str
     description: str
-    metadata: dict[str, Any]
 
 
 @router.get("/flows/{flow_id}")
@@ -74,7 +70,6 @@ async def get_whatsapp_flow(flow_id: str) -> GetWhatsAppFlowResponse:
         flow_id=response.flow.flow_id,
         name=response.flow.name,
         description=response.flow.description,
-        metadata=response.flow.metadata,
     )
 
 
@@ -99,7 +94,6 @@ async def get_all_whatsapp_flows() -> GetAllWhatsAppFlowsResponse:
                 flow_id=flow.flow_id,
                 name=flow.name,
                 description=flow.description,
-                metadata=flow.metadata,
             )
             for flow in all_flows.flows
         ]
@@ -158,5 +152,4 @@ async def patch_whatsapp_flow(
         flow_id=response.flow.flow_id,
         name=response.flow.name,
         description=response.flow.description,
-        metadata=response.flow.metadata,
     )

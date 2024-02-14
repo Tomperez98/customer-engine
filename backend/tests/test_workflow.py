@@ -27,7 +27,6 @@ async def test_retrieve_multiple() -> None:
                     flow_id=flow_id,
                     name=f"{flow_id} name",
                     description=f"{flow_id} description",
-                    metadata={},
                     conn=conn,
                 ),
                 transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
@@ -60,7 +59,6 @@ async def test_update_flow() -> None:
                 name="Initial Name",
                 description="Initial Description",
                 conn=conn,
-                metadata={},
             ),
             transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
         )
@@ -116,7 +114,6 @@ async def test_create_and_delete_flow() -> None:
                 name="Test Flow",
                 description="Flow used for testing purposes.",
                 conn=conn,
-                metadata={"country": "COL"},
             ),
             transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
         )

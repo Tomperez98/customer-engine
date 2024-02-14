@@ -2,11 +2,9 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
 
-import orjson
 from lego_workflows.components import Command, DomainError, DomainEvent, Response
-from sqlalchemy import Connection, Row, TextClause, text
+from sqlalchemy import Connection, TextClause, text
 
 from customer_engine.core.whatsapp_flows import WhatsAppFlow
 
@@ -44,8 +42,7 @@ class GetFlowCommand(Command[GetFlowResponse, TextClause]):
             SELECT
                 flow_id,
                 name,
-                description,
-                metadata
+                description
             FROM whatsapp_flows
             WHERE flow_id = :flow_id
 """
@@ -54,10 +51,4 @@ class GetFlowCommand(Command[GetFlowResponse, TextClause]):
         if whatsapp_flow is None:
             raise WhatsAppFlowNotFoundError(flow_id=self.flow_id)
 
-        return GetFlowResponse(flow=_parse_row(row=whatsapp_flow))
-
-
-def _parse_row(row: Row[Any]) -> WhatsAppFlow:
-    row_data = row._asdict()
-    row_data["metadata"] = orjson.loads(row_data["metadata"])
-    return WhatsAppFlow.from_dict(row_data)
+        return GetFlowResponse(flow=WhatsAppFlow.from_dict(whatsapp_flow._asdict()))

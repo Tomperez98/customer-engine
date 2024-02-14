@@ -3,9 +3,7 @@ from __future__ import annotations
 
 import datetime
 from dataclasses import dataclass
-from typing import Any
 
-import orjson
 from lego_workflows.components import Command, DomainError, DomainEvent, Response
 from sqlalchemy import Connection, TextClause, text
 
@@ -51,7 +49,6 @@ class RegisterFlowCommand(Command[RegisterFlowResponse, TextClause]):
     flow_id: str
     name: str
     description: str
-    metadata: dict[str, Any]
     conn: Connection
 
     async def run(
@@ -71,7 +68,6 @@ class RegisterFlowCommand(Command[RegisterFlowResponse, TextClause]):
             flow_id=self.flow_id,
             name=self.name,
             description=self.description,
-            metadata=self.metadata,
         ).to_dict()
         state_changes.append(
             text(
@@ -79,21 +75,16 @@ class RegisterFlowCommand(Command[RegisterFlowResponse, TextClause]):
                 INSERT INTO whatsapp_flows (
                 flow_id,
                 name,
-                description,
-                metadata
+                description
                 )
                 VALUES (
                 :flow_id,
                 :name,
-                :description,
-                :metadata
+                :description
                 )
                 """
             ).bindparams(
-                flow_id=self.flow_id,
-                name=self.name,
-                description=self.description,
-                metadata=orjson.dumps(self.metadata),
+                flow_id=self.flow_id, name=self.name, description=self.description
             )
         )
         now = datetime.datetime.now(tz=datetime.UTC)
