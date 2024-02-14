@@ -48,5 +48,11 @@ jobs:
         run: pyrgo check
 
       - name: Test code
+        env:
+          DB_AUTH_TOKEN: ${{ secrets.DB_AUTH_TOKEN }}
+          OPEN_API_KEY: ${{ secrets.OPEN_API_KEY }}
+          LOG_LEVEL: DEBUG
+          ENVIRONMENT: development
+          DB_URL: ${{ vars.DB_URL }}
         working-directory: backend
         run: pyrgo test
