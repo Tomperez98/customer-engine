@@ -46,10 +46,12 @@ idna==3.6
     #   anyio
     #   httpx
     #   yarl
-lego-workflows==0.0.1
+lego-workflows==0.0.2
     # via customer-engine (pyproject.toml)
 libsql-client==0.3.0
     # via sqlalchemy-libsql
+loguru==0.7.2
+    # via customer-engine (pyproject.toml)
 mashumaro==3.12
     # via customer-engine (pyproject.toml)
 multidict==6.0.5

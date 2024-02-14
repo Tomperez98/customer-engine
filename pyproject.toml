@@ -21,6 +21,7 @@ dependencies = [
     "httpx < 1",
     "gunicorn < 22",
     "mashumaro < 4",
+    "loguru < 1",
 ]
 
 [project.urls]
@@ -30,7 +31,7 @@ Source = "https://github.com/pymtech-co/whatsapp_customer_engine"
 
 
 [project.optional-dependencies]
-dev = ["pyrgo < 3", "pytest-asyncio", "types-toml"]
+dev = ["pyrgo < 3", "pytest-asyncio", "types-toml", "alembic"]
 
 [project.scripts]
 custeng = "customer_engine.cli:cli"
@@ -75,17 +76,28 @@ ignore = [
     "Q002",
     "Q003",
     "W191",
+    "UP040",
 ]
 select = ["ALL"]
+logger-objects = ["customer_engine.logger"]
+
+[tool.ruff.lint.flake8-type-checking]
+runtime-evaluated-base-classes = [
+    "pydantic.BaseModel",
+    "mashumaro.mixins.orjson.DataClassORJSONMixin",
+]
+
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*.py" = ["INP001", "S101", "D"]
+"tests/*.py" = ["INP001", "S101", "D", "SLF001"]
 "scripts/*.py" = ["INP001"]
+"customer_engine/migrations/**/*.py" = ["D103"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["customer_engine"]
 combine-as-imports = true
 required-imports = ["from __future__ import annotations"]
+
 
 [tool.ruff.lint.flake8-tidy-imports]
 ban-relative-imports = "all"
@@ -97,8 +109,13 @@ inline-quotes = "double"
 testpaths = ["tests"]
 xfail_strict = true
 addopts = ["--import-mode=importlib", "--strict-markers"]
-markers = ["integration: mark integration tests.", "unit: mark unittest."]
+markers = [
+    "integration: mark integration tests.",
+    "unit: mark unittest.",
+    "e2e: mark end to end tests.",
+]
 asyncio_mode = "auto"
+filterwarnings = ["ignore::DeprecationWarning"]
 
 [tool.mypy]
 follow_imports = "normal"
@@ -117,3 +134,7 @@ explicit_package_bases = true
 
 [tool.pyrgo]
 extra-paths = ["scripts"]
+
+[tool.vulture]
+exclude = ["customer_engine/migrations/versions/"]
+min_confidence = 80
