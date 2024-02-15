@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from lego_workflows.components import Command, DomainError, DomainEvent, Response
-from sqlalchemy import Connection, TextClause, text
+from sqlalchemy import Connection, text
 
 from customer_engine.core.whatsapp_flows import WhatsAppFlow
 
@@ -28,7 +28,7 @@ class GetFlowResponse(Response):
 
 
 @dataclass(frozen=True)
-class GetFlowCommand(Command[GetFlowResponse, TextClause]):
+class GetFlowCommand(Command[GetFlowResponse, None]):
     """Input data for get flow workflow."""
 
     org_code: str
@@ -37,7 +37,7 @@ class GetFlowCommand(Command[GetFlowResponse, TextClause]):
 
     async def run(
         self,
-        state_changes: list[TextClause],  # noqa: ARG002
+        state_changes: list[None],  # noqa: ARG002
         events: list[DomainEvent],  # noqa: ARG002
     ) -> GetFlowResponse:
         """Execute get flow workflow."""

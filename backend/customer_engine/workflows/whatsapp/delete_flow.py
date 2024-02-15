@@ -53,7 +53,7 @@ class DeleteFlow(Command[DeleteFlowResponse, TextClause]):
 
         await get_flow.GetFlowCommand(
             flow_id=self.flow_id, org_code=self.org_code, conn=self.conn
-        ).run(state_changes=state_changes, events=events)
+        ).run(state_changes=[], events=events)
 
         await global_config.clients.qdrant.delete(
             collection_name=self.org_code,

@@ -10,7 +10,7 @@ from sqlalchemy import Connection, TextClause, text
 
 from customer_engine import logger
 from customer_engine.core import global_config
-from customer_engine.core.whatsapp_flows import embed_description
+from customer_engine.core.whatsapp_flows import embed_description_and_prompt
 from customer_engine.workflows.whatsapp import get_flow
 
 if TYPE_CHECKING:
@@ -50,7 +50,7 @@ class UpdateWhatsAppFlowCommand(Command[UpdateWhatsAppFlowResponse, TextClause])
     ) -> UpdateWhatsAppFlowResponse:
         response = await get_flow.GetFlowCommand(
             flow_id=self.flow_id, conn=self.conn, org_code=self.org_code
-        ).run(state_changes=state_changes, events=events)
+        ).run(state_changes=[], events=events)
 
         existing_flow = response.flow
 
@@ -67,7 +67,7 @@ class UpdateWhatsAppFlowCommand(Command[UpdateWhatsAppFlowResponse, TextClause])
             require_recalculate_embeddings = True
 
         if require_recalculate_embeddings:
-            new_description_embeddings = await embed_description(
+            new_description_embeddings = await embed_description_and_prompt(
                 cohere=global_config.clients.cohere,
                 model=global_config.default_model,
                 description=existing_flow.description,
@@ -85,7 +85,8 @@ class UpdateWhatsAppFlowCommand(Command[UpdateWhatsAppFlowResponse, TextClause])
                 UPDATE whatsapp_flows
                 SET
                     name = :name,
-                    description = :description
+                    description = :description,
+                    embedding_model = :embedding_model
                 WHERE
                     flow_id = :flow_id
                 """
@@ -93,6 +94,7 @@ class UpdateWhatsAppFlowCommand(Command[UpdateWhatsAppFlowResponse, TextClause])
                 name=existing_flow.name,
                 description=existing_flow.description,
                 flow_id=existing_flow.flow_id,
+                embedding_model=existing_flow.embedding_model,
             )
         )
 

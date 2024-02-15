@@ -34,7 +34,7 @@ async def test_retrieve_multiple() -> None:
 
         all_workflows = await lego_workflows.execute(
             get_all_flows.GetAllWhatsAppFlowsCommand(conn=conn, org_code="test"),
-            transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
+            transaction_commiter=None,
         )
 
         assert len(all_workflows.flows) >= 2  # noqa: PLR2004
@@ -128,7 +128,7 @@ async def test_create_and_delete_flow() -> None:
             cmd=get_flow.GetFlowCommand(
                 flow_id=new_flow.flow_id, conn=conn, org_code="test"
             ),
-            transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
+            transaction_commiter=None,
         )
 
         assert response.flow.flow_id == new_flow.flow_id
@@ -147,5 +147,5 @@ async def test_create_and_delete_flow() -> None:
             cmd=get_flow.GetFlowCommand(
                 flow_id=new_flow.flow_id, conn=conn, org_code="test"
             ),
-            transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
+            transaction_commiter=None,
         )

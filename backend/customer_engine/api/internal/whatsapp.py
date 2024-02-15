@@ -10,8 +10,31 @@ from pydantic import BaseModel, Field
 
 from customer_engine.core import global_config
 from customer_engine.core.transactions import SqlAlchemyTransactionCommiter
+from customer_engine.core.whatsapp_flows import WhatsAppFlow
 
 router = APIRouter(prefix="/whatsapp", tags=["whatsapp"])
+
+
+class GetMostRelevantResponse(BaseModel):
+    """Get most relevant points response."""
+
+    most_relevant: WhatsAppFlow
+
+
+@router.get("/flows/most-relevant")
+async def get_most_relevant(prompt: str) -> GetMostRelevantResponse:
+    """Get most relevant whatsapp flows."""
+    from customer_engine.workflows.whatsapp import get_most_relevant_flows
+
+    with global_config.db_engine.begin() as conn:
+        response = await lego_workflows.execute(
+            cmd=get_most_relevant_flows.GetMostRelevantFlowCommand(
+                org_code=global_config.default_org, prompt=prompt, conn=conn
+            ),
+            transaction_commiter=None,
+        )
+
+    return GetMostRelevantResponse(most_relevant=response.most_revelant)
 
 
 class RegisterWhatsAppFlow(BaseModel):  # noqa: D101
@@ -67,7 +90,7 @@ async def get_whatsapp_flow(flow_id: UUID) -> GetWhatsAppFlowResponse:
                 flow_id=flow_id,
                 conn=conn,
             ),
-            transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
+            transaction_commiter=None,
         )
 
     return GetWhatsAppFlowResponse(
@@ -92,7 +115,7 @@ async def get_all_whatsapp_flows() -> GetAllWhatsAppFlowsResponse:
                 conn=conn,
                 org_code=global_config.default_org,
             ),
-            transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
+            transaction_commiter=None,
         )
 
     return GetAllWhatsAppFlowsResponse(

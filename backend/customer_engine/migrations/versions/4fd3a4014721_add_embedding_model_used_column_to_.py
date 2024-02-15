@@ -28,12 +28,7 @@ TABLE_NAME = "whatsapp_flows"
 def upgrade() -> None:
     op.add_column(
         TABLE_NAME,
-        sa.Column(
-            "embedding_model",
-            sa.String(),
-            nullable=False,
-            default="embed-multilingual-light-v3.0",
-        ),
+        sa.Column("embedding_model", sa.String(), nullable=True, default=None),
     )
 
 

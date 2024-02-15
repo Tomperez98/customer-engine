@@ -15,7 +15,7 @@ from customer_engine import logger
 from customer_engine.core import global_config
 from customer_engine.core.whatsapp_flows import (
     WhatsAppFlow,
-    embed_description,
+    embed_description_and_prompt,
     model_props,
 )
 from customer_engine.workflows.whatsapp import get_flow
@@ -78,7 +78,7 @@ class RegisterFlowCommand(Command[RegisterFlowResponse, TextClause]):
             try:
                 await get_flow.GetFlowCommand(
                     flow_id=random_flow_id, conn=self.conn, org_code=self.org_code
-                ).run(state_changes=state_changes, events=events)
+                ).run(state_changes=[], events=events)
             except get_flow.WhatsAppFlowNotFoundError:
                 break
             continue
@@ -99,7 +99,7 @@ class RegisterFlowCommand(Command[RegisterFlowResponse, TextClause]):
                 msg = "Unable to create collection"
                 raise RuntimeError(msg) from None
 
-        description_embeddings = await embed_description(
+        description_embeddings = await embed_description_and_prompt(
             cohere=global_config.clients.cohere,
             model=global_config.default_model,
             description=self.description,

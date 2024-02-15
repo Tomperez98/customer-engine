@@ -4,7 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from lego_workflows.components import Command, DomainEvent, Response
-from sqlalchemy import Connection, TextClause, text
+from sqlalchemy import Connection, text
 
 from customer_engine.core.whatsapp_flows import WhatsAppFlow
 
@@ -17,7 +17,7 @@ class GetAllWhatsAppFlowsResponse(Response):
 
 
 @dataclass(frozen=True)
-class GetAllWhatsAppFlowsCommand(Command[GetAllWhatsAppFlowsResponse, TextClause]):
+class GetAllWhatsAppFlowsCommand(Command[GetAllWhatsAppFlowsResponse, None]):
     """Get all whatsapp flows input data."""
 
     org_code: str
@@ -25,7 +25,7 @@ class GetAllWhatsAppFlowsCommand(Command[GetAllWhatsAppFlowsResponse, TextClause
 
     async def run(
         self,
-        state_changes: list[TextClause],  # noqa: ARG002
+        state_changes: list[None],  # noqa: ARG002
         events: list[DomainEvent],  # noqa: ARG002
     ) -> GetAllWhatsAppFlowsResponse:
         """Execute get all whatsapp flows."""
