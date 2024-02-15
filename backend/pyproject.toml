@@ -33,7 +33,7 @@ Source = "https://github.com/pymtech-co/whatsapp_customer_engine"
 
 
 [project.optional-dependencies]
-dev = ["pyrgo < 3", "pytest-asyncio", "types-toml", "alembic"]
+dev = ["pyrgo < 3", "pytest-asyncio", "types-toml", "alembic", "pytest-cov"]
 
 [project.scripts]
 custeng = "customer_engine.cli:cli"
@@ -110,7 +110,13 @@ inline-quotes = "double"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 xfail_strict = true
-addopts = ["--import-mode=importlib", "--strict-markers"]
+addopts = [
+    "--import-mode=importlib",
+    "--strict-markers",
+    "--cov-config=pyproject.toml",
+    "--cov=customer_engine",
+    "--cov-report=term-missing:skip-covered",
+]
 markers = [
     "integration: mark integration tests.",
     "unit: mark unittest.",
@@ -118,6 +124,21 @@ markers = [
 ]
 asyncio_mode = "auto"
 filterwarnings = ["ignore::DeprecationWarning"]
+
+[tool.coverage.run]
+branch = true
+parallel = true
+relative_files = true
+omit = ["customer_engine/migrations/**", "customer_engine/api/**"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@overload",
+    "raise NotImplementedError",
+    "assert_never",
+]
 
 [tool.mypy]
 follow_imports = "normal"

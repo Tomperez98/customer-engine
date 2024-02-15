@@ -15,7 +15,7 @@ from sqlalchemy import Engine, create_engine
 from customer_engine.typing import Environment
 
 if TYPE_CHECKING:
-    from customer_engine.core.whatsapp_flows import EmbeddingModels
+    from customer_engine.core.forms import EmbeddingModels
 
 load_dotenv(dotenv_path=".env")
 

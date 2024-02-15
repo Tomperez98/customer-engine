@@ -5,14 +5,19 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from lego_workflows.components import Command, DomainError, DomainEvent, Response
-from sqlalchemy import bindparam, text
+from lego_workflows.components import (
+    CommandComponent,
+    DomainError,
+    DomainEvent,
+    ResponseComponent,
+)
 
 from customer_engine.core import global_config
-from customer_engine.core.whatsapp_flows import (
-    WhatsAppFlow,
+from customer_engine.core.forms import (
+    Form,
     embed_description_and_prompt,
 )
+from customer_engine.workflows.forms import get_form
 
 if TYPE_CHECKING:
     from sqlalchemy import Connection
@@ -24,14 +29,14 @@ class NoRelevantWhatsappWorkflowError(DomainError):  # noqa: D101
 
 
 @dataclass(frozen=True)
-class GetMostRelevantFlowResponse(Response):
+class Response(ResponseComponent):
     """Response data for most relevant flows workflow."""
 
-    most_revelant: WhatsAppFlow
+    most_revelant: Form
 
 
 @dataclass(frozen=True)
-class GetMostRelevantFlowCommand(Command[GetMostRelevantFlowResponse, None]):
+class Command(CommandComponent[Response, None]):
     """Input data for most revelant flow workflow."""
 
     org_code: str
@@ -40,9 +45,9 @@ class GetMostRelevantFlowCommand(Command[GetMostRelevantFlowResponse, None]):
 
     async def run(  # noqa: D102
         self,
-        state_changes: list[None],  # noqa: ARG002
-        events: list[DomainEvent],  # noqa: ARG002
-    ) -> GetMostRelevantFlowResponse:
+        state_changes: list[None],
+        events: list[DomainEvent],
+    ) -> Response:
         prompt_embeddings = (
             await embed_description_and_prompt(
                 cohere=global_config.clients.cohere,
@@ -64,29 +69,8 @@ class GetMostRelevantFlowCommand(Command[GetMostRelevantFlowResponse, None]):
             msg = "Most relevant id type not expected."
             raise TypeError(msg)
 
-        relevant_flow = self.conn.execute(
-            text(
-                """
-            SELECT
-                org_code,
-                flow_id,
-                name,
-                description,
-                embedding_model
-            FROM whatsapp_flows
-            WHERE
-                org_code = :org_code AND
-                flow_id = :relevant_flows
-        """
-            ).bindparams(
-                bindparam(
-                    key="relevant_flows",
-                    value=UUID(most_relevant.id),
-                ),
-                bindparam(key="org_code", value=self.org_code),
-            )
-        ).one()
+        relevant_flow = await get_form.Command(
+            org_code=self.org_code, form_id=UUID(most_relevant.id), conn=self.conn
+        ).run(state_changes=state_changes, events=events)
 
-        return GetMostRelevantFlowResponse(
-            most_revelant=WhatsAppFlow.from_dict(relevant_flow._asdict())
-        )
+        return Response(most_revelant=relevant_flow.flow)

@@ -1,4 +1,4 @@
-"""whatsapp routes."""
+"""form routes."""
 from __future__ import annotations
 
 import datetime
@@ -9,26 +9,26 @@ from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
 from customer_engine.core import global_config
+from customer_engine.core.forms import Form
 from customer_engine.core.transactions import SqlAlchemyTransactionCommiter
-from customer_engine.core.whatsapp_flows import WhatsAppFlow
 
-router = APIRouter(prefix="/whatsapp", tags=["whatsapp"])
+router = APIRouter(prefix="/forms", tags=["forms"])
 
 
 class GetMostRelevantResponse(BaseModel):
     """Get most relevant points response."""
 
-    most_relevant: WhatsAppFlow
+    most_relevant: Form
 
 
-@router.get("/flows/most-relevant")
+@router.get("/most-relevant")
 async def get_most_relevant(prompt: str) -> GetMostRelevantResponse:
-    """Get most relevant whatsapp flows."""
-    from customer_engine.workflows.whatsapp import get_most_relevant_flows
+    """Get most relevant forms flows."""
+    from customer_engine.workflows.forms import get_most_relevant_form
 
     with global_config.db_engine.begin() as conn:
         response = await lego_workflows.execute(
-            cmd=get_most_relevant_flows.GetMostRelevantFlowCommand(
+            cmd=get_most_relevant_form.Command(
                 org_code=global_config.default_org, prompt=prompt, conn=conn
             ),
             transaction_commiter=None,
@@ -37,26 +37,26 @@ async def get_most_relevant(prompt: str) -> GetMostRelevantResponse:
     return GetMostRelevantResponse(most_relevant=response.most_revelant)
 
 
-class RegisterWhatsAppFlow(BaseModel):  # noqa: D101
+class RegisterForm(BaseModel):  # noqa: D101
     name: str = Field(max_length=40)
     description: str = Field(max_length=200)
 
 
-class RegisterWhatsAppFlowResponse(BaseModel):  # noqa: D101
-    flow_id: UUID
+class RegisterFormResponse(BaseModel):  # noqa: D101
+    form_id: UUID
     registed_at: datetime.datetime
 
 
-@router.post("/flows")
-async def register_whatsapp_flow(
-    req: RegisterWhatsAppFlow,
-) -> RegisterWhatsAppFlowResponse:
-    """Register whatsapp flow."""
-    from customer_engine.workflows.whatsapp import register_flow
+@router.post("")
+async def register_form(
+    req: RegisterForm,
+) -> RegisterFormResponse:
+    """Register forms flow."""
+    from customer_engine.workflows.forms import register_form
 
     with global_config.db_engine.begin() as conn:
         response = await lego_workflows.execute(
-            register_flow.RegisterFlowCommand(
+            register_form.Command(
                 org_code=global_config.default_org,
                 name=req.name,
                 description=req.description,
@@ -65,63 +65,63 @@ async def register_whatsapp_flow(
             transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
         )
 
-    return RegisterWhatsAppFlowResponse(
-        registed_at=response.register_at, flow_id=response.flow_id
+    return RegisterFormResponse(
+        registed_at=response.register_at, form_id=response.form_id
     )
 
 
-class GetWhatsAppFlowResponse(BaseModel):
-    """Response to get whatsapp flow."""
+class GetFormResponse(BaseModel):
+    """Response to get forms flow."""
 
-    flow_id: UUID
+    form_id: UUID
     name: str
     description: str
 
 
-@router.get("/flows/{flow_id}")
-async def get_whatsapp_flow(flow_id: UUID) -> GetWhatsAppFlowResponse:
-    """Get whatsapp flow."""
-    from customer_engine.workflows.whatsapp import get_flow
+@router.get("/{form_id}")
+async def get_forms_flow(form_id: UUID) -> GetFormResponse:
+    """Get forms flow."""
+    from customer_engine.workflows.forms import get_form
 
     with global_config.db_engine.begin() as conn:
         response = await lego_workflows.execute(
-            get_flow.GetFlowCommand(
+            get_form.Command(
                 org_code=global_config.default_org,
-                flow_id=flow_id,
+                form_id=form_id,
                 conn=conn,
             ),
             transaction_commiter=None,
         )
 
-    return GetWhatsAppFlowResponse(
-        flow_id=response.flow.flow_id,
+    return GetFormResponse(
+        form_id=response.flow.form_id,
         name=response.flow.name,
         description=response.flow.description,
     )
 
 
-class GetAllWhatsAppFlowsResponse(BaseModel):  # noqa: D101
-    flows: list[GetWhatsAppFlowResponse]
+class GetAllFormsResponseResponse(BaseModel):  # noqa: D101
+    flows: list[GetFormResponse]
 
 
-@router.get("/flows")
-async def get_all_whatsapp_flows() -> GetAllWhatsAppFlowsResponse:
-    """Get all whatsapp flows."""
-    from customer_engine.workflows.whatsapp import get_all_flows
+@router.get("")
+async def get_all_forms_flows() -> GetAllFormsResponseResponse:
+    """Get all forms flows."""
+    from customer_engine.workflows.forms import get_all_forms
 
     with global_config.db_engine.begin() as conn:
         all_flows = await lego_workflows.execute(
-            get_all_flows.GetAllWhatsAppFlowsCommand(
+            get_all_forms.Command(
                 conn=conn,
                 org_code=global_config.default_org,
             ),
             transaction_commiter=None,
         )
 
-    return GetAllWhatsAppFlowsResponse(
+    return GetAllFormsResponseResponse(
         flows=[
-            GetWhatsAppFlowResponse(
-                flow_id=flow.flow_id,
+            GetFormResponse(
+                form_id=flow.form_id,
                 name=flow.name,
                 description=flow.description,
             )
@@ -130,49 +130,47 @@ async def get_all_whatsapp_flows() -> GetAllWhatsAppFlowsResponse:
     )
 
 
-class DeleteWhatsAppFlowResponse(BaseModel):
-    """Response data to delete whatsapp flow."""
+class DeleteFormResponse(BaseModel):
+    """Response data to delete forms flow."""
 
     deleted_at: datetime.datetime
 
 
-@router.delete("/flows/{flow_id}")
-async def delete_whatsapp_flow(flow_id: UUID) -> DeleteWhatsAppFlowResponse:
-    """Delete whatsapp flow."""
-    from customer_engine.workflows.whatsapp import delete_flow
+@router.delete("/{form_id}")
+async def delte_form(form_id: UUID) -> DeleteFormResponse:
+    """Delete forms flow."""
+    from customer_engine.workflows.forms import delete_form
 
     with global_config.db_engine.begin() as conn:
         response = await lego_workflows.execute(
-            delete_flow.DeleteFlow(
+            delete_form.Command(
                 org_code=global_config.default_org,
-                flow_id=flow_id,
+                form_id=form_id,
                 conn=conn,
             ),
             transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
         )
 
-    return DeleteWhatsAppFlowResponse(deleted_at=response.deleted_at)
+    return DeleteFormResponse(deleted_at=response.deleted_at)
 
 
-class PatchWhatsAppFlow(BaseModel):
-    """Pathc whatsapp flow request."""
+class PatchForm(BaseModel):
+    """Pathc forms flow request."""
 
     name: str | None = Field(max_length=40)
     description: str | None = Field(max_length=200)
 
 
-@router.patch("/flows/{flow_id}")
-async def patch_whatsapp_flow(
-    flow_id: UUID, patch_data: PatchWhatsAppFlow
-) -> GetWhatsAppFlowResponse:
-    """Patch whatsapp flow."""
-    from customer_engine.workflows.whatsapp import update_flow
+@router.patch("/{form_id}")
+async def path_form(form_id: UUID, patch_data: PatchForm) -> GetFormResponse:
+    """Patch forms flow."""
+    from customer_engine.workflows.forms import update_form
 
     with global_config.db_engine.begin() as conn:
         response = await lego_workflows.execute(
-            update_flow.UpdateWhatsAppFlowCommand(
+            update_form.Command(
                 org_code=global_config.default_org,
-                flow_id=flow_id,
+                form_id=form_id,
                 conn=conn,
                 name=patch_data.name,
                 description=patch_data.description,
@@ -180,8 +178,8 @@ async def patch_whatsapp_flow(
             transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
         )
 
-    return GetWhatsAppFlowResponse(
-        flow_id=response.flow.flow_id,
+    return GetFormResponse(
+        form_id=response.flow.form_id,
         name=response.flow.name,
         description=response.flow.description,
     )

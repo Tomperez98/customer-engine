@@ -58,11 +58,11 @@ async def embed_description_and_prompt(
 
 
 @dataclass()
-class WhatsAppFlow(DataClassORJSONMixin):
+class Form(DataClassORJSONMixin):
     """WhatsApp Flow."""
 
     org_code: str
-    flow_id: UUID
+    form_id: UUID
     name: str
     description: str
     embedding_model: EmbeddingModels | None

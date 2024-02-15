@@ -6,60 +6,65 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from uuid import uuid4
 
-from lego_workflows.components import Command, DomainError, DomainEvent, Response
+from lego_workflows.components import (
+    CommandComponent,
+    DomainError,
+    DomainEvent,
+    ResponseComponent,
+)
 from qdrant_client.http.exceptions import UnexpectedResponse
 from qdrant_client.http.models import Batch, VectorParams
 from sqlalchemy import Connection, TextClause, text
 
 from customer_engine import logger
 from customer_engine.core import global_config
-from customer_engine.core.whatsapp_flows import (
+from customer_engine.core.forms import (
     embed_description_and_prompt,
     model_props,
 )
-from customer_engine.workflows.whatsapp import get_flow
+from customer_engine.workflows.forms import get_form
 
 if TYPE_CHECKING:
     from uuid import UUID
 
 
-class WhatsAppFlowAlreadyExistsError(DomainError):
+class FormsAlreadyExistsError(DomainError):
     """Raised when a whatsapp flow already exists."""
 
-    def __init__(self, flow_id: UUID, org_code: str) -> None:  # noqa: D107
+    def __init__(self, form_id: UUID, org_code: str) -> None:  # noqa: D107
         super().__init__(
-            f"WhatsApp flow with id {flow_id} already exists in org {org_code}."
+            f"WhatsApp flow with id {form_id} already exists in org {org_code}."
         )
 
 
 @dataclass(frozen=True)
-class NewWhatsAppFlowRegistered(DomainEvent):
+class NewFormsRegistered(DomainEvent):
     """Raised when a Whatsapp Flow has been registered."""
 
     org_code: str
-    flow_id: UUID
+    form_id: UUID
     registered_at: datetime.datetime
 
     async def publish(self) -> None:
         """Publish event."""
         logger.info(
-            "New flow ID {flow_id} has been registered at {registered_at} for org {org_code}",
-            flow_id=self.flow_id,
+            "New flow ID {form_id} has been registered at {registered_at} for org {org_code}",
+            form_id=self.form_id,
             registered_at=self.registered_at,
             org_code=self.org_code,
         )
 
 
 @dataclass(frozen=True)
-class RegisterFlowResponse(Response):
+class Response(ResponseComponent):
     """Response data to register flow workflow."""
 
-    flow_id: UUID
+    form_id: UUID
     register_at: datetime.datetime
 
 
 @dataclass(frozen=True)
-class RegisterFlowCommand(Command[RegisterFlowResponse, TextClause]):
+class Command(CommandComponent[Response, TextClause]):
     """Input data for register flow workflow."""
 
     org_code: str
@@ -69,16 +74,16 @@ class RegisterFlowCommand(Command[RegisterFlowResponse, TextClause]):
 
     async def run(
         self, state_changes: list[TextClause], events: list[DomainEvent]
-    ) -> RegisterFlowResponse:
+    ) -> Response:
         """Execuet register flow command."""
         random_flow_id = uuid4()
         configured_model_props = model_props(model=global_config.default_model)
         while True:
             try:
-                await get_flow.GetFlowCommand(
-                    flow_id=random_flow_id, conn=self.conn, org_code=self.org_code
+                await get_form.Command(
+                    form_id=random_flow_id, conn=self.conn, org_code=self.org_code
                 ).run(state_changes=[], events=events)
-            except get_flow.WhatsAppFlowNotFoundError:
+            except get_form.FormsNotFoundError:
                 break
             continue
 
@@ -115,16 +120,16 @@ class RegisterFlowCommand(Command[RegisterFlowResponse, TextClause]):
         state_changes.append(
             text(
                 """
-                INSERT INTO whatsapp_flows (
+                INSERT INTO forms (
                 org_code,
-                flow_id,
+                form_id,
                 name,
                 description,
                 embedding_model
                 )
                 VALUES (
                 :org_code,
-                :flow_id,
+                :form_id,
                 :name,
                 :description,
                 :embedding_model
@@ -132,7 +137,7 @@ class RegisterFlowCommand(Command[RegisterFlowResponse, TextClause]):
                 """
             ).bindparams(
                 org_code=self.org_code,
-                flow_id=random_flow_id,
+                form_id=random_flow_id,
                 name=self.name,
                 description=self.description,
                 embedding_model=global_config.default_model,
@@ -140,8 +145,8 @@ class RegisterFlowCommand(Command[RegisterFlowResponse, TextClause]):
         )
         now = datetime.datetime.now(tz=datetime.UTC)
         events.append(
-            NewWhatsAppFlowRegistered(
-                flow_id=random_flow_id, registered_at=now, org_code=self.org_code
+            NewFormsRegistered(
+                form_id=random_flow_id, registered_at=now, org_code=self.org_code
             )
         )
-        return RegisterFlowResponse(register_at=now, flow_id=random_flow_id)
+        return Response(register_at=now, form_id=random_flow_id)

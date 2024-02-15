@@ -7,12 +7,12 @@ import pytest
 
 from customer_engine.core import global_config
 from customer_engine.core.transactions import SqlAlchemyTransactionCommiter
-from customer_engine.workflows.whatsapp import (
-    delete_flow,
-    get_all_flows,
-    get_flow,
-    register_flow,
-    update_flow,
+from customer_engine.workflows.forms import (
+    delete_form,
+    get_all_forms,
+    get_form,
+    register_form,
+    update_form,
 )
 
 
@@ -21,11 +21,11 @@ async def test_retrieve_multiple() -> None:
     with global_config.db_engine.connect() as conn:
         test_ids: list[UUID] = [uuid4() for _ in range(2)]
 
-        for flow_id in test_ids:
+        for form_id in test_ids:
             await lego_workflows.execute(
-                register_flow.RegisterFlowCommand(
-                    name=f"{flow_id} name",
-                    description=f"{flow_id} description",
+                register_form.Command(
+                    name=f"{form_id} name",
+                    description=f"{form_id} description",
                     conn=conn,
                     org_code="test",
                 ),
@@ -33,18 +33,18 @@ async def test_retrieve_multiple() -> None:
             )
 
         all_workflows = await lego_workflows.execute(
-            get_all_flows.GetAllWhatsAppFlowsCommand(conn=conn, org_code="test"),
+            get_all_forms.Command(conn=conn, org_code="test"),
             transaction_commiter=None,
         )
 
         assert len(all_workflows.flows) >= 2  # noqa: PLR2004
-        all_ids: set[UUID] = {flow.flow_id for flow in all_workflows.flows}
-        for flow_id in all_ids:
-            assert flow_id in all_ids
+        all_ids: set[UUID] = {flow.form_id for flow in all_workflows.flows}
+        for form_id in all_ids:
+            assert form_id in all_ids
 
-        for flow_id in all_ids:
+        for form_id in all_ids:
             await lego_workflows.execute(
-                delete_flow.DeleteFlow(flow_id=flow_id, conn=conn, org_code="test"),
+                delete_form.Command(form_id=form_id, conn=conn, org_code="test"),
                 transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
             )
 
@@ -53,7 +53,7 @@ async def test_retrieve_multiple() -> None:
 async def test_update_flow() -> None:
     with global_config.db_engine.connect() as conn:
         created_flow = await lego_workflows.execute(
-            register_flow.RegisterFlowCommand(
+            register_form.Command(
                 name="Initial Name",
                 description="Initial Description",
                 conn=conn,
@@ -62,8 +62,8 @@ async def test_update_flow() -> None:
             transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
         )
         updated_workflow = await lego_workflows.execute(
-            update_flow.UpdateWhatsAppFlowCommand(
-                flow_id=created_flow.flow_id,
+            update_form.Command(
+                form_id=created_flow.form_id,
                 name="New Name",
                 description="New description",
                 conn=conn,
@@ -76,8 +76,8 @@ async def test_update_flow() -> None:
         assert updated_workflow.flow.description == "New description"
 
         updated_workflow = await lego_workflows.execute(
-            update_flow.UpdateWhatsAppFlowCommand(
-                flow_id=created_flow.flow_id,
+            update_form.Command(
+                form_id=created_flow.form_id,
                 name=None,
                 description="New description v2",
                 conn=conn,
@@ -90,8 +90,8 @@ async def test_update_flow() -> None:
         assert updated_workflow.flow.description == "New description v2"
 
         await lego_workflows.execute(
-            delete_flow.DeleteFlow(
-                flow_id=created_flow.flow_id, conn=conn, org_code="test"
+            delete_form.Command(
+                form_id=created_flow.form_id, conn=conn, org_code="test"
             ),
             transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
         )
@@ -101,11 +101,11 @@ async def test_update_flow() -> None:
 async def test_delete_not_existing_flow() -> None:
     not_existing_flow_id = uuid4()
     with global_config.db_engine.connect() as conn, pytest.raises(
-        get_flow.WhatsAppFlowNotFoundError
+        get_form.FormsNotFoundError
     ):
         await lego_workflows.execute(
-            delete_flow.DeleteFlow(
-                flow_id=not_existing_flow_id, conn=conn, org_code="test"
+            delete_form.Command(
+                form_id=not_existing_flow_id, conn=conn, org_code="test"
             ),
             transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
         )
@@ -115,7 +115,7 @@ async def test_delete_not_existing_flow() -> None:
 async def test_create_and_delete_flow() -> None:
     with global_config.db_engine.connect() as conn:
         new_flow = await lego_workflows.execute(
-            cmd=register_flow.RegisterFlowCommand(
+            cmd=register_form.Command(
                 name="Test Flow",
                 description="Flow used for testing purposes.",
                 conn=conn,
@@ -125,27 +125,23 @@ async def test_create_and_delete_flow() -> None:
         )
 
         response = await lego_workflows.execute(
-            cmd=get_flow.GetFlowCommand(
-                flow_id=new_flow.flow_id, conn=conn, org_code="test"
-            ),
+            cmd=get_form.Command(form_id=new_flow.form_id, conn=conn, org_code="test"),
             transaction_commiter=None,
         )
 
-        assert response.flow.flow_id == new_flow.flow_id
+        assert response.flow.form_id == new_flow.form_id
 
         await lego_workflows.execute(
-            cmd=delete_flow.DeleteFlow(
-                flow_id=new_flow.flow_id, conn=conn, org_code="test"
+            cmd=delete_form.Command(
+                form_id=new_flow.form_id, conn=conn, org_code="test"
             ),
             transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
         )
 
     with global_config.db_engine.connect() as conn, pytest.raises(
-        get_flow.WhatsAppFlowNotFoundError
+        get_form.FormsNotFoundError
     ):
         response = await lego_workflows.execute(
-            cmd=get_flow.GetFlowCommand(
-                flow_id=new_flow.flow_id, conn=conn, org_code="test"
-            ),
+            cmd=get_form.Command(form_id=new_flow.form_id, conn=conn, org_code="test"),
             transaction_commiter=None,
         )
