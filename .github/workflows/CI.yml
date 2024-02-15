@@ -18,6 +18,14 @@ jobs:
   run:
     name: Python ${{ matrix.python-version }} on ${{ startsWith(matrix.os, 'macos-') && 'macOS' || startsWith(matrix.os, 'windows-') && 'Windows' || 'Linux' }}
     runs-on: ${{ matrix.os }}
+    env:
+      DB_AUTH_TOKEN: ${{ secrets.DB_AUTH_TOKEN }}
+      QDRANT_URL: ${{ vars.QDRANT_URL }}
+      QDRANT_API_KEY: ${{ secrets.QDRANT_API_KEY }}
+      COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
+      LOG_LEVEL: DEBUG
+      ENVIRONMENT: development
+      DB_URL: ${{ vars.DB_URL }}
     permissions:
       contents: read
     strategy:
@@ -46,13 +54,11 @@ jobs:
       - name: Check code
         working-directory: backend
         run: pyrgo check
-
+      
+      - name: Upgrade database
+        working-directory: backend
+        run: alembic upgrade head
+          
       - name: Test code
-        env:
-          DB_AUTH_TOKEN: ${{ secrets.DB_AUTH_TOKEN }}
-          OPEN_API_KEY: ${{ secrets.OPEN_API_KEY }}
-          LOG_LEVEL: DEBUG
-          ENVIRONMENT: development
-          DB_URL: ${{ vars.DB_URL }}
         working-directory: backend
         run: pyrgo test
