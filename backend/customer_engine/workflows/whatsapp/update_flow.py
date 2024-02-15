@@ -57,8 +57,16 @@ class UpdateWhatsAppFlowCommand(Command[UpdateWhatsAppFlowResponse, TextClause])
         if self.name is not None:
             existing_flow.name = self.name
 
+        require_recalculate_embeddings: bool = False
         if self.description is not None:
             existing_flow.description = self.description
+            require_recalculate_embeddings = True
+
+        if existing_flow.embedding_model != global_config.default_model:
+            existing_flow.embedding_model = global_config.default_model
+            require_recalculate_embeddings = True
+
+        if require_recalculate_embeddings:
             new_description_embeddings = await embed_description(
                 cohere=global_config.clients.cohere,
                 model=global_config.default_model,
