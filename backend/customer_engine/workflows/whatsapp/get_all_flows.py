@@ -20,6 +20,7 @@ class GetAllWhatsAppFlowsResponse(Response):
 class GetAllWhatsAppFlowsCommand(Command[GetAllWhatsAppFlowsResponse, TextClause]):
     """Get all whatsapp flows input data."""
 
+    org_code: str
     conn: Connection
 
     async def run(
@@ -32,11 +33,14 @@ class GetAllWhatsAppFlowsCommand(Command[GetAllWhatsAppFlowsResponse, TextClause
             text(
                 """
             SELECT
+                org_code,
                 flow_id,
                 name,
-                description
-            FROM whatsapp_flows"""
-            )
+                description,
+                embedding_model
+            FROM whatsapp_flows
+            WHERE org_code = :org_code"""
+            ).bindparams(org_code=self.org_code)
         ).fetchall()
 
         return GetAllWhatsAppFlowsResponse(

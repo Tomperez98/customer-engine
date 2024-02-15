@@ -5,7 +5,9 @@
 #    pip-compile --extra=dev --output-file=requirements/dev.txt --strip-extras pyproject.toml
 #
 aiohttp==3.9.3
-    # via libsql-client
+    # via
+    #   cohere
+    #   libsql-client
 aiosignal==1.3.1
     # via aiohttp
 alembic==1.13.1
@@ -19,6 +21,8 @@ anyio==4.2.0
     #   watchfiles
 attrs==23.2.0
     # via aiohttp
+backoff==2.2.1
+    # via cohere
 boolean-py==4.0
     # via license-expression
 build==1.0.3
@@ -41,38 +45,58 @@ click==8.1.7
     #   pip-tools
     #   pyrgo
     #   uvicorn
+cohere==4.47
+    # via customer-engine (pyproject.toml)
 cyclonedx-python-lib==6.4.1
     # via pip-audit
 defusedxml==0.7.1
     # via py-serializable
 fastapi==0.109.2
     # via customer-engine (pyproject.toml)
+fastavro==1.9.4
+    # via cohere
 filelock==3.13.1
     # via cachecontrol
 frozenlist==1.4.1
     # via
     #   aiohttp
     #   aiosignal
+grpcio==1.60.1
+    # via
+    #   grpcio-tools
+    #   qdrant-client
+grpcio-tools==1.60.1
+    # via qdrant-client
 gunicorn==21.2.0
     # via customer-engine (pyproject.toml)
 h11==0.14.0
     # via
     #   httpcore
     #   uvicorn
+h2==4.1.0
+    # via httpx
+hpack==4.0.0
+    # via h2
 html5lib==1.1
     # via pip-audit
-httpcore==1.0.2
+httpcore==1.0.3
     # via httpx
 httptools==0.6.1
     # via uvicorn
 httpx==0.26.0
-    # via customer-engine (pyproject.toml)
+    # via
+    #   customer-engine (pyproject.toml)
+    #   qdrant-client
+hyperframe==6.0.1
+    # via h2
 idna==3.6
     # via
     #   anyio
     #   httpx
     #   requests
     #   yarl
+importlib-metadata==6.11.0
+    # via cohere
 iniconfig==2.0.0
     # via pytest
 jinja2==3.1.3
@@ -110,7 +134,9 @@ mypy==1.8.0
     # via pyrgo
 mypy-extensions==1.0.0
     # via mypy
-orjson==3.9.13
+numpy==1.26.4
+    # via qdrant-client
+orjson==3.9.14
     # via mashumaro
 packageurl-python==0.13.4
     # via cyclonedx-python-lib
@@ -133,10 +159,16 @@ pip-tools==7.3.0
     # via pyrgo
 pluggy==1.4.0
     # via pytest
-py-serializable==1.0.0
+portalocker==2.8.2
+    # via qdrant-client
+protobuf==4.25.2
+    # via grpcio-tools
+py-serializable==1.0.1
     # via cyclonedx-python-lib
 pydantic==2.6.1
-    # via fastapi
+    # via
+    #   fastapi
+    #   qdrant-client
 pydantic-core==2.16.2
     # via pydantic
 pygments==2.17.2
@@ -161,9 +193,12 @@ python-dotenv==1.0.1
     #   uvicorn
 pyyaml==6.0.1
     # via uvicorn
+qdrant-client==1.7.3
+    # via customer-engine (pyproject.toml)
 requests==2.31.0
     # via
     #   cachecontrol
+    #   cohere
     #   pip-audit
 result==0.16.0
     # via pyrgo
@@ -206,7 +241,10 @@ typing-extensions==4.9.0
     #   pydantic-core
     #   sqlalchemy
 urllib3==2.2.0
-    # via requests
+    # via
+    #   cohere
+    #   qdrant-client
+    #   requests
 uvicorn==0.27.1
     # via
     #   customer-engine (pyproject.toml)
@@ -225,6 +263,8 @@ wheel==0.42.0
     # via pip-tools
 yarl==1.9.4
     # via aiohttp
+zipp==3.17.0
+    # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # pip

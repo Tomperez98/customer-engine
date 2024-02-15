@@ -5,7 +5,9 @@
 #    pip-compile --output-file=requirements/core.txt --strip-extras pyproject.toml
 #
 aiohttp==3.9.3
-    # via libsql-client
+    # via
+    #   cohere
+    #   libsql-client
 aiosignal==1.3.1
     # via aiohttp
 annotated-types==0.6.0
@@ -17,35 +19,61 @@ anyio==4.2.0
     #   watchfiles
 attrs==23.2.0
     # via aiohttp
+backoff==2.2.1
+    # via cohere
 certifi==2024.2.2
     # via
     #   httpcore
     #   httpx
+    #   requests
+charset-normalizer==3.3.2
+    # via requests
 click==8.1.7
     # via uvicorn
+cohere==4.47
+    # via customer-engine (pyproject.toml)
 fastapi==0.109.2
     # via customer-engine (pyproject.toml)
+fastavro==1.9.4
+    # via cohere
 frozenlist==1.4.1
     # via
     #   aiohttp
     #   aiosignal
+grpcio==1.60.1
+    # via
+    #   grpcio-tools
+    #   qdrant-client
+grpcio-tools==1.60.1
+    # via qdrant-client
 gunicorn==21.2.0
     # via customer-engine (pyproject.toml)
 h11==0.14.0
     # via
     #   httpcore
     #   uvicorn
-httpcore==1.0.2
+h2==4.1.0
+    # via httpx
+hpack==4.0.0
+    # via h2
+httpcore==1.0.3
     # via httpx
 httptools==0.6.1
     # via uvicorn
 httpx==0.26.0
-    # via customer-engine (pyproject.toml)
+    # via
+    #   customer-engine (pyproject.toml)
+    #   qdrant-client
+hyperframe==6.0.1
+    # via h2
 idna==3.6
     # via
     #   anyio
     #   httpx
+    #   requests
     #   yarl
+importlib-metadata==6.11.0
+    # via cohere
 lego-workflows==0.0.2
     # via customer-engine (pyproject.toml)
 libsql-client==0.3.0
@@ -58,10 +86,18 @@ multidict==6.0.5
     # via
     #   aiohttp
     #   yarl
+numpy==1.26.4
+    # via qdrant-client
 packaging==23.2
     # via gunicorn
+portalocker==2.8.2
+    # via qdrant-client
+protobuf==4.25.2
+    # via grpcio-tools
 pydantic==2.6.1
-    # via fastapi
+    # via
+    #   fastapi
+    #   qdrant-client
 pydantic-core==2.16.2
     # via pydantic
 python-dotenv==1.0.1
@@ -70,6 +106,10 @@ python-dotenv==1.0.1
     #   uvicorn
 pyyaml==6.0.1
     # via uvicorn
+qdrant-client==1.7.3
+    # via customer-engine (pyproject.toml)
+requests==2.31.0
+    # via cohere
 sniffio==1.3.0
     # via
     #   anyio
@@ -88,6 +128,11 @@ typing-extensions==4.9.0
     #   pydantic
     #   pydantic-core
     #   sqlalchemy
+urllib3==2.2.0
+    # via
+    #   cohere
+    #   qdrant-client
+    #   requests
 uvicorn==0.27.1
     # via
     #   customer-engine (pyproject.toml)
@@ -100,3 +145,8 @@ websockets==12.0
     # via uvicorn
 yarl==1.9.4
     # via aiohttp
+zipp==3.17.0
+    # via importlib-metadata
+
+# The following packages are considered to be unsafe in a requirements file:
+# setuptools

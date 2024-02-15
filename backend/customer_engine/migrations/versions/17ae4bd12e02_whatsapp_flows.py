@@ -28,9 +28,10 @@ TABLE_NAME = "whatsapp_flows"
 def upgrade() -> None:
     op.create_table(
         TABLE_NAME,
-        sa.Column("flow_id", sa.String(length=20), primary_key=True, nullable=False),
-        sa.Column("name", sa.String(length=40)),
-        sa.Column("description", sa.String(length=200)),
+        sa.Column("org_code", sa.String(), primary_key=True),
+        sa.Column("flow_id", sa.UUID(), primary_key=True),
+        sa.Column("name", sa.String(length=40), nullable=False),
+        sa.Column("description", sa.String(length=200), nullable=False),
     )
 
 

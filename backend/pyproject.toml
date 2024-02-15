@@ -22,6 +22,8 @@ dependencies = [
     "gunicorn < 22",
     "mashumaro < 4",
     "loguru < 1",
+    "qdrant-client < 2",
+    "cohere < 5",
 ]
 
 [project.urls]
@@ -138,3 +140,7 @@ extra-paths = ["scripts"]
 [tool.vulture]
 exclude = ["customer_engine/migrations/versions/"]
 min_confidence = 80
+
+[[tool.mypy.overrides]]
+module = ["cohere", "cohere.responses.embeddings"]
+ignore_missing_imports = true

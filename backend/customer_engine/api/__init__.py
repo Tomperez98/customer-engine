@@ -1,4 +1,4 @@
-"""Webapp application."""
+"""API routes."""
 from __future__ import annotations
 
 from fastapi import FastAPI, Request, status
@@ -6,7 +6,7 @@ from fastapi.responses import ORJSONResponse
 from lego_workflows.components import DomainError
 from pydantic import BaseModel
 
-from customer_engine.web import api
+from customer_engine.api import internal
 
 app = FastAPI()
 
@@ -28,7 +28,4 @@ async def handle_domain_errors(req: Request, exc: DomainError) -> ORJSONResponse
     )
 
 
-app.include_router(
-    router=api.router,
-    responses={status.HTTP_400_BAD_REQUEST: {"model": DomainErrorResponse}},
-)
+app.include_router(router=internal.router)

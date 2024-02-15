@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import datetime
+from uuid import UUID
 
 import lego_workflows
 from fastapi import APIRouter
@@ -14,12 +15,12 @@ router = APIRouter(prefix="/whatsapp", tags=["whatsapp"])
 
 
 class RegisterWhatsAppFlow(BaseModel):  # noqa: D101
-    flow_id: str
     name: str = Field(max_length=40)
     description: str = Field(max_length=200)
 
 
 class RegisterWhatsAppFlowResponse(BaseModel):  # noqa: D101
+    flow_id: UUID
     registed_at: datetime.datetime
 
 
@@ -33,7 +34,7 @@ async def register_whatsapp_flow(
     with global_config.db_engine.begin() as conn:
         response = await lego_workflows.execute(
             register_flow.RegisterFlowCommand(
-                flow_id=req.flow_id,
+                org_code=global_config.default_org,
                 name=req.name,
                 description=req.description,
                 conn=conn,
@@ -41,25 +42,28 @@ async def register_whatsapp_flow(
             transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
         )
 
-    return RegisterWhatsAppFlowResponse(registed_at=response.register_at)
+    return RegisterWhatsAppFlowResponse(
+        registed_at=response.register_at, flow_id=response.flow_id
+    )
 
 
 class GetWhatsAppFlowResponse(BaseModel):
     """Response to get whatsapp flow."""
 
-    flow_id: str
+    flow_id: UUID
     name: str
     description: str
 
 
 @router.get("/flows/{flow_id}")
-async def get_whatsapp_flow(flow_id: str) -> GetWhatsAppFlowResponse:
+async def get_whatsapp_flow(flow_id: UUID) -> GetWhatsAppFlowResponse:
     """Get whatsapp flow."""
     from customer_engine.workflows.whatsapp import get_flow
 
     with global_config.db_engine.begin() as conn:
         response = await lego_workflows.execute(
             get_flow.GetFlowCommand(
+                org_code=global_config.default_org,
                 flow_id=flow_id,
                 conn=conn,
             ),
@@ -84,7 +88,10 @@ async def get_all_whatsapp_flows() -> GetAllWhatsAppFlowsResponse:
 
     with global_config.db_engine.begin() as conn:
         all_flows = await lego_workflows.execute(
-            get_all_flows.GetAllWhatsAppFlowsCommand(conn=conn),
+            get_all_flows.GetAllWhatsAppFlowsCommand(
+                conn=conn,
+                org_code=global_config.default_org,
+            ),
             transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
         )
 
@@ -107,13 +114,14 @@ class DeleteWhatsAppFlowResponse(BaseModel):
 
 
 @router.delete("/flows/{flow_id}")
-async def delete_whatsapp_flow(flow_id: str) -> DeleteWhatsAppFlowResponse:
+async def delete_whatsapp_flow(flow_id: UUID) -> DeleteWhatsAppFlowResponse:
     """Delete whatsapp flow."""
     from customer_engine.workflows.whatsapp import delete_flow
 
     with global_config.db_engine.begin() as conn:
         response = await lego_workflows.execute(
             delete_flow.DeleteFlow(
+                org_code=global_config.default_org,
                 flow_id=flow_id,
                 conn=conn,
             ),
@@ -132,7 +140,7 @@ class PatchWhatsAppFlow(BaseModel):
 
 @router.patch("/flows/{flow_id}")
 async def patch_whatsapp_flow(
-    flow_id: str, patch_data: PatchWhatsAppFlow
+    flow_id: UUID, patch_data: PatchWhatsAppFlow
 ) -> GetWhatsAppFlowResponse:
     """Patch whatsapp flow."""
     from customer_engine.workflows.whatsapp import update_flow
@@ -140,6 +148,7 @@ async def patch_whatsapp_flow(
     with global_config.db_engine.begin() as conn:
         response = await lego_workflows.execute(
             update_flow.UpdateWhatsAppFlowCommand(
+                org_code=global_config.default_org,
                 flow_id=flow_id,
                 conn=conn,
                 name=patch_data.name,
