@@ -14,7 +14,6 @@ from sqlalchemy import Connection, TextClause, text
 from customer_engine import logger
 from customer_engine.core import global_config
 from customer_engine.core.whatsapp_flows import (
-    WhatsAppFlow,
     embed_description_and_prompt,
     model_props,
 )
@@ -112,14 +111,6 @@ class RegisterFlowCommand(Command[RegisterFlowResponse, TextClause]):
                 vectors=description_embeddings,
             ),
         )
-
-        WhatsAppFlow(
-            org_code=self.org_code,
-            flow_id=random_flow_id,
-            name=self.name,
-            description=self.description,
-            embedding_model=global_config.default_model,
-        ).to_dict()
 
         state_changes.append(
             text(
