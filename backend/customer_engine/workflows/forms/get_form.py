@@ -26,6 +26,13 @@ class FormNotFoundError(DomainError):
         super().__init__(f"Whatsapp flow {form_id} from org {org_code} not found.")
 
 
+class NoFormConfigurationFoundError(DomainError):
+    """Raised when form configuration does not exists."""
+
+    def __init__(self, form_id: UUID, org_code: str) -> None:  # noqa: D107
+        super().__init__(f"Form configuration {form_id} from org {org_code} not found.")
+
+
 @dataclass(frozen=True)
 class Response(ResponseComponent):
     """Response data for get flow workflow."""
@@ -52,27 +59,39 @@ class Command(CommandComponent[Response, None]):
             text(
                 """
             SELECT
-                forms.org_code,
-                forms.form_id,
-                forms.name,
-                forms.description,
-                forms.embedding_model,
-                form_configs.configuration
+                org_code,
+                form_id,
+                name,
+                description,
+                embedding_model
             FROM forms
-            INNER JOIN form_configs
-            ON forms.org_code == form_configs.org_code
-                AND forms.form_id == form_configs.form_id
-            WHERE forms.org_code = :org_code AND forms.form_id = :form_id
+            WHERE org_code = :org_code AND form_id = :form_id
             """
             ).bindparams(form_id=self.form_id, org_code=self.org_code)
         ).fetchone()
         if whatsapp_flow is None:
             raise FormNotFoundError(form_id=self.form_id, org_code=self.org_code)
 
-        row_data = whatsapp_flow._asdict()
-        existing_form = Form.model_validate(row_data)
+        form_configuration = self.conn.execute(
+            text(
+                """
+            SELECT
+                configuration
+            FROM form_configs
+            WHERE org_code = :org_code AND form_id = :form_id
+            """
+            ).bindparams(form_id=self.form_id, org_code=self.org_code)
+        ).fetchone()
+        if form_configuration is None:
+            raise NoFormConfigurationFoundError(
+                form_id=self.form_id, org_code=self.org_code
+            )
 
-        configuration = TypeAdapter(FormConfig).validate_json(row_data["configuration"])
+        existing_form = Form.model_validate(whatsapp_flow._asdict())
+
+        configuration = TypeAdapter(FormConfig).validate_json(
+            form_configuration._asdict()["configuration"]
+        )
         return Response(
             form=existing_form,
             configuration=configuration,  # type: ignore[arg-type]

@@ -49,7 +49,7 @@ async def get_most_relevant(prompt: str) -> GetMostRelevantResponse:
 
     return GetMostRelevantResponse(
         most_relevant=response.most_revelant,
-        configuration=TypeAdapter(Configuration).validate_python(  # type: ignore[arg-type]
+        configuration=TypeAdapter(Configuration).validate_python(
             response.configuration.model_dump()
         ),
     )
