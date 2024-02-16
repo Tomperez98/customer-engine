@@ -7,6 +7,7 @@ from uuid import UUID
 
 import lego_workflows
 from fastapi import APIRouter
+from mashumaro.codecs.orjson import ORJSONDecoder
 from pydantic import AnyHttpUrl, BaseModel, Field, TypeAdapter
 
 from customer_engine.core import global_config
@@ -16,26 +17,26 @@ from customer_engine.core.transactions import SqlAlchemyTransactionCommiter
 router = APIRouter(prefix="/forms", tags=["forms"])
 
 
-class _UrlForm(BaseModel):
+class InternalUrlForm(BaseModel):  # noqa: D101
     url: AnyHttpUrl
 
 
-class _WhatsAppFlowForm(BaseModel):
+class InternalWhatsAppFlowForm(BaseModel):  # noqa: D101
     flow_id: str
 
 
-Configuration: TypeAlias = _UrlForm | _WhatsAppFlowForm
+InternalFormConfiguration: TypeAlias = InternalUrlForm | InternalWhatsAppFlowForm
 
 
-class GetMostRelevantResponse(BaseModel):
+class InternalGetMostRelevantFormResponse(BaseModel):
     """Get most relevant points response."""
 
     most_relevant: Form
-    configuration: Configuration
+    configuration: InternalFormConfiguration
 
 
 @router.get("/most-relevant")
-async def get_most_relevant(prompt: str) -> GetMostRelevantResponse:
+async def get_most_relevant(prompt: str) -> InternalGetMostRelevantFormResponse:
     """Get most relevant forms flows."""
     from customer_engine.workflows.forms import get_most_relevant_form
 
@@ -47,29 +48,29 @@ async def get_most_relevant(prompt: str) -> GetMostRelevantResponse:
             transaction_commiter=None,
         )
 
-    return GetMostRelevantResponse(
+    return InternalGetMostRelevantFormResponse(
         most_relevant=response.most_revelant,
-        configuration=TypeAdapter(Configuration).validate_python(
-            response.configuration.model_dump()
+        configuration=TypeAdapter(InternalFormConfiguration).validate_python(
+            response.configuration.to_dict()
         ),
     )
 
 
-class RegisterForm(BaseModel):  # noqa: D101
+class InternalRegisterForm(BaseModel):  # noqa: D101
     name: str = Field(max_length=40)
     description: str = Field(max_length=200)
-    configuration: _UrlForm | _WhatsAppFlowForm
+    configuration: InternalUrlForm | InternalWhatsAppFlowForm
 
 
-class RegisterFormResponse(BaseModel):  # noqa: D101
+class InternalRegisterFormResponse(BaseModel):  # noqa: D101
     form_id: UUID
     registed_at: datetime.datetime
 
 
 @router.post("")
 async def register_form(
-    req: RegisterForm,
-) -> RegisterFormResponse:
+    req: InternalRegisterForm,
+) -> InternalRegisterFormResponse:
     """Register forms flow."""
     from customer_engine.workflows.forms import register_form
 
@@ -80,14 +81,14 @@ async def register_form(
                 name=req.name,
                 description=req.description,
                 conn=conn,
-                configuration=TypeAdapter(FormConfig).validate_python(  # type: ignore[arg-type]
-                    req.configuration.model_dump()
+                configuration=ORJSONDecoder(FormConfig).decode(
+                    req.configuration.model_dump_json()
                 ),
             ),
             transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
         )
 
-    return RegisterFormResponse(
+    return InternalRegisterFormResponse(
         registed_at=response.register_at, form_id=response.form_id
     )
 

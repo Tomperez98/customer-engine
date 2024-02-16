@@ -104,7 +104,7 @@ class Command(CommandComponent[Response, TextClause]):
             ).bindparams(
                 org_code=self.org_code,
                 form_id=random_flow_id,
-                configuration=self.configuration.model_dump_json(),
+                configuration=self.configuration.to_json(),
             )
         )
 

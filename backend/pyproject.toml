@@ -13,7 +13,7 @@ classifiers = [
 ]
 authors = [{ name = "Author name", email = "author@email.com" }]
 dependencies = [
-    "lego-workflows < 0.1.0",
+    "lego-workflows >= 0.0.6",
     "sqlalchemy-libsql",
     "python-dotenv < 2",
     "fastapi < 1",
@@ -24,6 +24,7 @@ dependencies = [
     "loguru < 1",
     "qdrant-client < 2",
     "cohere < 5",
+    "pydantic >= 2",
 ]
 
 [project.urls]
@@ -84,11 +85,13 @@ select = ["ALL"]
 logger-objects = ["customer_engine.logger"]
 
 [tool.ruff.lint.flake8-type-checking]
-runtime-evaluated-base-classes = ["pydantic.BaseModel"]
+runtime-evaluated-base-classes = [
+    "pydantic.BaseModel",
+    "mashumaro.mixins.orjson.DataClassORJSONMixin",
+]
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api]
 enum = { msg = "`enum` is banned: Python enums are not allowed. Use typing.Literal and typing.TypeAlias to build enums" }
-mashumaro = { msg = "`mashumaro` is banned: We are using pydantic for data validation and serialization." }
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*.py" = ["INP001", "S101", "D", "SLF001"]

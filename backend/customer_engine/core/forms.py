@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Literal, TypeAlias, assert_never, cast
 from uuid import UUID
 
 from cohere.responses.embeddings import EmbeddingsByType
-from pydantic import BaseModel
+from mashumaro.mixins.orjson import DataClassORJSONMixin
 from qdrant_client.http.models import Distance
 
 if TYPE_CHECKING:
@@ -23,7 +23,7 @@ def _split_embedding_model(model: EmbeddingModels) -> tuple[ModelProviders, str]
 
 
 @dataclass(frozen=True)
-class _ModelProp:
+class _ModelProp(DataClassORJSONMixin):
     size: int
     distance: Distance
 
@@ -58,14 +58,14 @@ async def embed_description_and_prompt(
 
 
 @dataclass(frozen=True)
-class UrlForm(BaseModel):
+class UrlForm(DataClassORJSONMixin):
     """Url based forms."""
 
     url: str
 
 
 @dataclass(frozen=True)
-class WhatsAppFlowForm(BaseModel):
+class WhatsAppFlowForm(DataClassORJSONMixin):
     """Whatsapp flow based forms."""
 
     flow_id: str
@@ -75,7 +75,7 @@ FormConfig: TypeAlias = UrlForm | WhatsAppFlowForm
 
 
 @dataclass()
-class Form(BaseModel):
+class Form(DataClassORJSONMixin):
     """WhatsApp Flow."""
 
     org_code: str

@@ -10,7 +10,7 @@ from lego_workflows.components import (
     DomainEvent,
     ResponseComponent,
 )
-from pydantic import TypeAdapter
+from mashumaro.codecs.orjson import ORJSONDecoder
 from sqlalchemy import Connection, text
 
 from customer_engine.core.forms import Form, FormConfig
@@ -87,12 +87,11 @@ class Command(CommandComponent[Response, None]):
                 form_id=self.form_id, org_code=self.org_code
             )
 
-        existing_form = Form.model_validate(whatsapp_flow._asdict())
+        existing_form = Form.from_dict(whatsapp_flow._asdict())
 
-        configuration = TypeAdapter(FormConfig).validate_json(
-            form_configuration._asdict()["configuration"]
-        )
         return Response(
             form=existing_form,
-            configuration=configuration,  # type: ignore[arg-type]
+            configuration=ORJSONDecoder(FormConfig).decode(
+                form_configuration._asdict()["configuration"]
+            ),
         )
