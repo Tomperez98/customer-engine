@@ -6,7 +6,7 @@ from fastapi.responses import ORJSONResponse
 from lego_workflows.components import DomainError
 from pydantic import BaseModel
 
-from customer_engine.api import internal
+from customer_engine.api import ui
 
 app = FastAPI()
 
@@ -28,4 +28,4 @@ async def handle_domain_errors(req: Request, exc: DomainError) -> ORJSONResponse
     )
 
 
-app.include_router(router=internal.router)
+app.include_router(router=ui.router)
