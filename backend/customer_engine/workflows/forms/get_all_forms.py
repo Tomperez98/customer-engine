@@ -44,5 +44,7 @@ class Command(CommandComponent[Response, None]):
         ).fetchall()
 
         return Response(
-            flows=[Form.from_dict(workflow._asdict()) for workflow in all_workflows]
+            flows=[
+                Form.model_validate(workflow._asdict()) for workflow in all_workflows
+            ]
         )

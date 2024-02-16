@@ -52,7 +52,7 @@ class Command(CommandComponent[Response, TextClause]):  # noqa: D101
             form_id=self.form_id, conn=self.conn, org_code=self.org_code
         ).run(state_changes=[], events=events)
 
-        existing_flow = response.flow
+        existing_flow = response.form
 
         if self.name is not None:
             existing_flow.name = self.name

@@ -2,23 +2,36 @@
 from __future__ import annotations
 
 import datetime
+from typing import TypeAlias
 from uuid import UUID
 
 import lego_workflows
 from fastapi import APIRouter
-from pydantic import BaseModel, Field
+from pydantic import AnyHttpUrl, BaseModel, Field, TypeAdapter
 
 from customer_engine.core import global_config
-from customer_engine.core.forms import Form
+from customer_engine.core.forms import Form, FormConfig
 from customer_engine.core.transactions import SqlAlchemyTransactionCommiter
 
 router = APIRouter(prefix="/forms", tags=["forms"])
+
+
+class _UrlForm(BaseModel):
+    url: AnyHttpUrl
+
+
+class _WhatsAppFlowForm(BaseModel):
+    flow_id: str
+
+
+Configuration: TypeAlias = _UrlForm | _WhatsAppFlowForm
 
 
 class GetMostRelevantResponse(BaseModel):
     """Get most relevant points response."""
 
     most_relevant: Form
+    configuration: Configuration
 
 
 @router.get("/most-relevant")
@@ -34,12 +47,18 @@ async def get_most_relevant(prompt: str) -> GetMostRelevantResponse:
             transaction_commiter=None,
         )
 
-    return GetMostRelevantResponse(most_relevant=response.most_revelant)
+    return GetMostRelevantResponse(
+        most_relevant=response.most_revelant,
+        configuration=TypeAdapter(Configuration).validate_python(  # type: ignore[arg-type]
+            response.configuration.model_dump()
+        ),
+    )
 
 
 class RegisterForm(BaseModel):  # noqa: D101
     name: str = Field(max_length=40)
     description: str = Field(max_length=200)
+    configuration: _UrlForm | _WhatsAppFlowForm
 
 
 class RegisterFormResponse(BaseModel):  # noqa: D101
@@ -61,6 +80,9 @@ async def register_form(
                 name=req.name,
                 description=req.description,
                 conn=conn,
+                configuration=TypeAdapter(FormConfig).validate_python(  # type: ignore[arg-type]
+                    req.configuration.model_dump()
+                ),
             ),
             transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
         )
@@ -76,6 +98,7 @@ class GetFormResponse(BaseModel):
     form_id: UUID
     name: str
     description: str
+    configuration: FormConfig
 
 
 @router.get("/{form_id}")
@@ -94,18 +117,27 @@ async def get_forms_flow(form_id: UUID) -> GetFormResponse:
         )
 
     return GetFormResponse(
-        form_id=response.flow.form_id,
-        name=response.flow.name,
-        description=response.flow.description,
+        form_id=response.form.form_id,
+        name=response.form.name,
+        description=response.form.description,
+        configuration=response.configuration,
     )
 
 
-class GetAllFormsResponseResponse(BaseModel):  # noqa: D101
-    flows: list[GetFormResponse]
+class GetAllFormsElement(BaseModel):
+    """Element of get all forms."""
+
+    form_id: UUID
+    name: str
+    description: str
+
+
+class GetAllFormsResponse(BaseModel):  # noqa: D101
+    flows: list[GetAllFormsElement]
 
 
 @router.get("")
-async def get_all_forms_flows() -> GetAllFormsResponseResponse:
+async def get_all_forms_flows() -> GetAllFormsResponse:
     """Get all forms flows."""
     from customer_engine.workflows.forms import get_all_forms
 
@@ -118,9 +150,9 @@ async def get_all_forms_flows() -> GetAllFormsResponseResponse:
             transaction_commiter=None,
         )
 
-    return GetAllFormsResponseResponse(
+    return GetAllFormsResponse(
         flows=[
-            GetFormResponse(
+            GetAllFormsElement(
                 form_id=flow.form_id,
                 name=flow.name,
                 description=flow.description,
@@ -161,8 +193,16 @@ class PatchForm(BaseModel):
     description: str | None = Field(max_length=200)
 
 
+class PathFormResponse(BaseModel):
+    """Response to patch form."""
+
+    form_id: UUID
+    name: str
+    description: str
+
+
 @router.patch("/{form_id}")
-async def path_form(form_id: UUID, patch_data: PatchForm) -> GetFormResponse:
+async def path_form(form_id: UUID, patch_data: PatchForm) -> PathFormResponse:
     """Patch forms flow."""
     from customer_engine.workflows.forms import update_form
 
@@ -178,7 +218,7 @@ async def path_form(form_id: UUID, patch_data: PatchForm) -> GetFormResponse:
             transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
         )
 
-    return GetFormResponse(
+    return PathFormResponse(
         form_id=response.flow.form_id,
         name=response.flow.name,
         description=response.flow.description,

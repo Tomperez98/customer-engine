@@ -6,11 +6,13 @@ import lego_workflows
 import pytest
 
 from customer_engine.core import global_config
+from customer_engine.core.forms import UrlForm, WhatsAppFlowForm
 from customer_engine.core.transactions import SqlAlchemyTransactionCommiter
 from customer_engine.workflows.forms import (
     delete_form,
     get_all_forms,
     get_form,
+    get_most_relevant_form,
     register_form,
     update_form,
 )
@@ -28,6 +30,7 @@ async def test_retrieve_multiple() -> None:
                     description=f"{form_id} description",
                     conn=conn,
                     org_code="test",
+                    configuration=UrlForm(url="https://google.com"),
                 ),
                 transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
             )
@@ -50,6 +53,68 @@ async def test_retrieve_multiple() -> None:
 
 
 @pytest.mark.e2e()
+async def test_get_most_relevant() -> None:
+    with global_config.db_engine.connect() as conn:
+        first_flow = await lego_workflows.execute(
+            register_form.Command(
+                org_code="test",
+                conn=conn,
+                name="Formulario Ofertas Laborales",
+                description="Estoy buscando trabajo, me gustaria ver oportunidades de empleo, ofertas laborales",
+                configuration=UrlForm(url="https://test.com"),
+            ),
+            transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
+        )
+        second_flow = await lego_workflows.execute(
+            register_form.Command(
+                org_code="test",
+                conn=conn,
+                name="Formulario Reserva de restaurante",
+                description="Me gustaria hacer una reserva para esta noche, quisiera conocer el restaurante",
+                configuration=WhatsAppFlowForm(flow_id="HCSP"),
+            ),
+            transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
+        )
+
+        most_relevant_form = await lego_workflows.execute(
+            get_most_relevant_form.Command(
+                org_code="test",
+                prompt="Hola! Me gustaria conocer oportunidades de empleo",
+                conn=conn,
+            ),
+            transaction_commiter=None,
+        )
+        assert isinstance(most_relevant_form.configuration, UrlForm)
+        assert most_relevant_form.most_revelant.form_id == first_flow.form_id
+        assert most_relevant_form.configuration.url == "https://test.com"
+
+        most_relevant_form = await lego_workflows.execute(
+            get_most_relevant_form.Command(
+                org_code="test",
+                prompt="Hola! Para hacer una reserva esta noche en el restaurante de Manila",
+                conn=conn,
+            ),
+            transaction_commiter=None,
+        )
+
+        assert isinstance(most_relevant_form.configuration, WhatsAppFlowForm)
+        assert most_relevant_form.most_revelant.form_id == second_flow.form_id
+        assert most_relevant_form.configuration.flow_id == "HCSP"
+
+        await lego_workflows.execute(
+            delete_form.Command(form_id=first_flow.form_id, org_code="test", conn=conn),
+            transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
+        )
+
+        await lego_workflows.execute(
+            delete_form.Command(
+                form_id=second_flow.form_id, org_code="test", conn=conn
+            ),
+            transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
+        )
+
+
+@pytest.mark.e2e()
 async def test_update_flow() -> None:
     with global_config.db_engine.connect() as conn:
         created_flow = await lego_workflows.execute(
@@ -58,6 +123,7 @@ async def test_update_flow() -> None:
                 description="Initial Description",
                 conn=conn,
                 org_code="test",
+                configuration=UrlForm(url="https://google.com"),
             ),
             transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
         )
@@ -101,7 +167,7 @@ async def test_update_flow() -> None:
 async def test_delete_not_existing_flow() -> None:
     not_existing_flow_id = uuid4()
     with global_config.db_engine.connect() as conn, pytest.raises(
-        get_form.FormsNotFoundError
+        get_form.FormNotFoundError
     ):
         await lego_workflows.execute(
             delete_form.Command(
@@ -120,6 +186,7 @@ async def test_create_and_delete_flow() -> None:
                 description="Flow used for testing purposes.",
                 conn=conn,
                 org_code="test",
+                configuration=UrlForm(url="https://google.com"),
             ),
             transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
         )
@@ -129,7 +196,8 @@ async def test_create_and_delete_flow() -> None:
             transaction_commiter=None,
         )
 
-        assert response.flow.form_id == new_flow.form_id
+        assert response.form.form_id == new_flow.form_id
+        assert isinstance(response.configuration, UrlForm)
 
         await lego_workflows.execute(
             cmd=delete_form.Command(
@@ -139,7 +207,7 @@ async def test_create_and_delete_flow() -> None:
         )
 
     with global_config.db_engine.connect() as conn, pytest.raises(
-        get_form.FormsNotFoundError
+        get_form.FormNotFoundError
     ):
         response = await lego_workflows.execute(
             cmd=get_form.Command(form_id=new_flow.form_id, conn=conn, org_code="test"),

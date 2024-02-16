@@ -10,15 +10,16 @@ from lego_workflows.components import (
     DomainEvent,
     ResponseComponent,
 )
+from pydantic import TypeAdapter
 from sqlalchemy import Connection, text
 
-from customer_engine.core.forms import Form
+from customer_engine.core.forms import Form, FormConfig
 
 if TYPE_CHECKING:
     from uuid import UUID
 
 
-class FormsNotFoundError(DomainError):
+class FormNotFoundError(DomainError):
     """Raised when whatsapp flow does not exists."""
 
     def __init__(self, form_id: UUID, org_code: str) -> None:  # noqa: D107
@@ -29,7 +30,8 @@ class FormsNotFoundError(DomainError):
 class Response(ResponseComponent):
     """Response data for get flow workflow."""
 
-    flow: Form
+    form: Form
+    configuration: FormConfig
 
 
 @dataclass(frozen=True)
@@ -50,17 +52,28 @@ class Command(CommandComponent[Response, None]):
             text(
                 """
             SELECT
-                org_code,
-                form_id,
-                name,
-                description,
-                embedding_model
+                forms.org_code,
+                forms.form_id,
+                forms.name,
+                forms.description,
+                forms.embedding_model,
+                form_configs.configuration
             FROM forms
-            WHERE org_code = :org_code AND form_id = :form_id
-"""
+            INNER JOIN form_configs
+            ON forms.org_code == form_configs.org_code
+                AND forms.form_id == form_configs.form_id
+            WHERE forms.org_code = :org_code AND forms.form_id = :form_id
+            """
             ).bindparams(form_id=self.form_id, org_code=self.org_code)
         ).fetchone()
         if whatsapp_flow is None:
-            raise FormsNotFoundError(form_id=self.form_id, org_code=self.org_code)
+            raise FormNotFoundError(form_id=self.form_id, org_code=self.org_code)
 
-        return Response(flow=Form.from_dict(whatsapp_flow._asdict()))
+        row_data = whatsapp_flow._asdict()
+        existing_form = Form.model_validate(row_data)
+
+        configuration = TypeAdapter(FormConfig).validate_json(row_data["configuration"])
+        return Response(
+            form=existing_form,
+            configuration=configuration,  # type: ignore[arg-type]
+        )

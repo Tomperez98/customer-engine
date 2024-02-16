@@ -84,11 +84,11 @@ select = ["ALL"]
 logger-objects = ["customer_engine.logger"]
 
 [tool.ruff.lint.flake8-type-checking]
-runtime-evaluated-base-classes = [
-    "pydantic.BaseModel",
-    "mashumaro.mixins.orjson.DataClassORJSONMixin",
-]
+runtime-evaluated-base-classes = ["pydantic.BaseModel"]
 
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+enum = { msg = "`enum` is banned: Python enums are not allowed. Use typing.Literal and typing.TypeAlias to build enums" }
+mashumaro = { msg = "`mashumaro` is banned: We are using pydantic for data validation and serialization." }
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*.py" = ["INP001", "S101", "D", "SLF001"]

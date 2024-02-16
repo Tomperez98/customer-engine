@@ -24,13 +24,13 @@ depends_on: str | Sequence[str] | None = None
 
 def upgrade() -> None:
     op.alter_column(
-        table_name="whatsapp_flows", column_name="form_id", new_column_name="form_id"
+        table_name="whatsapp_flows", column_name="flow_id", new_column_name="form_id"
     )
     op.rename_table(old_table_name="whatsapp_flows", new_table_name="forms")
 
 
 def downgrade() -> None:
     op.alter_column(
-        table_name="forms", column_name="form_id", new_column_name="form_id"
+        table_name="forms", column_name="form_id", new_column_name="flow_id"
     )
     op.rename_table(old_table_name="forms", new_table_name="whatsapp_flows")

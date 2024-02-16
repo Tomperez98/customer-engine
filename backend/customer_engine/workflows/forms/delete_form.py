@@ -67,5 +67,13 @@ class Command(CommandComponent[Response, TextClause]):
         """
             ).bindparams(form_id=self.form_id, org_code=self.org_code)
         )
+        state_changes.append(
+            text(
+                """
+            DELETE FROM form_configs
+            WHERE org_code = :org_code AND form_id = :form_id
+        """
+            ).bindparams(form_id=self.form_id, org_code=self.org_code)
+        )
         events.append(FormsHasBeenDeleted(form_id=self.form_id, org_code=self.org_code))
         return Response(deleted_at=now)

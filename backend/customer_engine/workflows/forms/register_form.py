@@ -19,6 +19,7 @@ from sqlalchemy import Connection, TextClause, text
 from customer_engine import logger
 from customer_engine.core import global_config
 from customer_engine.core.forms import (
+    FormConfig,
     embed_description_and_prompt,
     model_props,
 )
@@ -70,6 +71,7 @@ class Command(CommandComponent[Response, TextClause]):
     org_code: str
     name: str
     description: str
+    configuration: FormConfig
     conn: Connection
 
     async def run(
@@ -83,9 +85,55 @@ class Command(CommandComponent[Response, TextClause]):
                 await get_form.Command(
                     form_id=random_flow_id, conn=self.conn, org_code=self.org_code
                 ).run(state_changes=[], events=events)
-            except get_form.FormsNotFoundError:
+            except get_form.FormNotFoundError:
                 break
             continue
+
+        state_changes.append(
+            text(
+                """INSERT INTO form_configs (
+                org_code,
+                form_id,
+                configuration
+                )
+                VALUES (
+                :org_code,
+                :form_id,
+                :configuration
+                )"""
+            ).bindparams(
+                org_code=self.org_code,
+                form_id=random_flow_id,
+                configuration=self.configuration.model_dump_json(),
+            )
+        )
+
+        state_changes.append(
+            text(
+                """
+                INSERT INTO forms (
+                org_code,
+                form_id,
+                name,
+                description,
+                embedding_model
+                )
+                VALUES (
+                :org_code,
+                :form_id,
+                :name,
+                :description,
+                :embedding_model
+                )
+                """
+            ).bindparams(
+                org_code=self.org_code,
+                form_id=random_flow_id,
+                name=self.name,
+                description=self.description,
+                embedding_model=global_config.default_model,
+            )
+        )
 
         try:
             await global_config.clients.qdrant.get_collection(
@@ -117,32 +165,6 @@ class Command(CommandComponent[Response, TextClause]):
             ),
         )
 
-        state_changes.append(
-            text(
-                """
-                INSERT INTO forms (
-                org_code,
-                form_id,
-                name,
-                description,
-                embedding_model
-                )
-                VALUES (
-                :org_code,
-                :form_id,
-                :name,
-                :description,
-                :embedding_model
-                )
-                """
-            ).bindparams(
-                org_code=self.org_code,
-                form_id=random_flow_id,
-                name=self.name,
-                description=self.description,
-                embedding_model=global_config.default_model,
-            )
-        )
         now = datetime.datetime.now(tz=datetime.UTC)
         events.append(
             NewFormsRegistered(

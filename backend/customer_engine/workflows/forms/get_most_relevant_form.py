@@ -15,6 +15,7 @@ from lego_workflows.components import (
 from customer_engine.core import global_config
 from customer_engine.core.forms import (
     Form,
+    FormConfig,
     embed_description_and_prompt,
 )
 from customer_engine.workflows.forms import get_form
@@ -33,6 +34,7 @@ class Response(ResponseComponent):
     """Response data for most relevant flows workflow."""
 
     most_revelant: Form
+    configuration: FormConfig
 
 
 @dataclass(frozen=True)
@@ -73,4 +75,6 @@ class Command(CommandComponent[Response, None]):
             org_code=self.org_code, form_id=UUID(most_relevant.id), conn=self.conn
         ).run(state_changes=state_changes, events=events)
 
-        return Response(most_revelant=relevant_flow.flow)
+        return Response(
+            most_revelant=relevant_flow.form, configuration=relevant_flow.configuration
+        )
