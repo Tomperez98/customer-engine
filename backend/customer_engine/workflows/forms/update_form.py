@@ -46,11 +46,11 @@ class Command(CommandComponent[Response, TextClause]):  # noqa: D101
     conn: Connection
 
     async def run(  # noqa: D102
-        self, state_changes: list[TextClause], events: list[DomainEvent]
+        self, events: list[DomainEvent]
     ) -> Response:
         response = await get_form.Command(
             form_id=self.form_id, conn=self.conn, org_code=self.org_code
-        ).run(state_changes=[], events=events)
+        ).run(events=events)
 
         existing_flow = response.form
 
@@ -66,20 +66,7 @@ class Command(CommandComponent[Response, TextClause]):  # noqa: D101
             existing_flow.embedding_model = global_config.default_model
             require_recalculate_embeddings = True
 
-        if require_recalculate_embeddings:
-            new_description_embeddings = await embed_description_and_prompt(
-                cohere=global_config.clients.cohere,
-                model=global_config.default_model,
-                description=existing_flow.description,
-            )
-            await global_config.clients.qdrant.upsert(
-                collection_name=self.org_code,
-                points=Batch(
-                    ids=[self.form_id.hex],
-                    vectors=new_description_embeddings,
-                ),
-            )
-        state_changes.append(
+        self.conn.execute(
             text(
                 """
                 UPDATE forms
@@ -97,6 +84,20 @@ class Command(CommandComponent[Response, TextClause]):  # noqa: D101
                 embedding_model=existing_flow.embedding_model,
             )
         )
+
+        if require_recalculate_embeddings:
+            new_description_embeddings = await embed_description_and_prompt(
+                cohere=global_config.clients.cohere,
+                model=global_config.default_model,
+                description=existing_flow.description,
+            )
+            await global_config.clients.qdrant.upsert(
+                collection_name=self.org_code,
+                points=Batch(
+                    ids=[self.form_id.hex],
+                    vectors=new_description_embeddings,
+                ),
+            )
 
         events.append(FormsHasBeenUpdated(form_id=self.form_id, org_code="test"))
         return Response(flow=existing_flow)

@@ -45,21 +45,15 @@ class Command(CommandComponent[Response, TextClause]):
     org_code: str
     conn: Connection
 
-    async def run(
-        self, state_changes: list[TextClause], events: list[DomainEvent]
-    ) -> Response:
+    async def run(self, events: list[DomainEvent]) -> Response:
         """Execute delete form workflow."""
         now = datetime.datetime.now(tz=datetime.UTC)
 
         await get_form.Command(
             form_id=self.form_id, org_code=self.org_code, conn=self.conn
-        ).run(state_changes=[], events=events)
+        ).run(events=events)
 
-        await global_config.clients.qdrant.delete(
-            collection_name=self.org_code,
-            points_selector=PointIdsList(points=[self.form_id.hex]),
-        )
-        state_changes.append(
+        self.conn.execute(
             text(
                 """
             DELETE FROM forms
@@ -67,7 +61,7 @@ class Command(CommandComponent[Response, TextClause]):
         """
             ).bindparams(form_id=self.form_id, org_code=self.org_code)
         )
-        state_changes.append(
+        self.conn.execute(
             text(
                 """
             DELETE FROM form_configs
@@ -75,5 +69,11 @@ class Command(CommandComponent[Response, TextClause]):
         """
             ).bindparams(form_id=self.form_id, org_code=self.org_code)
         )
+
+        await global_config.clients.qdrant.delete(
+            collection_name=self.org_code,
+            points_selector=PointIdsList(points=[self.form_id.hex]),
+        )
+
         events.append(FormsHasBeenDeleted(form_id=self.form_id, org_code=self.org_code))
         return Response(deleted_at=now)

@@ -74,9 +74,7 @@ class Command(CommandComponent[Response, TextClause]):
     configuration: FormConfig
     conn: Connection
 
-    async def run(
-        self, state_changes: list[TextClause], events: list[DomainEvent]
-    ) -> Response:
+    async def run(self, events: list[DomainEvent]) -> Response:
         """Execuet register flow command."""
         random_flow_id = uuid4()
         configured_model_props = model_props(model=global_config.default_model)
@@ -84,12 +82,12 @@ class Command(CommandComponent[Response, TextClause]):
             try:
                 await get_form.Command(
                     form_id=random_flow_id, conn=self.conn, org_code=self.org_code
-                ).run(state_changes=[], events=events)
+                ).run(events=events)
             except get_form.FormNotFoundError:
                 break
             continue
 
-        state_changes.append(
+        self.conn.execute(
             text(
                 """INSERT INTO form_configs (
                 org_code,
@@ -108,7 +106,7 @@ class Command(CommandComponent[Response, TextClause]):
             )
         )
 
-        state_changes.append(
+        self.conn.execute(
             text(
                 """
                 INSERT INTO forms (

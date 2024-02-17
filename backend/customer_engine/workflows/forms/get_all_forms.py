@@ -25,7 +25,6 @@ class Command(CommandComponent[Response, None]):
 
     async def run(
         self,
-        state_changes: list[None],  # noqa: ARG002
         events: list[DomainEvent],  # noqa: ARG002
     ) -> Response:
         """Execute get all whatsapp flows."""

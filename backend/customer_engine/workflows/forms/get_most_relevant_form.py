@@ -47,23 +47,21 @@ class Command(CommandComponent[Response, None]):
 
     async def run(  # noqa: D102
         self,
-        state_changes: list[None],
         events: list[DomainEvent],
     ) -> Response:
-        prompt_embeddings = (
-            await embed_description_and_prompt(
-                cohere=global_config.clients.cohere,
-                model=global_config.default_model,
-                description=self.prompt,
-            )
-        )[0]
+        prompt_embeddings = await embed_description_and_prompt(
+            cohere=global_config.clients.cohere,
+            model=global_config.default_model,
+            description=self.prompt,
+        )
 
         relevant_points = await global_config.clients.qdrant.search(
             collection_name=self.org_code,
-            query_vector=prompt_embeddings,
+            query_vector=prompt_embeddings[0],
             limit=3,
-            score_threshold=0.7,
+            score_threshold=0.65,
         )
+
         if len(relevant_points) == 0:
             raise NoRelevantWhatsappWorkflowError
         most_relevant = relevant_points[0]
@@ -73,7 +71,7 @@ class Command(CommandComponent[Response, None]):
 
         relevant_flow = await get_form.Command(
             org_code=self.org_code, form_id=UUID(most_relevant.id), conn=self.conn
-        ).run(state_changes=state_changes, events=events)
+        ).run(events=events)
 
         return Response(
             most_revelant=relevant_flow.form, configuration=relevant_flow.configuration

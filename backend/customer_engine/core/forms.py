@@ -18,7 +18,7 @@ ModelProviders: TypeAlias = Literal["cohere"]
 
 def _split_embedding_model(model: EmbeddingModels) -> tuple[ModelProviders, str]:
     """Split embedding model into components."""
-    provider, model_name = model.split(sep=":")
+    provider, model_name = model.split(sep=":", maxsplit=1)
     return cast(ModelProviders, provider), model_name
 
 
