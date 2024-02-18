@@ -5,9 +5,10 @@ import datetime
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+import sqlalchemy
 from lego_workflows.components import CommandComponent, DomainEvent, ResponseComponent
 from qdrant_client.http.models import PointIdsList
-from sqlalchemy import Connection, TextClause, text
+from sqlalchemy import Connection, TextClause, bindparam, text
 
 from customer_engine import logger
 from customer_engine.core import global_config
@@ -59,7 +60,12 @@ class Command(CommandComponent[Response, TextClause]):
             DELETE FROM forms
             WHERE org_code = :org_code AND form_id = :form_id
         """
-            ).bindparams(form_id=self.form_id, org_code=self.org_code)
+            ).bindparams(
+                bindparam(
+                    key="org_code", value=self.org_code, type_=sqlalchemy.String()
+                ),
+                bindparam(key="form_id", value=self.form_id, type_=sqlalchemy.UUID()),
+            )
         )
         self.conn.execute(
             text(
@@ -67,7 +73,12 @@ class Command(CommandComponent[Response, TextClause]):
             DELETE FROM form_configs
             WHERE org_code = :org_code AND form_id = :form_id
         """
-            ).bindparams(form_id=self.form_id, org_code=self.org_code)
+            ).bindparams(
+                bindparam(
+                    key="org_code", value=self.org_code, type_=sqlalchemy.String()
+                ),
+                bindparam(key="form_id", value=self.form_id, type_=sqlalchemy.UUID()),
+            )
         )
 
         await global_config.clients.qdrant.delete(

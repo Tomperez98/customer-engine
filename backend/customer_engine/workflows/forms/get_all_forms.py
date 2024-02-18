@@ -3,8 +3,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+import sqlalchemy
 from lego_workflows.components import CommandComponent, DomainEvent, ResponseComponent
-from sqlalchemy import Connection, text
+from sqlalchemy import Connection, bindparam, text
 
 from customer_engine.core.forms import Form
 
@@ -39,7 +40,11 @@ class Command(CommandComponent[Response, None]):
                 embedding_model
             FROM forms
             WHERE org_code = :org_code"""
-            ).bindparams(org_code=self.org_code)
+            ).bindparams(
+                bindparam(
+                    key="org_code", value=self.org_code, type_=sqlalchemy.String()
+                )
+            )
         ).fetchall()
 
         return Response(

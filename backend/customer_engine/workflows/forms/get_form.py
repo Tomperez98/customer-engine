@@ -4,6 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+import sqlalchemy
 from lego_workflows.components import (
     CommandComponent,
     DomainError,
@@ -11,7 +12,7 @@ from lego_workflows.components import (
     ResponseComponent,
 )
 from mashumaro.codecs.orjson import ORJSONDecoder
-from sqlalchemy import Connection, text
+from sqlalchemy import Connection, bindparam, text
 
 from customer_engine.core.forms import Form, FormConfig
 
@@ -66,7 +67,12 @@ class Command(CommandComponent[Response, None]):
             FROM forms
             WHERE org_code = :org_code AND form_id = :form_id
             """
-            ).bindparams(form_id=self.form_id, org_code=self.org_code)
+            ).bindparams(
+                bindparam(
+                    key="org_code", value=self.org_code, type_=sqlalchemy.String()
+                ),
+                bindparam(key="form_id", value=self.form_id, type_=sqlalchemy.UUID()),
+            )
         ).fetchone()
         if whatsapp_flow is None:
             raise FormNotFoundError(form_id=self.form_id, org_code=self.org_code)
@@ -79,7 +85,12 @@ class Command(CommandComponent[Response, None]):
             FROM form_configs
             WHERE org_code = :org_code AND form_id = :form_id
             """
-            ).bindparams(form_id=self.form_id, org_code=self.org_code)
+            ).bindparams(
+                bindparam(
+                    key="org_code", value=self.org_code, type_=sqlalchemy.String()
+                ),
+                bindparam(key="form_id", value=self.form_id, type_=sqlalchemy.UUID()),
+            )
         ).fetchone()
         if form_configuration is None:
             raise NoFormConfigurationFoundError(

@@ -4,9 +4,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+import sqlalchemy
 from lego_workflows.components import CommandComponent, DomainEvent, ResponseComponent
 from qdrant_client.http.models import Batch
-from sqlalchemy import Connection, TextClause, text
+from sqlalchemy import Connection, TextClause, bindparam, text
 
 from customer_engine import logger
 from customer_engine.core import global_config
@@ -78,10 +79,22 @@ class Command(CommandComponent[Response, TextClause]):  # noqa: D101
                     form_id = :form_id
                 """
             ).bindparams(
-                name=existing_flow.name,
-                description=existing_flow.description,
-                form_id=existing_flow.form_id,
-                embedding_model=existing_flow.embedding_model,
+                bindparam(
+                    key="name", value=existing_flow.name, type_=sqlalchemy.String()
+                ),
+                bindparam(
+                    key="description",
+                    value=existing_flow.description,
+                    type_=sqlalchemy.String(),
+                ),
+                bindparam(
+                    key="form_id", value=existing_flow.form_id, type_=sqlalchemy.UUID()
+                ),
+                bindparam(
+                    key="embedding_model",
+                    value=existing_flow.embedding_model,
+                    type_=sqlalchemy.String(),
+                ),
             )
         )
 

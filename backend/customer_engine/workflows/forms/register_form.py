@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from uuid import uuid4
 
+import sqlalchemy
 from lego_workflows.components import (
     CommandComponent,
     DomainError,
@@ -14,7 +15,7 @@ from lego_workflows.components import (
 )
 from qdrant_client.http.exceptions import UnexpectedResponse
 from qdrant_client.http.models import Batch, VectorParams
-from sqlalchemy import Connection, TextClause, text
+from sqlalchemy import Connection, TextClause, bindparam, text
 
 from customer_engine import logger
 from customer_engine.core import global_config
@@ -100,9 +101,15 @@ class Command(CommandComponent[Response, TextClause]):
                 :configuration
                 )"""
             ).bindparams(
-                org_code=self.org_code,
-                form_id=random_flow_id,
-                configuration=self.configuration.to_json(),
+                bindparam(
+                    key="org_code", value=self.org_code, type_=sqlalchemy.String()
+                ),
+                bindparam(key="form_id", value=random_flow_id, type_=sqlalchemy.UUID()),
+                bindparam(
+                    key="configuration",
+                    value=self.configuration.to_dict(),
+                    type_=sqlalchemy.JSON(),
+                ),
             )
         )
 
@@ -125,11 +132,19 @@ class Command(CommandComponent[Response, TextClause]):
                 )
                 """
             ).bindparams(
-                org_code=self.org_code,
-                form_id=random_flow_id,
-                name=self.name,
-                description=self.description,
-                embedding_model=global_config.default_model,
+                bindparam(
+                    key="org_code", value=self.org_code, type_=sqlalchemy.String()
+                ),
+                bindparam(key="form_id", value=random_flow_id, type_=sqlalchemy.UUID()),
+                bindparam(key="name", value=self.name, type_=sqlalchemy.String()),
+                bindparam(
+                    key="description", value=self.description, type_=sqlalchemy.String()
+                ),
+                bindparam(
+                    key="embedding_model",
+                    value=global_config.default_model,
+                    type_=sqlalchemy.String(),
+                ),
             )
         )
 
