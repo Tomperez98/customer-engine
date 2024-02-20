@@ -4,9 +4,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+import sqlalchemy
 from lego_workflows.components import CommandComponent, DomainEvent, ResponseComponent
 from qdrant_client.http.models import Batch
-from sqlalchemy import Connection, TextClause, text
+from sqlalchemy import Connection, TextClause, bindparam, text
 
 from customer_engine import logger
 from customer_engine.core import global_config
@@ -42,15 +43,15 @@ class Command(CommandComponent[Response, TextClause]):  # noqa: D101
     org_code: str
     form_id: UUID
     name: str | None
-    description: str | None
+    examples: list[str] | None
     conn: Connection
 
     async def run(  # noqa: D102
-        self, state_changes: list[TextClause], events: list[DomainEvent]
+        self, events: list[DomainEvent]
     ) -> Response:
         response = await get_form.Command(
             form_id=self.form_id, conn=self.conn, org_code=self.org_code
-        ).run(state_changes=[], events=events)
+        ).run(events=events)
 
         existing_flow = response.form
 
@@ -58,19 +59,50 @@ class Command(CommandComponent[Response, TextClause]):  # noqa: D101
             existing_flow.name = self.name
 
         require_recalculate_embeddings: bool = False
-        if self.description is not None:
-            existing_flow.description = self.description
+        if self.examples is not None:
+            existing_flow.examples = self.examples
             require_recalculate_embeddings = True
 
         if existing_flow.embedding_model != global_config.default_model:
             existing_flow.embedding_model = global_config.default_model
             require_recalculate_embeddings = True
 
+        self.conn.execute(
+            text(
+                """
+                UPDATE forms
+                SET
+                    name = :name,
+                    examples = :examples,
+                    embedding_model = :embedding_model
+                WHERE
+                    form_id = :form_id
+                """
+            ).bindparams(
+                bindparam(
+                    key="name", value=existing_flow.name, type_=sqlalchemy.String()
+                ),
+                bindparam(
+                    key="examples",
+                    value=existing_flow.examples,
+                    type_=sqlalchemy.JSON(),
+                ),
+                bindparam(
+                    key="form_id", value=existing_flow.form_id, type_=sqlalchemy.UUID()
+                ),
+                bindparam(
+                    key="embedding_model",
+                    value=existing_flow.embedding_model,
+                    type_=sqlalchemy.String(),
+                ),
+            )
+        )
+
         if require_recalculate_embeddings:
             new_description_embeddings = await embed_description_and_prompt(
                 cohere=global_config.clients.cohere,
                 model=global_config.default_model,
-                description=existing_flow.description,
+                examples=existing_flow.examples,
             )
             await global_config.clients.qdrant.upsert(
                 collection_name=self.org_code,
@@ -79,24 +111,6 @@ class Command(CommandComponent[Response, TextClause]):  # noqa: D101
                     vectors=new_description_embeddings,
                 ),
             )
-        state_changes.append(
-            text(
-                """
-                UPDATE forms
-                SET
-                    name = :name,
-                    description = :description,
-                    embedding_model = :embedding_model
-                WHERE
-                    form_id = :form_id
-                """
-            ).bindparams(
-                name=existing_flow.name,
-                description=existing_flow.description,
-                form_id=existing_flow.form_id,
-                embedding_model=existing_flow.embedding_model,
-            )
-        )
 
         events.append(FormsHasBeenUpdated(form_id=self.form_id, org_code="test"))
         return Response(flow=existing_flow)

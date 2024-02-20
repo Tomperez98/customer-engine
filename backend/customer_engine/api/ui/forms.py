@@ -12,7 +12,6 @@ from pydantic import AnyHttpUrl, BaseModel, Field, TypeAdapter
 
 from customer_engine.core import global_config
 from customer_engine.core.forms import Form, FormConfig
-from customer_engine.core.transactions import SqlAlchemyTransactionCommiter
 
 router = APIRouter(prefix="/forms", tags=["forms"])
 
@@ -41,12 +40,13 @@ async def get_most_relevant(prompt: str) -> InternalGetMostRelevantFormResponse:
     from customer_engine.workflows.forms import get_most_relevant_form
 
     with global_config.db_engine.begin() as conn:
-        response = await lego_workflows.execute(
+        response, events = await lego_workflows.run_and_collect_events(
             cmd=get_most_relevant_form.Command(
                 org_code=global_config.default_org, prompt=prompt, conn=conn
             ),
-            transaction_commiter=None,
         )
+
+    await lego_workflows.publish_events(events=events)
 
     return InternalGetMostRelevantFormResponse(
         most_relevant=response.most_revelant,
@@ -58,7 +58,7 @@ async def get_most_relevant(prompt: str) -> InternalGetMostRelevantFormResponse:
 
 class InternalRegisterForm(BaseModel):  # noqa: D101
     name: str = Field(max_length=40)
-    description: str = Field(max_length=200)
+    examples: list[str]
     configuration: InternalUrlForm | InternalWhatsAppFlowForm
 
 
@@ -75,18 +75,19 @@ async def register_form(
     from customer_engine.workflows.forms import register_form
 
     with global_config.db_engine.begin() as conn:
-        response = await lego_workflows.execute(
+        response, events = await lego_workflows.run_and_collect_events(
             register_form.Command(
                 org_code=global_config.default_org,
                 name=req.name,
-                description=req.description,
+                examples=req.examples,
                 conn=conn,
                 configuration=ORJSONDecoder(FormConfig).decode(
                     req.configuration.model_dump_json()
                 ),
             ),
-            transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
         )
+
+    await lego_workflows.publish_events(events=events)
 
     return InternalRegisterFormResponse(
         registed_at=response.register_at, form_id=response.form_id
@@ -98,7 +99,7 @@ class GetFormResponse(BaseModel):
 
     form_id: UUID
     name: str
-    description: str
+    examples: list[str]
     configuration: FormConfig
 
 
@@ -108,19 +109,20 @@ async def get_forms_flow(form_id: UUID) -> GetFormResponse:
     from customer_engine.workflows.forms import get_form
 
     with global_config.db_engine.begin() as conn:
-        response = await lego_workflows.execute(
+        response, events = await lego_workflows.run_and_collect_events(
             get_form.Command(
                 org_code=global_config.default_org,
                 form_id=form_id,
                 conn=conn,
             ),
-            transaction_commiter=None,
         )
+
+    await lego_workflows.publish_events(events=events)
 
     return GetFormResponse(
         form_id=response.form.form_id,
         name=response.form.name,
-        description=response.form.description,
+        examples=response.form.examples,
         configuration=response.configuration,
     )
 
@@ -130,7 +132,7 @@ class GetAllFormsElement(BaseModel):
 
     form_id: UUID
     name: str
-    description: str
+    examples: list[str]
 
 
 class GetAllFormsResponse(BaseModel):  # noqa: D101
@@ -143,20 +145,21 @@ async def get_all_forms_flows() -> GetAllFormsResponse:
     from customer_engine.workflows.forms import get_all_forms
 
     with global_config.db_engine.begin() as conn:
-        all_flows = await lego_workflows.execute(
+        all_flows, events = await lego_workflows.run_and_collect_events(
             get_all_forms.Command(
                 conn=conn,
                 org_code=global_config.default_org,
             ),
-            transaction_commiter=None,
         )
+
+    await lego_workflows.publish_events(events=events)
 
     return GetAllFormsResponse(
         flows=[
             GetAllFormsElement(
                 form_id=flow.form_id,
                 name=flow.name,
-                description=flow.description,
+                examples=flow.examples,
             )
             for flow in all_flows.flows
         ]
@@ -175,14 +178,15 @@ async def delte_form(form_id: UUID) -> DeleteFormResponse:
     from customer_engine.workflows.forms import delete_form
 
     with global_config.db_engine.begin() as conn:
-        response = await lego_workflows.execute(
+        response, events = await lego_workflows.run_and_collect_events(
             delete_form.Command(
                 org_code=global_config.default_org,
                 form_id=form_id,
                 conn=conn,
             ),
-            transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
         )
+
+    await lego_workflows.publish_events(events=events)
 
     return DeleteFormResponse(deleted_at=response.deleted_at)
 
@@ -191,7 +195,7 @@ class PatchForm(BaseModel):
     """Pathc forms flow request."""
 
     name: str | None = Field(max_length=40)
-    description: str | None = Field(max_length=200)
+    examples: list[str] | None
 
 
 class PathFormResponse(BaseModel):
@@ -199,7 +203,7 @@ class PathFormResponse(BaseModel):
 
     form_id: UUID
     name: str
-    description: str
+    examples: list[str]
 
 
 @router.patch("/{form_id}")
@@ -208,19 +212,20 @@ async def path_form(form_id: UUID, patch_data: PatchForm) -> PathFormResponse:
     from customer_engine.workflows.forms import update_form
 
     with global_config.db_engine.begin() as conn:
-        response = await lego_workflows.execute(
+        response, events = await lego_workflows.run_and_collect_events(
             update_form.Command(
                 org_code=global_config.default_org,
                 form_id=form_id,
                 conn=conn,
                 name=patch_data.name,
-                description=patch_data.description,
+                examples=patch_data.examples,
             ),
-            transaction_commiter=SqlAlchemyTransactionCommiter(conn=conn),
         )
+
+    await lego_workflows.publish_events(events=events)
 
     return PathFormResponse(
         form_id=response.flow.form_id,
         name=response.flow.name,
-        description=response.flow.description,
+        examples=response.flow.examples,
     )

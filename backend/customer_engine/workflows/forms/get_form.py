@@ -1,9 +1,11 @@
 """Get flow workflow."""
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+import sqlalchemy
 from lego_workflows.components import (
     CommandComponent,
     DomainError,
@@ -11,7 +13,7 @@ from lego_workflows.components import (
     ResponseComponent,
 )
 from mashumaro.codecs.orjson import ORJSONDecoder
-from sqlalchemy import Connection, text
+from sqlalchemy import Connection, bindparam, text
 
 from customer_engine.core.forms import Form, FormConfig
 
@@ -51,7 +53,6 @@ class Command(CommandComponent[Response, None]):
 
     async def run(
         self,
-        state_changes: list[None],  # noqa: ARG002
         events: list[DomainEvent],  # noqa: ARG002
     ) -> Response:
         """Execute get flow workflow."""
@@ -62,12 +63,17 @@ class Command(CommandComponent[Response, None]):
                 org_code,
                 form_id,
                 name,
-                description,
+                examples,
                 embedding_model
             FROM forms
             WHERE org_code = :org_code AND form_id = :form_id
             """
-            ).bindparams(form_id=self.form_id, org_code=self.org_code)
+            ).bindparams(
+                bindparam(
+                    key="org_code", value=self.org_code, type_=sqlalchemy.String()
+                ),
+                bindparam(key="form_id", value=self.form_id, type_=sqlalchemy.UUID()),
+            )
         ).fetchone()
         if whatsapp_flow is None:
             raise FormNotFoundError(form_id=self.form_id, org_code=self.org_code)
@@ -80,14 +86,22 @@ class Command(CommandComponent[Response, None]):
             FROM form_configs
             WHERE org_code = :org_code AND form_id = :form_id
             """
-            ).bindparams(form_id=self.form_id, org_code=self.org_code)
+            ).bindparams(
+                bindparam(
+                    key="org_code", value=self.org_code, type_=sqlalchemy.String()
+                ),
+                bindparam(key="form_id", value=self.form_id, type_=sqlalchemy.UUID()),
+            )
         ).fetchone()
         if form_configuration is None:
             raise NoFormConfigurationFoundError(
                 form_id=self.form_id, org_code=self.org_code
             )
 
-        existing_form = Form.from_dict(whatsapp_flow._asdict())
+        whatsapp_flow_data = whatsapp_flow._asdict()
+
+        whatsapp_flow_data["examples"] = json.loads(whatsapp_flow_data["examples"])
+        existing_form = Form.from_dict(whatsapp_flow_data)
 
         return Response(
             form=existing_form,

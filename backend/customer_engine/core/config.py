@@ -46,11 +46,14 @@ class _Config:
         self.db_engine: Engine
         if environment == "development":
             self.db_engine = create_engine(
-                url=f"sqlite+{db_url}/?authToken={db_auth_token}", echo=True
+                url=f"sqlite+{db_url}/?authToken={db_auth_token}",
+                echo=True,
             )
+
         elif environment == "production":
             self.db_engine = create_engine(
-                url=f"sqlite+{db_url}/?authToken={db_auth_token}", echo=False
+                url=f"sqlite+{db_url}/?authToken={db_auth_token}",
+                echo=False,
             )
         else:
             assert_never(environment)

@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 from uuid import uuid4
 
+import sqlalchemy
 from lego_workflows.components import (
     CommandComponent,
     DomainError,
@@ -14,7 +15,7 @@ from lego_workflows.components import (
 )
 from qdrant_client.http.exceptions import UnexpectedResponse
 from qdrant_client.http.models import Batch, VectorParams
-from sqlalchemy import Connection, TextClause, text
+from sqlalchemy import Connection, TextClause, bindparam, text
 
 from customer_engine import logger
 from customer_engine.core import global_config
@@ -70,13 +71,11 @@ class Command(CommandComponent[Response, TextClause]):
 
     org_code: str
     name: str
-    description: str
+    examples: list[str]
     configuration: FormConfig
     conn: Connection
 
-    async def run(
-        self, state_changes: list[TextClause], events: list[DomainEvent]
-    ) -> Response:
+    async def run(self, events: list[DomainEvent]) -> Response:
         """Execuet register flow command."""
         random_flow_id = uuid4()
         configured_model_props = model_props(model=global_config.default_model)
@@ -84,12 +83,12 @@ class Command(CommandComponent[Response, TextClause]):
             try:
                 await get_form.Command(
                     form_id=random_flow_id, conn=self.conn, org_code=self.org_code
-                ).run(state_changes=[], events=events)
+                ).run(events=events)
             except get_form.FormNotFoundError:
                 break
             continue
 
-        state_changes.append(
+        self.conn.execute(
             text(
                 """INSERT INTO form_configs (
                 org_code,
@@ -102,36 +101,52 @@ class Command(CommandComponent[Response, TextClause]):
                 :configuration
                 )"""
             ).bindparams(
-                org_code=self.org_code,
-                form_id=random_flow_id,
-                configuration=self.configuration.to_json(),
+                bindparam(
+                    key="org_code", value=self.org_code, type_=sqlalchemy.String()
+                ),
+                bindparam(key="form_id", value=random_flow_id, type_=sqlalchemy.UUID()),
+                bindparam(
+                    key="configuration",
+                    value=self.configuration.to_dict(),
+                    type_=sqlalchemy.JSON(),
+                ),
             )
         )
 
-        state_changes.append(
+        self.conn.execute(
             text(
                 """
                 INSERT INTO forms (
                 org_code,
                 form_id,
                 name,
-                description,
+                examples,
                 embedding_model
                 )
                 VALUES (
                 :org_code,
                 :form_id,
                 :name,
-                :description,
+                :examples,
                 :embedding_model
                 )
                 """
             ).bindparams(
-                org_code=self.org_code,
-                form_id=random_flow_id,
-                name=self.name,
-                description=self.description,
-                embedding_model=global_config.default_model,
+                bindparam(
+                    key="org_code", value=self.org_code, type_=sqlalchemy.String()
+                ),
+                bindparam(key="form_id", value=random_flow_id, type_=sqlalchemy.UUID()),
+                bindparam(key="name", value=self.name, type_=sqlalchemy.String()),
+                bindparam(
+                    key="examples",
+                    value=self.examples,
+                    type_=sqlalchemy.JSON(),
+                ),
+                bindparam(
+                    key="embedding_model",
+                    value=global_config.default_model,
+                    type_=sqlalchemy.String(),
+                ),
             )
         )
 
@@ -154,7 +169,7 @@ class Command(CommandComponent[Response, TextClause]):
         description_embeddings = await embed_description_and_prompt(
             cohere=global_config.clients.cohere,
             model=global_config.default_model,
-            description=self.description,
+            examples=self.examples,
         )
 
         await global_config.clients.qdrant.upsert(
