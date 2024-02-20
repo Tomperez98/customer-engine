@@ -1,6 +1,7 @@
 """Get flow workflow."""
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -62,7 +63,7 @@ class Command(CommandComponent[Response, None]):
                 org_code,
                 form_id,
                 name,
-                description,
+                examples,
                 embedding_model
             FROM forms
             WHERE org_code = :org_code AND form_id = :form_id
@@ -97,7 +98,10 @@ class Command(CommandComponent[Response, None]):
                 form_id=self.form_id, org_code=self.org_code
             )
 
-        existing_form = Form.from_dict(whatsapp_flow._asdict())
+        whatsapp_flow_data = whatsapp_flow._asdict()
+
+        whatsapp_flow_data["examples"] = json.loads(whatsapp_flow_data["examples"])
+        existing_form = Form.from_dict(whatsapp_flow_data)
 
         return Response(
             form=existing_form,

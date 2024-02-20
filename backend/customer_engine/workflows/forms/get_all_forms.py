@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+import orjson
 import sqlalchemy
 from lego_workflows.components import CommandComponent, DomainEvent, ResponseComponent
 from sqlalchemy import Connection, bindparam, text
@@ -36,7 +37,7 @@ class Command(CommandComponent[Response, None]):
                 org_code,
                 form_id,
                 name,
-                description,
+                examples,
                 embedding_model
             FROM forms
             WHERE org_code = :org_code"""
@@ -47,6 +48,9 @@ class Command(CommandComponent[Response, None]):
             )
         ).fetchall()
 
-        return Response(
-            flows=[Form.from_dict(workflow._asdict()) for workflow in all_workflows]
-        )
+        flows: list[Form] = []
+        for workflow in all_workflows:
+            workflow_data = workflow._asdict()
+            workflow_data["examples"] = orjson.loads(workflow_data["examples"])
+            flows.append(Form.from_dict(workflow_data))
+        return Response(flows=flows)

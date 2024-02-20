@@ -43,7 +43,7 @@ class Command(CommandComponent[Response, TextClause]):  # noqa: D101
     org_code: str
     form_id: UUID
     name: str | None
-    description: str | None
+    examples: list[str] | None
     conn: Connection
 
     async def run(  # noqa: D102
@@ -59,8 +59,8 @@ class Command(CommandComponent[Response, TextClause]):  # noqa: D101
             existing_flow.name = self.name
 
         require_recalculate_embeddings: bool = False
-        if self.description is not None:
-            existing_flow.description = self.description
+        if self.examples is not None:
+            existing_flow.examples = self.examples
             require_recalculate_embeddings = True
 
         if existing_flow.embedding_model != global_config.default_model:
@@ -73,7 +73,7 @@ class Command(CommandComponent[Response, TextClause]):  # noqa: D101
                 UPDATE forms
                 SET
                     name = :name,
-                    description = :description,
+                    examples = :examples,
                     embedding_model = :embedding_model
                 WHERE
                     form_id = :form_id
@@ -83,9 +83,9 @@ class Command(CommandComponent[Response, TextClause]):  # noqa: D101
                     key="name", value=existing_flow.name, type_=sqlalchemy.String()
                 ),
                 bindparam(
-                    key="description",
-                    value=existing_flow.description,
-                    type_=sqlalchemy.String(),
+                    key="examples",
+                    value=existing_flow.examples,
+                    type_=sqlalchemy.JSON(),
                 ),
                 bindparam(
                     key="form_id", value=existing_flow.form_id, type_=sqlalchemy.UUID()
@@ -102,7 +102,7 @@ class Command(CommandComponent[Response, TextClause]):  # noqa: D101
             new_description_embeddings = await embed_description_and_prompt(
                 cohere=global_config.clients.cohere,
                 model=global_config.default_model,
-                description=existing_flow.description,
+                examples=existing_flow.examples,
             )
             await global_config.clients.qdrant.upsert(
                 collection_name=self.org_code,

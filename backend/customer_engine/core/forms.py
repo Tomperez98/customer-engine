@@ -39,14 +39,16 @@ def model_props(model: EmbeddingModels) -> _ModelProp:
 async def embed_description_and_prompt(
     cohere: cohere.AsyncClient,
     model: EmbeddingModels,
-    description: str,
+    examples: list[str],
 ) -> list[list[float]]:
-    """Embed description with provider."""
+    """Embed example with provider."""
     provider, model_name = _split_embedding_model(model=model)
     if provider == "cohere":
         embeddings = (
             await cohere.embed(
-                model=model_name, input_type="search_document", texts=[description]
+                model=model_name,
+                input_type="search_document",
+                texts=["\n".join(examples)],
             )
         ).embeddings
         if isinstance(embeddings, EmbeddingsByType):
@@ -81,5 +83,5 @@ class Form(DataClassORJSONMixin):
     org_code: str
     form_id: UUID
     name: str
-    description: str
+    examples: list[str]
     embedding_model: EmbeddingModels

@@ -52,7 +52,7 @@ class Command(CommandComponent[Response, None]):
         prompt_embeddings = await embed_description_and_prompt(
             cohere=global_config.clients.cohere,
             model=global_config.default_model,
-            description=self.prompt,
+            examples=[self.prompt],
         )
 
         relevant_points = await global_config.clients.qdrant.search(

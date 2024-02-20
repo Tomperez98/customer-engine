@@ -71,7 +71,7 @@ class Command(CommandComponent[Response, TextClause]):
 
     org_code: str
     name: str
-    description: str
+    examples: list[str]
     configuration: FormConfig
     conn: Connection
 
@@ -120,14 +120,14 @@ class Command(CommandComponent[Response, TextClause]):
                 org_code,
                 form_id,
                 name,
-                description,
+                examples,
                 embedding_model
                 )
                 VALUES (
                 :org_code,
                 :form_id,
                 :name,
-                :description,
+                :examples,
                 :embedding_model
                 )
                 """
@@ -138,7 +138,9 @@ class Command(CommandComponent[Response, TextClause]):
                 bindparam(key="form_id", value=random_flow_id, type_=sqlalchemy.UUID()),
                 bindparam(key="name", value=self.name, type_=sqlalchemy.String()),
                 bindparam(
-                    key="description", value=self.description, type_=sqlalchemy.String()
+                    key="examples",
+                    value=self.examples,
+                    type_=sqlalchemy.JSON(),
                 ),
                 bindparam(
                     key="embedding_model",
@@ -167,7 +169,7 @@ class Command(CommandComponent[Response, TextClause]):
         description_embeddings = await embed_description_and_prompt(
             cohere=global_config.clients.cohere,
             model=global_config.default_model,
-            description=self.description,
+            examples=self.examples,
         )
 
         await global_config.clients.qdrant.upsert(

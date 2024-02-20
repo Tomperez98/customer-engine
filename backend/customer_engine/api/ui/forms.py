@@ -58,7 +58,7 @@ async def get_most_relevant(prompt: str) -> InternalGetMostRelevantFormResponse:
 
 class InternalRegisterForm(BaseModel):  # noqa: D101
     name: str = Field(max_length=40)
-    description: str = Field(max_length=200)
+    examples: list[str]
     configuration: InternalUrlForm | InternalWhatsAppFlowForm
 
 
@@ -79,7 +79,7 @@ async def register_form(
             register_form.Command(
                 org_code=global_config.default_org,
                 name=req.name,
-                description=req.description,
+                examples=req.examples,
                 conn=conn,
                 configuration=ORJSONDecoder(FormConfig).decode(
                     req.configuration.model_dump_json()
@@ -99,7 +99,7 @@ class GetFormResponse(BaseModel):
 
     form_id: UUID
     name: str
-    description: str
+    examples: list[str]
     configuration: FormConfig
 
 
@@ -122,7 +122,7 @@ async def get_forms_flow(form_id: UUID) -> GetFormResponse:
     return GetFormResponse(
         form_id=response.form.form_id,
         name=response.form.name,
-        description=response.form.description,
+        examples=response.form.examples,
         configuration=response.configuration,
     )
 
@@ -132,7 +132,7 @@ class GetAllFormsElement(BaseModel):
 
     form_id: UUID
     name: str
-    description: str
+    examples: list[str]
 
 
 class GetAllFormsResponse(BaseModel):  # noqa: D101
@@ -159,7 +159,7 @@ async def get_all_forms_flows() -> GetAllFormsResponse:
             GetAllFormsElement(
                 form_id=flow.form_id,
                 name=flow.name,
-                description=flow.description,
+                examples=flow.examples,
             )
             for flow in all_flows.flows
         ]
@@ -195,7 +195,7 @@ class PatchForm(BaseModel):
     """Pathc forms flow request."""
 
     name: str | None = Field(max_length=40)
-    description: str | None = Field(max_length=200)
+    examples: list[str] | None
 
 
 class PathFormResponse(BaseModel):
@@ -203,7 +203,7 @@ class PathFormResponse(BaseModel):
 
     form_id: UUID
     name: str
-    description: str
+    examples: list[str]
 
 
 @router.patch("/{form_id}")
@@ -218,7 +218,7 @@ async def path_form(form_id: UUID, patch_data: PatchForm) -> PathFormResponse:
                 form_id=form_id,
                 conn=conn,
                 name=patch_data.name,
-                description=patch_data.description,
+                examples=patch_data.examples,
             ),
         )
 
@@ -227,5 +227,5 @@ async def path_form(form_id: UUID, patch_data: PatchForm) -> PathFormResponse:
     return PathFormResponse(
         form_id=response.flow.form_id,
         name=response.flow.name,
-        description=response.flow.description,
+        examples=response.flow.examples,
     )

@@ -31,7 +31,7 @@ def upgrade() -> None:
         sa.Column("org_code", sa.String(), primary_key=True),
         sa.Column("flow_id", sa.UUID(), primary_key=True),
         sa.Column("name", sa.String(length=40), nullable=False),
-        sa.Column("description", sa.String(length=200), nullable=False),
+        sa.Column("examples", sa.JSON(), nullable=False),
     )
 
 

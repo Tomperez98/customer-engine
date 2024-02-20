@@ -26,7 +26,7 @@ async def test_retrieve_multiple() -> None:
             await lego_workflows.run_and_collect_events(
                 register_form.Command(
                     name=f"{form_id} name",
-                    description=f"{form_id} description",
+                    examples=[f"{form_id} example"],
                     conn=conn,
                     org_code="test",
                     configuration=UrlForm(url="https://google.com"),
@@ -56,7 +56,11 @@ async def test_get_most_relevant() -> None:
                 org_code="test",
                 conn=conn,
                 name="Formulario Ofertas Laborales",
-                description="Estoy buscando trabajo, me gustaria ver oportunidades de empleo, ofertas laborales",
+                examples=[
+                    "Estoy buscando trabajo",
+                    "Me gustaria ver oportunidades de empleo",
+                    "Ofertas laborales",
+                ],
                 configuration=UrlForm(url="https://test.com"),
             ),
         )
@@ -65,7 +69,10 @@ async def test_get_most_relevant() -> None:
                 org_code="test",
                 conn=conn,
                 name="Formulario Reserva de restaurante",
-                description="Me gustaria hacer una reserva para esta noche, quisiera conocer el restaurante",
+                examples=[
+                    "Me gustaria hacer una reserva para esta noche",
+                    "Quisiera conocer el restaurante",
+                ],
                 configuration=WhatsAppFlowForm(flow_id="HCSP"),
             ),
         )
@@ -110,7 +117,7 @@ async def test_update_flow() -> None:
         created_flow, _ = await lego_workflows.run_and_collect_events(
             register_form.Command(
                 name="Initial Name",
-                description="Initial Description",
+                examples=["Initial Description"],
                 conn=conn,
                 org_code="test",
                 configuration=UrlForm(url="https://google.com"),
@@ -120,27 +127,27 @@ async def test_update_flow() -> None:
             update_form.Command(
                 form_id=created_flow.form_id,
                 name="New Name",
-                description="New description",
+                examples=["New example"],
                 conn=conn,
                 org_code="test",
             ),
         )
 
         assert updated_workflow.flow.name == "New Name"
-        assert updated_workflow.flow.description == "New description"
+        assert updated_workflow.flow.examples == ["New example"]
 
         updated_workflow, _ = await lego_workflows.run_and_collect_events(
             update_form.Command(
                 form_id=created_flow.form_id,
                 name=None,
-                description="New description v2",
+                examples=["New example v2"],
                 conn=conn,
                 org_code="test",
             ),
         )
 
         assert updated_workflow.flow.name == "New Name"
-        assert updated_workflow.flow.description == "New description v2"
+        assert updated_workflow.flow.examples == ["New example v2"]
 
         await lego_workflows.run_and_collect_events(
             delete_form.Command(
@@ -168,7 +175,7 @@ async def test_create_and_delete_flow() -> None:
         new_flow, _ = await lego_workflows.run_and_collect_events(
             cmd=register_form.Command(
                 name="Test Flow",
-                description="Flow used for testing purposes.",
+                examples=["Flow used for testing purposes."],
                 conn=conn,
                 org_code="test",
                 configuration=UrlForm(url="https://google.com"),
