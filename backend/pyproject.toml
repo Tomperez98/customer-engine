@@ -25,6 +25,7 @@ dependencies = [
     "qdrant-client < 2",
     "cohere < 5",
     "pydantic >= 2",
+    "orjson",
 ]
 
 [project.urls]
