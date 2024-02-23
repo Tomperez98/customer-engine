@@ -1,13 +1,14 @@
-import Header from '@/components/Header'
-import Table from '@/components/Table'
-export default function Home() {
+'use client'
+
+import Layout from '@/components/layout'
+import FormsTableSection from '../components/pages/home/FormsTableSection'
+
+const Home = () => {
     return (
-        <main>
-            <Header />
-            <div className='flex min-h-screen flex-col items-center p-8'>
-                <h1>Flows</h1>
-                <Table name='tomas' expertise='Backend' age={25} />
-            </div>
-        </main>
+        <Layout>
+            <FormsTableSection />
+        </Layout>
     )
 }
+
+export default Home
