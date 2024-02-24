@@ -7,6 +7,7 @@ on:
     branches: [main]
     paths:
       - "backend/**"
+      - ".github/workflows/CI.yml"
 
 env:
   PYTHONUNBUFFERED: "1"

@@ -4,7 +4,7 @@ from __future__ import annotations
 import os
 import sys
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, assert_never, cast
+from typing import assert_never, cast
 
 import cohere
 import loguru
@@ -13,9 +13,6 @@ from qdrant_client import AsyncQdrantClient
 from sqlalchemy import Engine, create_engine
 
 from customer_engine.typing import Environment
-
-if TYPE_CHECKING:
-    from customer_engine.core.forms import EmbeddingModels
 
 load_dotenv(dotenv_path=".env")
 
@@ -65,8 +62,7 @@ class _Config:
             ),
             cohere=cohere.AsyncClient(api_key=os.environ["COHERE_API_KEY"]),
         )
-        self.default_org = "default"
-        self.default_model: EmbeddingModels = "cohere:embed-multilingual-light-v3.0"
+        self.default_org = "dev-tomas"
 
 
 global_config = _Config()
