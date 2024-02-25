@@ -62,7 +62,7 @@ class _Config:
             ),
             cohere=cohere.AsyncClient(api_key=os.environ["COHERE_API_KEY"]),
         )
-        self.default_org = "dev-tomas"
+        self.default_org = "default"
 
 
 global_config = _Config()

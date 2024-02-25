@@ -1,7 +1,7 @@
-"""Automatic responses command."""
+"""Automatic responses module."""
 from __future__ import annotations
 
-from customer_engine.commands.automatic_responses import (
+from customer_engine.core.automatic_responses import (
     create,
     delete,
     get,

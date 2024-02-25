@@ -1,23 +1,27 @@
-"""Automatic responses core."""
+"""Automatic responses shared."""
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Self, assert_never
+from typing import TYPE_CHECKING, Any, Literal, Self, TypeAlias, assert_never
 from uuid import UUID
 
 import orjson
 from cohere.responses.embeddings import EmbeddingsByType
 from mashumaro.mixins.orjson import DataClassORJSONMixin
 
-from customer_engine.commands.automatic_responses.core.typing import EmbeddingModels
+from customer_engine.traits import SqlQueriable
 
 if TYPE_CHECKING:
     import cohere
     from sqlalchemy import Row
 
+EmbeddingModels: TypeAlias = Literal["cohere:embed-multilingual-light-v3.0"]
+
+DEFAULT_EMBEDDING_MODEL: EmbeddingModels = "cohere:embed-multilingual-light-v3.0"
+
 
 @dataclass(frozen=False)
-class AutomaticResponse(DataClassORJSONMixin):
+class AutomaticResponse(DataClassORJSONMixin, SqlQueriable):
     """Automatic response."""
 
     org_code: str

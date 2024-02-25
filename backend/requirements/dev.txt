@@ -42,7 +42,7 @@ cyclonedx-python-lib==6.4.1
     # via pip-audit
 defusedxml==0.7.1
     # via py-serializable
-fastapi==0.109.2
+fastapi==0.110.0
 fastavro==1.9.4
     # via cohere
 filelock==3.13.1
