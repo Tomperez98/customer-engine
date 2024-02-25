@@ -7,20 +7,20 @@ import sqlalchemy
 from lego_workflows.components import CommandComponent, DomainEvent, ResponseComponent
 from sqlalchemy import Connection, bindparam, text
 
-from customer_engine.commands.unmatched_prompts.core import UnmatchedPrompt
+from customer_engine.core.unmatched_prompts.shared import UnmatchedPrompt
 
 
 @dataclass(frozen=True)
-class Response(ResponseComponent):
+class Response(ResponseComponent):  # noqa: D101
     unmatched_prompts: list[UnmatchedPrompt]
 
 
 @dataclass(frozen=True)
-class Command(CommandComponent[Response]):
+class Command(CommandComponent[Response]):  # noqa: D101
     org_code: str
     sql_conn: Connection
 
-    async def run(self, events: list[DomainEvent]) -> Response:
+    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002, D102
         stmt = text(
             """SELECT
                 org_code,

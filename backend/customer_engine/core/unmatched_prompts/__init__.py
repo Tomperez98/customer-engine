@@ -1,7 +1,7 @@
-"""Unmatched prompts."""
+"""Unmatched prompts module."""
 from __future__ import annotations
 
-from customer_engine.commands.unmatched_prompts import (
+from customer_engine.core.unmatched_prompts import (
     add_as_example_to_automatic_response,
     delete,
     get,

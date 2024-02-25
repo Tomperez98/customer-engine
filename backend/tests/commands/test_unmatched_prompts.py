@@ -6,7 +6,7 @@ import lego_workflows
 import pytest
 
 from customer_engine import global_config
-from customer_engine.commands import automatic_responses, unmatched_prompts
+from customer_engine.core import automatic_responses, unmatched_prompts
 
 
 @pytest.mark.e2e()

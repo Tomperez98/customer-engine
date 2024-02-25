@@ -8,8 +8,8 @@ import lego_workflows
 from lego_workflows.components import CommandComponent, DomainEvent, ResponseComponent
 
 from customer_engine import logger
-from customer_engine.commands import automatic_responses
-from customer_engine.commands.unmatched_prompts import delete, get
+from customer_engine.core import automatic_responses
+from customer_engine.core.unmatched_prompts import delete, get
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -27,7 +27,7 @@ class UnmatchedPromptHasBeenAddedAsExampleToAutomaticResponse(DomainEvent):
     automatic_response_id: UUID
     prompt_id: UUID
 
-    async def publish(self) -> None:
+    async def publish(self) -> None:  # noqa: D102
         logger.debug(
             "Prompt {prompt_id} has been added as an example to automatic response {automatic_response_id}",
             prompt_id=self.prompt_id,
@@ -36,12 +36,12 @@ class UnmatchedPromptHasBeenAddedAsExampleToAutomaticResponse(DomainEvent):
 
 
 @dataclass(frozen=True)
-class Response(ResponseComponent):
+class Response(ResponseComponent):  # noqa: D101
     prompt_id: UUID
 
 
 @dataclass(frozen=True)
-class Command(CommandComponent[Response]):
+class Command(CommandComponent[Response]):  # noqa: D101
     org_code: str
     prompt_id: UUID
     autoamtic_response_id: UUID
@@ -49,7 +49,7 @@ class Command(CommandComponent[Response]):
     cohere_client: cohere.AsyncClient
     qdrant_client: AsyncQdrantClient
 
-    async def run(self, events: list[DomainEvent]) -> Response:
+    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: D102
         automatic_response = (
             await lego_workflows.run_and_collect_events(
                 cmd=automatic_responses.get.Command(

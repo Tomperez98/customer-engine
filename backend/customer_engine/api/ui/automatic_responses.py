@@ -8,8 +8,8 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from customer_engine import global_config
-from customer_engine.commands import automatic_responses
-from customer_engine.commands.automatic_responses.core import AutomaticResponse
+from customer_engine.core import automatic_responses
+from customer_engine.core.automatic_responses.shared import AutomaticResponse
 
 router = APIRouter(prefix="/automatic-responses", tags=["automatic-responses"])
 

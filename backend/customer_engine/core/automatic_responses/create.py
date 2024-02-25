@@ -14,12 +14,10 @@ from qdrant_client.http.models import Batch, Distance, VectorParams
 from sqlalchemy import bindparam, text
 
 from customer_engine import logger
-from customer_engine.commands.automatic_responses import get
-from customer_engine.commands.automatic_responses.core import (
-    cohere_embed_examples_and_prompt,
-)
-from customer_engine.commands.automatic_responses.core.constants import (
+from customer_engine.core.automatic_responses import get
+from customer_engine.core.automatic_responses.shared import (
     DEFAULT_EMBEDDING_MODEL,
+    cohere_embed_examples_and_prompt,
 )
 
 if TYPE_CHECKING:
@@ -30,7 +28,7 @@ if TYPE_CHECKING:
     from qdrant_client import AsyncQdrantClient
     from sqlalchemy import Connection
 
-    from customer_engine.commands.automatic_responses.core.typing import EmbeddingModels
+    from customer_engine.core.automatic_responses.shared import EmbeddingModels
 
 
 def _qdrant_vectored_params_per_model(model: EmbeddingModels) -> VectorParams:

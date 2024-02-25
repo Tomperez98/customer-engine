@@ -8,14 +8,12 @@ from uuid import UUID
 import lego_workflows
 from lego_workflows.components import CommandComponent, DomainEvent, ResponseComponent
 
-from customer_engine.commands import unmatched_prompts
-from customer_engine.commands.automatic_responses import get
-from customer_engine.commands.automatic_responses.core import (
+from customer_engine.core import unmatched_prompts
+from customer_engine.core.automatic_responses import get
+from customer_engine.core.automatic_responses.shared import (
+    DEFAULT_EMBEDDING_MODEL,
     AutomaticResponse,
     cohere_embed_examples_and_prompt,
-)
-from customer_engine.commands.automatic_responses.core.constants import (
-    DEFAULT_EMBEDDING_MODEL,
 )
 
 if TYPE_CHECKING:

@@ -1,4 +1,4 @@
-"""Unmatched prompts core."""
+"""Unmatched prompts shared."""
 from __future__ import annotations
 
 from dataclasses import dataclass

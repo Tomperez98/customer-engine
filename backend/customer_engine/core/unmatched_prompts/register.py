@@ -12,7 +12,7 @@ from lego_workflows.components import CommandComponent, DomainEvent, ResponseCom
 from sqlalchemy import Connection, bindparam, text
 
 from customer_engine import logger
-from customer_engine.commands.unmatched_prompts import get
+from customer_engine.core.unmatched_prompts import get
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -26,7 +26,7 @@ class UnmatchedPromptRegistered(DomainEvent):
     prompt_id: UUID
     registered_at: datetime.datetime
 
-    async def publish(self) -> None:
+    async def publish(self) -> None:  # noqa: D102
         logger.debug(
             "Unmatched prompt {prompt_id} has been registered at {registered_at}",
             registered_at=self.registered_at,
@@ -35,17 +35,17 @@ class UnmatchedPromptRegistered(DomainEvent):
 
 
 @dataclass(frozen=True)
-class Response(ResponseComponent):
+class Response(ResponseComponent):  # noqa: D101
     prompt_id: UUID
 
 
 @dataclass(frozen=True)
-class Command(CommandComponent[Response]):
+class Command(CommandComponent[Response]):  # noqa: D101
     org_code: str
     prompt: str
     sql_conn: Connection
 
-    async def run(self, events: list[DomainEvent]) -> Response:
+    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: D102
         while True:
             random_id = uuid4()
             try:
