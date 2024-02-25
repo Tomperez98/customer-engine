@@ -28,10 +28,10 @@ class AutomaticResponseDeleted(DomainEvent):
 
     async def publish(self) -> None:  # noqa: D102
         logger.info(
-            "Automatic response with ID %s from organization %s has been deleted at %s",
-            self.automatic_response_id,
-            self.org_code,
-            self.deleted_at,
+            "Automatic response with ID {automatic_response_id} from organization {org_code} has been deleted at {deleted_at}",
+            automatic_response_id=self.automatic_response_id,
+            org_code=self.org_code,
+            deleted_at=self.deleted_at,
         )
 
 

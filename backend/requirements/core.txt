@@ -27,7 +27,7 @@ charset-normalizer==3.3.2
 click==8.1.7
     # via uvicorn
 cohere==4.50
-fastapi==0.109.2
+fastapi==0.110.0
 fastavro==1.9.4
     # via cohere
 frozenlist==1.4.1

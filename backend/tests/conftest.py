@@ -10,9 +10,11 @@ if TYPE_CHECKING:
     from collections.abc import Generator
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
-    policy = asyncio.get_event_loop_policy()
-    loop = policy.new_event_loop()
+    try:
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        loop = asyncio.new_event_loop()
     yield loop
     loop.close()

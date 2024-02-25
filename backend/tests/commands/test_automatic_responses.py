@@ -11,7 +11,7 @@ from customer_engine.commands import automatic_responses
 
 @pytest.mark.e2e()
 async def test_get_not_existing_automatic_response() -> None:
-    with global_config.db_engine.begin() as conn, pytest.raises(
+    with global_config.db_engine.connect() as conn, pytest.raises(
         automatic_responses.get.AutomaticResponseNotFoundError
     ):
         await lego_workflows.run_and_collect_events(
@@ -23,7 +23,7 @@ async def test_get_not_existing_automatic_response() -> None:
 
 @pytest.mark.e2e()
 async def test_list_org_automated_responses() -> None:
-    with global_config.db_engine.begin() as conn:
+    with global_config.db_engine.connect() as conn:
         created_automated_responses: set[UUID] = set()
         for i in range(2):
             name_to_use = f"Automatic response {i}"
@@ -64,7 +64,7 @@ async def test_list_org_automated_responses() -> None:
 
 @pytest.mark.e2e()
 async def test_search_by_prompt() -> None:
-    with global_config.db_engine.begin() as conn:
+    with global_config.db_engine.connect() as conn:
         test_org = "test"
         create_response, _ = await lego_workflows.run_and_collect_events(
             cmd=automatic_responses.create.Command(
@@ -102,6 +102,8 @@ async def test_search_by_prompt() -> None:
                 new_examples=["I'm looking for a job"],
                 new_response=None,
                 sql_conn=conn,
+                cohere_client=global_config.clients.cohere,
+                qdrant_client=global_config.clients.qdrant,
             )
         )
 
@@ -149,7 +151,7 @@ async def test_search_by_prompt() -> None:
 
 @pytest.mark.e2e()
 async def test_update_automatic_response() -> None:
-    with global_config.db_engine.begin() as conn:
+    with global_config.db_engine.connect() as conn:
         test_org_code = "test"
         create_response, _ = await lego_workflows.run_and_collect_events(
             cmd=automatic_responses.create.Command(
@@ -182,6 +184,8 @@ async def test_update_automatic_response() -> None:
                 new_name="New name",
                 new_response="New response",
                 new_examples=None,
+                cohere_client=global_config.clients.cohere,
+                qdrant_client=global_config.clients.qdrant,
             )
         )
 
@@ -208,6 +212,8 @@ async def test_update_automatic_response() -> None:
                 new_name=None,
                 new_response=None,
                 new_examples=["New example"],
+                cohere_client=global_config.clients.cohere,
+                qdrant_client=global_config.clients.qdrant,
             )
         )
 
@@ -237,7 +243,7 @@ async def test_update_automatic_response() -> None:
 
 @pytest.mark.e2e()
 async def test_get_existing_automatic_response() -> None:
-    with global_config.db_engine.begin() as conn:
+    with global_config.db_engine.connect() as conn:
         test_org_code = "test"
         create_response, _ = await lego_workflows.run_and_collect_events(
             cmd=automatic_responses.create.Command(

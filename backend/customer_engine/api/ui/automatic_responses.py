@@ -100,6 +100,8 @@ async def patch_automatic_response(  # noqa: D103
                 new_examples=req.examples,
                 new_response=req.response,
                 sql_conn=conn,
+                cohere_client=global_config.clients.cohere,
+                qdrant_client=global_config.clients.qdrant,
             )
         )
 

@@ -10,6 +10,7 @@ from cohere.responses.embeddings import EmbeddingsByType
 from mashumaro.mixins.orjson import DataClassORJSONMixin
 
 from customer_engine.commands.automatic_responses.core.typing import EmbeddingModels
+from customer_engine.traits import SqlQueriable
 
 if TYPE_CHECKING:
     import cohere
@@ -17,7 +18,7 @@ if TYPE_CHECKING:
 
 
 @dataclass(frozen=False)
-class AutomaticResponse(DataClassORJSONMixin):
+class AutomaticResponse(DataClassORJSONMixin, SqlQueriable):
     """Automatic response."""
 
     org_code: str

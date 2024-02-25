@@ -49,10 +49,10 @@ class AutomaticResponseCreated(DomainEvent):
 
     async def publish(self) -> None:  # noqa: D102
         logger.info(
-            "New automatic response with ID %s for organization %s has been created at %s.",
-            self.automatic_response_id,
-            self.org_code,
-            self.created_at,
+            "New automatic response with ID {automatic_response_id} for organization {org_code} has been created at {created_at}.",
+            automatic_response_id=self.automatic_response_id,
+            org_code=self.org_code,
+            created_at=self.created_at,
         )
 
 
