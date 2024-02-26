@@ -13,12 +13,12 @@ from qdrant_client.http.exceptions import UnexpectedResponse
 from qdrant_client.http.models import Batch, Distance, VectorParams
 from sqlalchemy import bindparam, text
 
-from customer_engine import logger
 from customer_engine.core.automatic_responses import get
 from customer_engine.core.automatic_responses.shared import (
     DEFAULT_EMBEDDING_MODEL,
     cohere_embed_examples_and_prompt,
 )
+from customer_engine.logging import logger
 
 if TYPE_CHECKING:
     import datetime

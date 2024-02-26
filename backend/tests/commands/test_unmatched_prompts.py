@@ -5,13 +5,13 @@ from uuid import UUID, uuid4
 import lego_workflows
 import pytest
 
-from customer_engine import global_config
+from customer_engine.config import resources
 from customer_engine.core import automatic_responses, unmatched_prompts
 
 
 @pytest.mark.e2e()
 async def test_list_unmatched_prompts() -> None:
-    with global_config.db_engine.begin() as conn:
+    with resources.db_engine.begin() as conn:
         created_umatched_prompts: set[UUID] = set()
         for i in range(2):
             prompt_used = f"Unmatched prompt {i}"
@@ -47,7 +47,7 @@ async def test_list_unmatched_prompts() -> None:
 
 @pytest.mark.e2e()
 async def test_get_not_existing() -> None:
-    with global_config.db_engine.begin() as conn, pytest.raises(
+    with resources.db_engine.begin() as conn, pytest.raises(
         unmatched_prompts.get.UnmatchedResponseNotFoundError
     ):
         await lego_workflows.run_and_collect_events(
@@ -59,7 +59,7 @@ async def test_get_not_existing() -> None:
 
 @pytest.mark.e2e()
 async def test_get_existing() -> None:
-    with global_config.db_engine.begin() as conn:
+    with resources.db_engine.begin() as conn:
         created, _ = await lego_workflows.run_and_collect_events(
             unmatched_prompts.register.Command(
                 org_code="test",
@@ -92,7 +92,7 @@ async def test_get_existing() -> None:
 @pytest.mark.e2e()
 async def test_add_unmatched_as_example() -> None:
     org_code = "test"
-    with global_config.db_engine.begin() as conn:
+    with resources.db_engine.begin() as conn:
         created_automatic_response, _ = await lego_workflows.run_and_collect_events(
             cmd=automatic_responses.create.Command(
                 org_code=org_code,
@@ -100,8 +100,8 @@ async def test_add_unmatched_as_example() -> None:
                 examples=["abc"],
                 response="Link lever",
                 sql_conn=conn,
-                qdrant_client=global_config.clients.qdrant,
-                cohere_client=global_config.clients.cohere,
+                qdrant_client=resources.clients.qdrant,
+                cohere_client=resources.clients.cohere,
             )
         )
 
@@ -119,8 +119,8 @@ async def test_add_unmatched_as_example() -> None:
                 prompt_id=created_unmatched_prompt.prompt_id,
                 autoamtic_response_id=created_automatic_response.automatic_response_id,
                 sql_conn=conn,
-                cohere_client=global_config.clients.cohere,
-                qdrant_client=global_config.clients.qdrant,
+                cohere_client=resources.clients.cohere,
+                qdrant_client=resources.clients.qdrant,
             )
         )
 
@@ -151,7 +151,7 @@ async def test_add_unmatched_as_example() -> None:
                 org_code=org_code,
                 automatic_response_id=created_automatic_response.automatic_response_id,
                 sql_conn=conn,
-                qdrant_client=global_config.clients.qdrant,
+                qdrant_client=resources.clients.qdrant,
             )
         )
 

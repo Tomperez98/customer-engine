@@ -6,14 +6,14 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from customer_engine import global_config
+from customer_engine.config import resources
 
 config = context.config
 
 config.set_section_option(
     "alembic",
     "sqlalchemy.url",
-    global_config.db_engine.url.render_as_string(hide_password=False),
+    resources.db_engine.url.render_as_string(hide_password=False),
 )
 
 

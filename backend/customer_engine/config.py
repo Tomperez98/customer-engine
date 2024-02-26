@@ -2,30 +2,14 @@
 from __future__ import annotations
 
 import os
-import sys
 from dataclasses import dataclass
 from typing import assert_never, cast
 
 import cohere
-import loguru
-from dotenv import load_dotenv
 from qdrant_client import AsyncQdrantClient
 from sqlalchemy import Engine, create_engine
 
-from customer_engine.typing import Environment
-
-load_dotenv(dotenv_path=".env")
-
-
-def _configure_logger(logger: loguru.Logger, level: str) -> loguru.Logger:
-    """Configure logger for the system."""
-    logger.remove()
-    fmt = "{time:HH:mm:ss} <lvl>[{level}]</lvl> {message} <green>{name}:{function}:{line}</green>"
-    logger.add(sys.stderr, format=fmt, level=level)
-    return logger
-
-
-logger = _configure_logger(logger=loguru.logger, level=os.environ["LOG_LEVEL"])
+from customer_engine.core.typing import Environment
 
 
 @dataclass(frozen=True)
@@ -34,7 +18,7 @@ class _Clients:
     cohere: cohere.AsyncClient
 
 
-class _Config:
+class _Resources:
     def __init__(self) -> None:
         db_url = os.environ["DB_URL"]
         db_auth_token = os.environ["DB_AUTH_TOKEN"]
@@ -65,4 +49,4 @@ class _Config:
         self.default_org = "default"
 
 
-global_config = _Config()
+resources = _Resources()

@@ -7,9 +7,9 @@ from typing import TYPE_CHECKING
 import lego_workflows
 from lego_workflows.components import CommandComponent, DomainEvent, ResponseComponent
 
-from customer_engine import logger
 from customer_engine.core import automatic_responses
 from customer_engine.core.unmatched_prompts import delete, get
+from customer_engine.logging import logger
 
 if TYPE_CHECKING:
     from uuid import UUID

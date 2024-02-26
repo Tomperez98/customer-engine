@@ -1,6 +1,6 @@
 """Project code."""
 from __future__ import annotations
 
-from customer_engine._config import global_config, logger
+from dotenv import load_dotenv
 
-__all__ = ["logger", "global_config"]
+load_dotenv(dotenv_path=".env")

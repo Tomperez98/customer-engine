@@ -7,7 +7,7 @@ import lego_workflows
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from customer_engine import global_config
+from customer_engine.config import resources
 from customer_engine.core import automatic_responses
 from customer_engine.core.automatic_responses.shared import AutomaticResponse
 
@@ -29,16 +29,16 @@ async def create_automatic_response(
     req: CreateAutomaticResponse,
 ) -> ResponseCreateAutomaticResponse:
     """Create a new automatic response."""
-    with global_config.db_engine.begin() as conn:
+    with resources.db_engine.begin() as conn:
         created_response, events = await lego_workflows.run_and_collect_events(
             cmd=automatic_responses.create.Command(
-                org_code=global_config.default_org,
+                org_code=resources.default_org,
                 name=req.name,
                 examples=req.examples,
                 response=req.response,
                 sql_conn=conn,
-                qdrant_client=global_config.clients.qdrant,
-                cohere_client=global_config.clients.cohere,
+                qdrant_client=resources.clients.qdrant,
+                cohere_client=resources.clients.cohere,
             )
         )
 
@@ -57,13 +57,13 @@ async def get_automatic_response(
     automatic_response_id: UUID,
 ) -> ResponseGetAutomaticResponse:
     """Get automatic response."""
-    with global_config.db_engine.begin() as conn:
+    with resources.db_engine.begin() as conn:
         (
             existing_automatic_response,
             events,
         ) = await lego_workflows.run_and_collect_events(
             cmd=automatic_responses.get.Command(
-                org_code=global_config.default_org,
+                org_code=resources.default_org,
                 automatic_response_id=automatic_response_id,
                 sql_conn=conn,
             )
@@ -77,7 +77,6 @@ async def get_automatic_response(
 
 
 class PatchAutomaticResponse(BaseModel):  # noqa: D101
-    automatic_response_id: UUID
     name: str | None
     examples: list[str] | None
     response: str | None
@@ -89,19 +88,20 @@ class ResponsePatchAutomaticResponse(BaseModel):  # noqa: D101
 
 @router.patch("/{automatic_response_id}")
 async def patch_automatic_response(  # noqa: D103
+    automatic_response_id: UUID,
     req: PatchAutomaticResponse,
 ) -> ResponsePatchAutomaticResponse:
-    with global_config.db_engine.begin() as conn:
+    with resources.db_engine.begin() as conn:
         updated_response, events = await lego_workflows.run_and_collect_events(
             cmd=automatic_responses.update.Command(
-                org_code=global_config.default_org,
-                automatic_response_id=req.automatic_response_id,
+                org_code=resources.default_org,
+                automatic_response_id=automatic_response_id,
                 new_name=req.name,
                 new_examples=req.examples,
                 new_response=req.response,
                 sql_conn=conn,
-                cohere_client=global_config.clients.cohere,
-                qdrant_client=global_config.clients.qdrant,
+                cohere_client=resources.clients.cohere,
+                qdrant_client=resources.clients.qdrant,
             )
         )
 
@@ -117,13 +117,13 @@ class ResponseListAutomaticResponse(BaseModel):  # noqa: D101
 
 @router.get("")
 async def list_automatic_responses() -> ResponseListAutomaticResponse:  # noqa: D103
-    with global_config.db_engine.begin() as conn:
+    with resources.db_engine.begin() as conn:
         (
             listed_automatic_responses,
             events,
         ) = await lego_workflows.run_and_collect_events(
             cmd=automatic_responses.list.Command(
-                org_code=global_config.default_org, sql_conn=conn
+                org_code=resources.default_org, sql_conn=conn
             )
         )
 
@@ -141,13 +141,13 @@ class ResponseDeleteAutomaticResponse(BaseModel):  # noqa: D101
 async def delete_automatic_response(  # noqa: D103
     automatic_response_id: UUID,
 ) -> ResponseDeleteAutomaticResponse:
-    with global_config.db_engine.begin() as conn:
+    with resources.db_engine.begin() as conn:
         deleted_response, events = await lego_workflows.run_and_collect_events(
             cmd=automatic_responses.delete.Command(
-                org_code=global_config.default_org,
+                org_code=resources.default_org,
                 automatic_response_id=automatic_response_id,
                 sql_conn=conn,
-                qdrant_client=global_config.clients.qdrant,
+                qdrant_client=resources.clients.qdrant,
             )
         )
 
@@ -163,17 +163,17 @@ class ResponseSearchByPromptAutomaticResponse(BaseModel):  # noqa: D101
 
 @router.get("/search/by-prompt")
 async def search_by_prompt(prompt: str) -> ResponseSearchByPromptAutomaticResponse:  # noqa: D103
-    with global_config.db_engine.begin() as conn:
+    with resources.db_engine.begin() as conn:
         (
             result_automatic_response,
             events,
         ) = await lego_workflows.run_and_collect_events(
             automatic_responses.search_by_prompt.Command(
-                org_code=global_config.default_org,
+                org_code=resources.default_org,
                 prompt=prompt,
                 sql_conn=conn,
-                cohere_client=global_config.clients.cohere,
-                qdrant_client=global_config.clients.qdrant,
+                cohere_client=resources.clients.cohere,
+                qdrant_client=resources.clients.qdrant,
             )
         )
 

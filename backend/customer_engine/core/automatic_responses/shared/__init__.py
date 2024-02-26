@@ -9,7 +9,7 @@ import orjson
 from cohere.responses.embeddings import EmbeddingsByType
 from mashumaro.mixins.orjson import DataClassORJSONMixin
 
-from customer_engine.traits import SqlQueriable
+from customer_engine.core.interfaces import SqlQueriable
 
 if TYPE_CHECKING:
     import cohere

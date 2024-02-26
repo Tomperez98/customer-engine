@@ -7,7 +7,7 @@ import lego_workflows
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from customer_engine import global_config
+from customer_engine.config import resources
 from customer_engine.core import unmatched_prompts
 from customer_engine.core.unmatched_prompts.shared import UnmatchedPrompt
 
@@ -21,10 +21,10 @@ class ResponseListUnmatchedPrompts(BaseModel):  # noqa: D101
 @router.get("")
 async def list_unmatched_prompts() -> ResponseListUnmatchedPrompts:
     """List unmatched prompts."""
-    with global_config.db_engine.begin() as conn:
+    with resources.db_engine.begin() as conn:
         listed_unmatched_prompts, events = await lego_workflows.run_and_collect_events(
             cmd=unmatched_prompts.list.Command(
-                org_code=global_config.default_org, sql_conn=conn
+                org_code=resources.default_org, sql_conn=conn
             )
         )
 
@@ -41,10 +41,10 @@ class ResponseDeleteUnmatchedPrompt(BaseModel):  # noqa: D101
 
 @router.delete("/{prompt_id}")
 async def delete_unmatched_prompt(prompt_id: UUID) -> ResponseDeleteUnmatchedPrompt:  # noqa: D103
-    with global_config.db_engine.begin() as conn:
+    with resources.db_engine.begin() as conn:
         deleted, events = await lego_workflows.run_and_collect_events(
             cmd=unmatched_prompts.delete.Command(
-                org_code=global_config.default_org, prompt_id=prompt_id, sql_conn=conn
+                org_code=resources.default_org, prompt_id=prompt_id, sql_conn=conn
             )
         )
 
@@ -60,18 +60,18 @@ class ResponseAddAsExampleToAutomaticResponse(BaseModel):  # noqa: D101
 async def add_as_example_to_automatic_response(  # noqa: D103
     prompt_id: UUID, automatic_response_id: UUID
 ) -> ResponseAddAsExampleToAutomaticResponse:
-    with global_config.db_engine.begin() as conn:
+    with resources.db_engine.begin() as conn:
         (
             added_to_automatic_response,
             events,
         ) = await lego_workflows.run_and_collect_events(
             cmd=unmatched_prompts.add_as_example_to_automatic_response.Command(
-                org_code=global_config.default_org,
+                org_code=resources.default_org,
                 prompt_id=prompt_id,
                 autoamtic_response_id=automatic_response_id,
                 sql_conn=conn,
-                cohere_client=global_config.clients.cohere,
-                qdrant_client=global_config.clients.qdrant,
+                cohere_client=resources.clients.cohere,
+                qdrant_client=resources.clients.qdrant,
             )
         )
 
