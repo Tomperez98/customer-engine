@@ -43,12 +43,15 @@ jobs:
           cache: "pip"
           cache-dependency-path: backend/pyproject.toml
 
+      - name: Fix uv venv env variable
+        run: echo "VIRTUAL_ENV=${Python_ROOT_DIR}" >> $GITHUB_ENV
+
       - name: Install deps
         working-directory: backend
         run: |
-          pip install -U pip
-          pip install -r requirements/dev.txt
-          pip install -e .
+          pip install -U uv
+          uv pip install -r requirements/dev.txt
+          uv pip install -e .
 
       - name: Check code
         working-directory: backend
