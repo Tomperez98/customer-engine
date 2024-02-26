@@ -10,21 +10,20 @@ from lego_workflows.components import CommandComponent, DomainEvent, ResponseCom
 from qdrant_client.http.models import Batch
 from sqlalchemy import bindparam, text
 
-from customer_engine import global_config
-from customer_engine.commands.automatic_responses import get
-from customer_engine.commands.automatic_responses.core import (
-    cohere_embed_examples_and_prompt,
-)
-from customer_engine.commands.automatic_responses.core.constants import (
+from customer_engine.core.automatic_responses import get
+from customer_engine.core.automatic_responses.shared import (
     DEFAULT_EMBEDDING_MODEL,
+    cohere_embed_examples_and_prompt,
 )
 
 if TYPE_CHECKING:
     from uuid import UUID
 
+    import cohere
+    from qdrant_client import AsyncQdrantClient
     from sqlalchemy import Connection
 
-    from customer_engine.commands.automatic_responses.core import AutomaticResponse
+    from customer_engine.core.automatic_responses.shared import AutomaticResponse
 
 
 @dataclass(frozen=True)
@@ -41,6 +40,8 @@ class Command(CommandComponent[Response]):  # noqa: D101
     new_examples: list[str] | None
     new_response: str | None
     sql_conn: Connection
+    cohere_client: cohere.AsyncClient
+    qdrant_client: AsyncQdrantClient
 
     async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002, D102
         existing_automatic_response = (
@@ -111,11 +112,11 @@ class Command(CommandComponent[Response]):  # noqa: D101
         embedding_model_to_use = DEFAULT_EMBEDDING_MODEL
 
         new_examples_embeddings = await cohere_embed_examples_and_prompt(
-            client=global_config.clients.cohere,
+            client=self.cohere_client,
             model=embedding_model_to_use,
             examples_or_prompt=existing_automatic_response.examples,
         )
-        await global_config.clients.qdrant.upsert(
+        await self.qdrant_client.upsert(
             collection_name=self.org_code,
             points=Batch(
                 ids=[existing_automatic_response.automatic_response_id.hex],

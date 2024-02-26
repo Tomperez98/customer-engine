@@ -13,7 +13,7 @@ from lego_workflows.components import (
 )
 from sqlalchemy import Connection, bindparam, text
 
-from customer_engine.commands.automatic_responses.core import AutomaticResponse
+from customer_engine.core.automatic_responses.shared import AutomaticResponse
 
 if TYPE_CHECKING:
     from uuid import UUID

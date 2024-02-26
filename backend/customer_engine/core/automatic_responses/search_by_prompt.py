@@ -8,13 +8,12 @@ from uuid import UUID
 import lego_workflows
 from lego_workflows.components import CommandComponent, DomainEvent, ResponseComponent
 
-from customer_engine.commands.automatic_responses import get
-from customer_engine.commands.automatic_responses.core import (
+from customer_engine.core import unmatched_prompts
+from customer_engine.core.automatic_responses import get
+from customer_engine.core.automatic_responses.shared import (
+    DEFAULT_EMBEDDING_MODEL,
     AutomaticResponse,
     cohere_embed_examples_and_prompt,
-)
-from customer_engine.commands.automatic_responses.core.constants import (
-    DEFAULT_EMBEDDING_MODEL,
 )
 
 if TYPE_CHECKING:
@@ -26,6 +25,7 @@ if TYPE_CHECKING:
 @dataclass(frozen=True)
 class Response(ResponseComponent):  # noqa: D101
     automatic_response: AutomaticResponse | None
+    unmatched_prompt_id: UUID | None
 
 
 @dataclass(frozen=True)
@@ -36,7 +36,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
     cohere_client: cohere.AsyncClient
     qdrant_client: AsyncQdrantClient
 
-    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002, D102
+    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: D102
         embedding_model_to_use = DEFAULT_EMBEDDING_MODEL
         prompt_embeddings = await cohere_embed_examples_and_prompt(
             client=self.cohere_client,
@@ -51,12 +51,27 @@ class Command(CommandComponent[Response]):  # noqa: D101
         )
 
         if len(relevant_points) == 0:
-            return Response(automatic_response=None)
+            (
+                unmatched_prompt,
+                register_prompt_events,
+            ) = await lego_workflows.run_and_collect_events(
+                unmatched_prompts.register.Command(
+                    org_code=self.org_code,
+                    prompt=self.prompt,
+                    sql_conn=self.sql_conn,
+                )
+            )
+            events.extend(register_prompt_events)
+            return Response(
+                automatic_response=None,
+                unmatched_prompt_id=unmatched_prompt.prompt_id,
+            )
 
         most_relevant = relevant_points[0]
         if isinstance(most_relevant.id, int):
             msg = "Most relevant id type not expected."
             raise TypeError(msg)
+
         relevant_automatic_response = (
             await lego_workflows.run_and_collect_events(
                 get.Command(
@@ -67,4 +82,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
             )
         )[0].automatic_response
 
-        return Response(automatic_response=relevant_automatic_response)
+        return Response(
+            automatic_response=relevant_automatic_response,
+            unmatched_prompt_id=None,
+        )
