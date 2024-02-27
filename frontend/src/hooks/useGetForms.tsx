@@ -1,26 +1,33 @@
 'use client'
 import {useEffect, useState} from 'react'
 import {Form} from '@/types/Forms'
+import {BASE_URL} from '@/constants/url'
 
 type FormListResponse = {
-    flows: Form[]
+    automatic_response: Form[]
+}
+
+export type FormResponse = {
+    automatic_response: Form
 }
 
 const useGetForms = (id?: string) => {
-    const [data, setData] = useState<any>([])
+    const [data, setData] = useState<FormListResponse | FormResponse>()
     const [isLoading, setIsLoading] = useState<boolean>(false)
 
-    const url = id
-        ? `http://localhost:8000/ui/forms/${id}`
-        : 'http://localhost:8000/ui/forms'
+    const url = id ? `${BASE_URL}/${id}` : BASE_URL
 
     const fetchForms = async () => {
         setIsLoading(true)
         try {
             const res = await fetch(url)
             const resJson = await res.json()
-            console.log(resJson, 'here')
-            setData(resJson)
+
+            if (id) {
+                setData(resJson as FormResponse)
+            } else {
+                setData(resJson as FormListResponse)
+            }
         } catch (error) {
             console.log(error)
         } finally {

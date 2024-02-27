@@ -1,11 +1,14 @@
 export type Form = {
+    automatic_response_id: string
     examples: string[]
-    form_id: string
     name: string
+    org_code: string
+    response: string
 }
 
 export enum FormKeys {
+    automatic_response_id = 'ID',
     examples = 'ejemplos',
-    form_id = 'ID',
     name = 'nombre',
+    response = 'respuesta',
 }

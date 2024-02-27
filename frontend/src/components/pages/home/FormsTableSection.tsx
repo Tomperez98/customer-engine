@@ -10,11 +10,11 @@ import {FaTrash} from 'react-icons/fa6'
 
 const FormsTableSection: React.FC = () => {
     const {data, isLoading} = useGetForms()
-    const forms = useMemo(() => data.flows, [data])
+    const forms = useMemo(() => data?.automatic_response, [data])
     const columnHelper = createColumnHelper<Form>()
     const columns = [
-        columnHelper.accessor('form_id', {
-            header: () => <span>{FormKeys['form_id']}</span>,
+        columnHelper.accessor('automatic_response_id', {
+            header: () => <span>{FormKeys['automatic_response_id']}</span>,
             cell: (info) => info.getValue(),
         }),
         columnHelper.accessor('name', {
@@ -28,7 +28,7 @@ const FormsTableSection: React.FC = () => {
                 return (
                     <div className='flex flex-row gap-4'>
                         <Link
-                            href={`/forms/${row.getValue('form_id')}`}
+                            href={`/automatic-responses/${row.getValue('automatic_response_id')}`}
                             target='_blank'>
                             <FaMagnifyingGlass color='#455d7a' />
                         </Link>
@@ -43,7 +43,7 @@ const FormsTableSection: React.FC = () => {
             <h2 className='mb-4 text-3xl font-extrabold text-slate-800'>
                 Formularios
             </h2>
-            {forms && <Table columns={columns} data={forms} />}
+            {forms && <Table columns={columns} data={forms as Form[]} />}
         </section>
     )
 }
