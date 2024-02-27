@@ -6,7 +6,7 @@
 			"type": "debugpy",
 			"request": "launch",
 			"module": "uvicorn",
-			"args": ["customer_engine.api:app", "--reload"],
+			"args": ["customer_engine_api.api:app", "--reload"],
 			"jinja": true,
 			"justMyCode": true
 		}
