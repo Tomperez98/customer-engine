@@ -10,10 +10,7 @@ def main() -> None:
     version = pyproject_data["version"]
     repo_url = pyproject_data["urls"]["Source"]
     params = urlencode(
-        query={
-            "title": f"v{version}",
-            "tag": f"v{version}",
-        },
+        query={"title": f"v{version}", "tag": f"v{version}", "prerelease": 1},
     )
     webbrowser.open_new_tab(url=f"{repo_url}/releases/new?{params}")
 
