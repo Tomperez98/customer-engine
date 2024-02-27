@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "customer-engine"
+name = "customer-engine-api"
 version = "0.0.1"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -36,9 +36,6 @@ Source = "https://github.com/pymtech-co/whatsapp_customer_engine"
 
 [project.optional-dependencies]
 dev = ["pyrgo < 3", "pytest-asyncio", "types-toml", "alembic", "pytest-cov"]
-
-[project.scripts]
-custeng = "customer_engine.cli:cli"
 
 [tool.ruff]
 line-length = 88
@@ -83,7 +80,7 @@ ignore = [
     "UP040",
 ]
 select = ["ALL"]
-logger-objects = ["customer_engine.logger"]
+logger-objects = ["customer_engine_api.logger"]
 
 [tool.ruff.lint.flake8-type-checking]
 runtime-evaluated-base-classes = [
@@ -97,10 +94,10 @@ enum = { msg = "`enum` is banned: Python enums are not allowed. Use typing.Liter
 [tool.ruff.lint.per-file-ignores]
 "tests/*.py" = ["INP001", "S101", "D", "SLF001"]
 "scripts/*.py" = ["INP001"]
-"customer_engine/migrations/**/*.py" = ["D103"]
+"customer_engine_api/migrations/**/*.py" = ["D103"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["customer_engine"]
+known-first-party = ["customer_engine_api"]
 combine-as-imports = true
 required-imports = ["from __future__ import annotations"]
 
@@ -118,7 +115,7 @@ addopts = [
     "--import-mode=importlib",
     "--strict-markers",
     "--cov-config=pyproject.toml",
-    "--cov=customer_engine",
+    "--cov=customer_engine_api",
     "--cov-report=term-missing:skip-covered",
 ]
 markers = [
@@ -133,7 +130,7 @@ filterwarnings = ["ignore::DeprecationWarning"]
 branch = true
 parallel = true
 relative_files = true
-omit = ["customer_engine/migrations/**", "customer_engine/api/**"]
+omit = ["customer_engine_api/migrations/**", "customer_engine_api/api/**"]
 
 [tool.coverage.report]
 exclude_lines = [
@@ -164,7 +161,7 @@ explicit_package_bases = true
 extra-paths = ["scripts"]
 
 [tool.vulture]
-exclude = ["customer_engine/migrations/versions/"]
+exclude = ["customer_engine_api/migrations/versions/"]
 min_confidence = 80
 
 [[tool.mypy.overrides]]

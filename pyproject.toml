@@ -1,0 +1,12 @@
+[project]
+name = "customer-engine"
+version = "0.1.0"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [{ name = "Author name", email = "author@email.com" }]
+dependencies = ["ruff", "uv", "toml"]
+
+[project.urls]
+Documentation = "https://github.com/Tomperez98/customer-engine#readme"
+Issues = "https://github.com/Tomperez98/customer-engine/issues"
+Source = "https://github.com/Tomperez98/customer-engine"
