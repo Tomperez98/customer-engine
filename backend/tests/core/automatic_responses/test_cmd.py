@@ -12,10 +12,10 @@ from customer_engine.core import automatic_responses
 @pytest.mark.e2e()
 async def test_get_not_existing_automatic_response() -> None:
     with resources.db_engine.connect() as conn, pytest.raises(
-        automatic_responses.get.AutomaticResponseNotFoundError
+        automatic_responses.cmd.get.AutomaticResponseNotFoundError
     ):
         await lego_workflows.run_and_collect_events(
-            cmd=automatic_responses.get.Command(
+            cmd=automatic_responses.cmd.get.Command(
                 org_code="test", automatic_response_id=uuid4(), sql_conn=conn
             )
         )
@@ -29,7 +29,7 @@ async def test_list_org_automated_responses() -> None:
             name_to_use = f"Automatic response {i}"
 
             created_response, _ = await lego_workflows.run_and_collect_events(
-                cmd=automatic_responses.create.Command(
+                cmd=automatic_responses.cmd.create.Command(
                     org_code="test",
                     name=name_to_use,
                     examples=["This is an example"],
@@ -42,7 +42,7 @@ async def test_list_org_automated_responses() -> None:
             created_automated_responses.add(created_response.automatic_response_id)
 
         list_response, _ = await lego_workflows.run_and_collect_events(
-            automatic_responses.list.Command(org_code="test", sql_conn=conn)
+            automatic_responses.cmd.list.Command(org_code="test", sql_conn=conn)
         )
 
         ids_for_listed: set[UUID] = {
@@ -53,7 +53,7 @@ async def test_list_org_automated_responses() -> None:
 
         for created_auto_response in created_automated_responses:
             await lego_workflows.run_and_collect_events(
-                automatic_responses.delete.Command(
+                automatic_responses.cmd.delete.Command(
                     org_code="test",
                     automatic_response_id=created_auto_response,
                     sql_conn=conn,
@@ -67,7 +67,7 @@ async def test_search_by_prompt() -> None:
     with resources.db_engine.connect() as conn:
         test_org = "test"
         create_response, _ = await lego_workflows.run_and_collect_events(
-            cmd=automatic_responses.create.Command(
+            cmd=automatic_responses.cmd.create.Command(
                 org_code=test_org,
                 name="test automatic response",
                 examples=["I'm a test case"],
@@ -79,7 +79,7 @@ async def test_search_by_prompt() -> None:
         )
 
         search_by_prompt_response, _ = await lego_workflows.run_and_collect_events(
-            cmd=automatic_responses.search_by_prompt.Command(
+            cmd=automatic_responses.cmd.search_by_prompt.Command(
                 org_code=test_org,
                 prompt="I'm a test case",
                 sql_conn=conn,
@@ -95,7 +95,7 @@ async def test_search_by_prompt() -> None:
         )
 
         await lego_workflows.run_and_collect_events(
-            cmd=automatic_responses.update.Command(
+            cmd=automatic_responses.cmd.update.Command(
                 org_code=test_org,
                 automatic_response_id=create_response.automatic_response_id,
                 new_name=None,
@@ -108,7 +108,7 @@ async def test_search_by_prompt() -> None:
         )
 
         search_by_prompt_response, _ = await lego_workflows.run_and_collect_events(
-            cmd=automatic_responses.search_by_prompt.Command(
+            cmd=automatic_responses.cmd.search_by_prompt.Command(
                 org_code=test_org,
                 prompt="I'm a test case",
                 sql_conn=conn,
@@ -120,7 +120,7 @@ async def test_search_by_prompt() -> None:
         assert search_by_prompt_response.automatic_response is None
 
         search_by_prompt_response, _ = await lego_workflows.run_and_collect_events(
-            cmd=automatic_responses.search_by_prompt.Command(
+            cmd=automatic_responses.cmd.search_by_prompt.Command(
                 org_code=test_org,
                 prompt="I'm looking for a job",
                 sql_conn=conn,
@@ -140,7 +140,7 @@ async def test_search_by_prompt() -> None:
         )
 
         await lego_workflows.run_and_collect_events(
-            cmd=automatic_responses.delete.Command(
+            cmd=automatic_responses.cmd.delete.Command(
                 org_code=test_org,
                 automatic_response_id=create_response.automatic_response_id,
                 sql_conn=conn,
@@ -154,7 +154,7 @@ async def test_update_automatic_response() -> None:
     with resources.db_engine.connect() as conn:
         test_org_code = "test"
         create_response, _ = await lego_workflows.run_and_collect_events(
-            cmd=automatic_responses.create.Command(
+            cmd=automatic_responses.cmd.create.Command(
                 org_code=test_org_code,
                 name="test automatic response",
                 examples=["I'm a test case"],
@@ -166,7 +166,7 @@ async def test_update_automatic_response() -> None:
         )
 
         get_response, _ = await lego_workflows.run_and_collect_events(
-            cmd=automatic_responses.get.Command(
+            cmd=automatic_responses.cmd.get.Command(
                 org_code=test_org_code,
                 automatic_response_id=create_response.automatic_response_id,
                 sql_conn=conn,
@@ -177,7 +177,7 @@ async def test_update_automatic_response() -> None:
         assert get_response.automatic_response.response == "I know you are a test case"
 
         update_response, _ = await lego_workflows.run_and_collect_events(
-            cmd=automatic_responses.update.Command(
+            cmd=automatic_responses.cmd.update.Command(
                 org_code=test_org_code,
                 automatic_response_id=create_response.automatic_response_id,
                 sql_conn=conn,
@@ -193,7 +193,7 @@ async def test_update_automatic_response() -> None:
 
         updated_automatic_response = (
             await lego_workflows.run_and_collect_events(
-                cmd=automatic_responses.get.Command(
+                cmd=automatic_responses.cmd.get.Command(
                     org_code=test_org_code,
                     automatic_response_id=create_response.automatic_response_id,
                     sql_conn=conn,
@@ -205,7 +205,7 @@ async def test_update_automatic_response() -> None:
         assert updated_automatic_response.response == "New response"
 
         update_response, _ = await lego_workflows.run_and_collect_events(
-            cmd=automatic_responses.update.Command(
+            cmd=automatic_responses.cmd.update.Command(
                 org_code=test_org_code,
                 automatic_response_id=create_response.automatic_response_id,
                 sql_conn=conn,
@@ -221,7 +221,7 @@ async def test_update_automatic_response() -> None:
 
         updated_automatic_response = (
             await lego_workflows.run_and_collect_events(
-                cmd=automatic_responses.get.Command(
+                cmd=automatic_responses.cmd.get.Command(
                     org_code=test_org_code,
                     automatic_response_id=create_response.automatic_response_id,
                     sql_conn=conn,
@@ -232,7 +232,7 @@ async def test_update_automatic_response() -> None:
         assert updated_automatic_response.examples == ["New example"]
 
         await lego_workflows.run_and_collect_events(
-            cmd=automatic_responses.delete.Command(
+            cmd=automatic_responses.cmd.delete.Command(
                 org_code=test_org_code,
                 automatic_response_id=create_response.automatic_response_id,
                 sql_conn=conn,
@@ -246,7 +246,7 @@ async def test_get_existing_automatic_response() -> None:
     with resources.db_engine.connect() as conn:
         test_org_code = "test"
         create_response, _ = await lego_workflows.run_and_collect_events(
-            cmd=automatic_responses.create.Command(
+            cmd=automatic_responses.cmd.create.Command(
                 org_code=test_org_code,
                 name="test automatic response",
                 examples=["I'm a test case"],
@@ -258,7 +258,7 @@ async def test_get_existing_automatic_response() -> None:
         )
 
         get_response, _ = await lego_workflows.run_and_collect_events(
-            cmd=automatic_responses.get.Command(
+            cmd=automatic_responses.cmd.get.Command(
                 org_code=test_org_code,
                 automatic_response_id=create_response.automatic_response_id,
                 sql_conn=conn,
@@ -269,7 +269,7 @@ async def test_get_existing_automatic_response() -> None:
         assert get_response.automatic_response.response == "I know you are a test case"
 
         await lego_workflows.run_and_collect_events(
-            cmd=automatic_responses.delete.Command(
+            cmd=automatic_responses.cmd.delete.Command(
                 org_code=test_org_code,
                 automatic_response_id=create_response.automatic_response_id,
                 sql_conn=conn,
@@ -277,9 +277,9 @@ async def test_get_existing_automatic_response() -> None:
             )
         )
 
-        with pytest.raises(automatic_responses.get.AutomaticResponseNotFoundError):
+        with pytest.raises(automatic_responses.cmd.get.AutomaticResponseNotFoundError):
             await lego_workflows.run_and_collect_events(
-                cmd=automatic_responses.get.Command(
+                cmd=automatic_responses.cmd.get.Command(
                     org_code=test_org_code,
                     automatic_response_id=create_response.automatic_response_id,
                     sql_conn=conn,

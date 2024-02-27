@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 from customer_engine.config import resources
 from customer_engine.core import automatic_responses
-from customer_engine.core.automatic_responses.shared import AutomaticResponse
+from customer_engine.core.automatic_responses.core import AutomaticResponse
 
 router = APIRouter(prefix="/automatic-responses", tags=["automatic-responses"])
 
@@ -31,7 +31,7 @@ async def create_automatic_response(
     """Create a new automatic response."""
     with resources.db_engine.begin() as conn:
         created_response, events = await lego_workflows.run_and_collect_events(
-            cmd=automatic_responses.create.Command(
+            cmd=automatic_responses.cmd.create.Command(
                 org_code=resources.default_org,
                 name=req.name,
                 examples=req.examples,
@@ -62,7 +62,7 @@ async def get_automatic_response(
             existing_automatic_response,
             events,
         ) = await lego_workflows.run_and_collect_events(
-            cmd=automatic_responses.get.Command(
+            cmd=automatic_responses.cmd.get.Command(
                 org_code=resources.default_org,
                 automatic_response_id=automatic_response_id,
                 sql_conn=conn,
@@ -93,7 +93,7 @@ async def patch_automatic_response(  # noqa: D103
 ) -> ResponsePatchAutomaticResponse:
     with resources.db_engine.begin() as conn:
         updated_response, events = await lego_workflows.run_and_collect_events(
-            cmd=automatic_responses.update.Command(
+            cmd=automatic_responses.cmd.update.Command(
                 org_code=resources.default_org,
                 automatic_response_id=automatic_response_id,
                 new_name=req.name,
@@ -122,7 +122,7 @@ async def list_automatic_responses() -> ResponseListAutomaticResponse:  # noqa: 
             listed_automatic_responses,
             events,
         ) = await lego_workflows.run_and_collect_events(
-            cmd=automatic_responses.list.Command(
+            cmd=automatic_responses.cmd.list.Command(
                 org_code=resources.default_org, sql_conn=conn
             )
         )
@@ -143,7 +143,7 @@ async def delete_automatic_response(  # noqa: D103
 ) -> ResponseDeleteAutomaticResponse:
     with resources.db_engine.begin() as conn:
         deleted_response, events = await lego_workflows.run_and_collect_events(
-            cmd=automatic_responses.delete.Command(
+            cmd=automatic_responses.cmd.delete.Command(
                 org_code=resources.default_org,
                 automatic_response_id=automatic_response_id,
                 sql_conn=conn,
@@ -168,7 +168,7 @@ async def search_by_prompt(prompt: str) -> ResponseSearchByPromptAutomaticRespon
             result_automatic_response,
             events,
         ) = await lego_workflows.run_and_collect_events(
-            automatic_responses.search_by_prompt.Command(
+            automatic_responses.cmd.search_by_prompt.Command(
                 org_code=resources.default_org,
                 prompt=prompt,
                 sql_conn=conn,

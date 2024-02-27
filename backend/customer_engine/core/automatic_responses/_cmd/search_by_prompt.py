@@ -9,8 +9,8 @@ import lego_workflows
 from lego_workflows.components import CommandComponent, DomainEvent, ResponseComponent
 
 from customer_engine.core import unmatched_prompts
-from customer_engine.core.automatic_responses import get
-from customer_engine.core.automatic_responses.shared import (
+from customer_engine.core.automatic_responses._cmd import get
+from customer_engine.core.automatic_responses.core import (
     DEFAULT_EMBEDDING_MODEL,
     AutomaticResponse,
     cohere_embed_examples_and_prompt,
@@ -23,20 +23,20 @@ if TYPE_CHECKING:
 
 
 @dataclass(frozen=True)
-class Response(ResponseComponent):  # noqa: D101
+class Response(ResponseComponent):
     automatic_response: AutomaticResponse | None
     unmatched_prompt_id: UUID | None
 
 
 @dataclass(frozen=True)
-class Command(CommandComponent[Response]):  # noqa: D101
+class Command(CommandComponent[Response]):
     org_code: str
     prompt: str
     sql_conn: Connection
     cohere_client: cohere.AsyncClient
     qdrant_client: AsyncQdrantClient
 
-    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: D102
+    async def run(self, events: list[DomainEvent]) -> Response:
         embedding_model_to_use = DEFAULT_EMBEDDING_MODEL
         prompt_embeddings = await cohere_embed_examples_and_prompt(
             client=self.cohere_client,
@@ -55,7 +55,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
                 unmatched_prompt,
                 register_prompt_events,
             ) = await lego_workflows.run_and_collect_events(
-                unmatched_prompts.register.Command(
+                unmatched_prompts.cmd.register.Command(
                     org_code=self.org_code,
                     prompt=self.prompt,
                     sql_conn=self.sql_conn,

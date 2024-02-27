@@ -13,7 +13,7 @@ from lego_workflows.components import (
 )
 from sqlalchemy import Connection, bindparam, text
 
-from customer_engine.core.unmatched_prompts.shared import UnmatchedPrompt
+from customer_engine.core.unmatched_prompts.core import UnmatchedPrompt
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -22,24 +22,24 @@ if TYPE_CHECKING:
 class UnmatchedResponseNotFoundError(DomainError):
     """Raised when an unmatched response is not found."""
 
-    def __init__(self, org_code: str, prompt_id: UUID) -> None:  # noqa: D107
+    def __init__(self, org_code: str, prompt_id: UUID) -> None:
         super().__init__(
             f"Unmatched prompt with ID {prompt_id} not found for org {org_code}"
         )
 
 
 @dataclass(frozen=True)
-class Response(ResponseComponent):  # noqa: D101
+class Response(ResponseComponent):
     unmatched_prompt: UnmatchedPrompt
 
 
 @dataclass(frozen=True)
-class Command(CommandComponent[Response]):  # noqa: D101
+class Command(CommandComponent[Response]):
     org_code: str
     prompt_id: UUID
     sql_conn: Connection
 
-    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002, D102
+    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002
         stmt = text(
             """SELECT
                 org_code,

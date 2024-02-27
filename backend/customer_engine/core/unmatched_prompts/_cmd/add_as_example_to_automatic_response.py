@@ -8,7 +8,7 @@ import lego_workflows
 from lego_workflows.components import CommandComponent, DomainEvent, ResponseComponent
 
 from customer_engine.core import automatic_responses
-from customer_engine.core.unmatched_prompts import delete, get
+from customer_engine.core.unmatched_prompts._cmd import delete, get
 from customer_engine.logging import logger
 
 if TYPE_CHECKING:
@@ -27,7 +27,7 @@ class UnmatchedPromptHasBeenAddedAsExampleToAutomaticResponse(DomainEvent):
     automatic_response_id: UUID
     prompt_id: UUID
 
-    async def publish(self) -> None:  # noqa: D102
+    async def publish(self) -> None:
         logger.debug(
             "Prompt {prompt_id} has been added as an example to automatic response {automatic_response_id}",
             prompt_id=self.prompt_id,
@@ -36,12 +36,12 @@ class UnmatchedPromptHasBeenAddedAsExampleToAutomaticResponse(DomainEvent):
 
 
 @dataclass(frozen=True)
-class Response(ResponseComponent):  # noqa: D101
+class Response(ResponseComponent):
     prompt_id: UUID
 
 
 @dataclass(frozen=True)
-class Command(CommandComponent[Response]):  # noqa: D101
+class Command(CommandComponent[Response]):
     org_code: str
     prompt_id: UUID
     autoamtic_response_id: UUID
@@ -49,10 +49,10 @@ class Command(CommandComponent[Response]):  # noqa: D101
     cohere_client: cohere.AsyncClient
     qdrant_client: AsyncQdrantClient
 
-    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: D102
+    async def run(self, events: list[DomainEvent]) -> Response:
         automatic_response = (
             await lego_workflows.run_and_collect_events(
-                cmd=automatic_responses.get.Command(
+                cmd=automatic_responses.cmd.get.Command(
                     org_code=self.org_code,
                     automatic_response_id=self.autoamtic_response_id,
                     sql_conn=self.sql_conn,
@@ -72,7 +72,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
         automatic_response.examples.append(unmatched_prompt.prompt)
 
         _, updated_events = await lego_workflows.run_and_collect_events(
-            cmd=automatic_responses.update.Command(
+            cmd=automatic_responses.cmd.update.Command(
                 org_code=self.org_code,
                 automatic_response_id=self.autoamtic_response_id,
                 new_name=None,

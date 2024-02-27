@@ -31,7 +31,7 @@ class _Resources:
                 echo=True,
             )
 
-        elif environment == "production":
+        elif environment == "staging":
             self.db_engine = create_engine(
                 url=f"sqlite+{db_url}/?authToken={db_auth_token}",
                 echo=False,

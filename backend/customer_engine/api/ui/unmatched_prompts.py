@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 from customer_engine.config import resources
 from customer_engine.core import unmatched_prompts
-from customer_engine.core.unmatched_prompts.shared import UnmatchedPrompt
+from customer_engine.core.unmatched_prompts.core import UnmatchedPrompt
 
 router = APIRouter(prefix="/unmatched-prompts", tags=["unmatched-prompts"])
 
@@ -23,7 +23,7 @@ async def list_unmatched_prompts() -> ResponseListUnmatchedPrompts:
     """List unmatched prompts."""
     with resources.db_engine.begin() as conn:
         listed_unmatched_prompts, events = await lego_workflows.run_and_collect_events(
-            cmd=unmatched_prompts.list.Command(
+            cmd=unmatched_prompts.cmd.list.Command(
                 org_code=resources.default_org, sql_conn=conn
             )
         )
@@ -43,7 +43,7 @@ class ResponseDeleteUnmatchedPrompt(BaseModel):  # noqa: D101
 async def delete_unmatched_prompt(prompt_id: UUID) -> ResponseDeleteUnmatchedPrompt:  # noqa: D103
     with resources.db_engine.begin() as conn:
         deleted, events = await lego_workflows.run_and_collect_events(
-            cmd=unmatched_prompts.delete.Command(
+            cmd=unmatched_prompts.cmd.delete.Command(
                 org_code=resources.default_org, prompt_id=prompt_id, sql_conn=conn
             )
         )
@@ -65,7 +65,7 @@ async def add_as_example_to_automatic_response(  # noqa: D103
             added_to_automatic_response,
             events,
         ) = await lego_workflows.run_and_collect_events(
-            cmd=unmatched_prompts.add_as_example_to_automatic_response.Command(
+            cmd=unmatched_prompts.cmd.add_as_example_to_automatic_response.Command(
                 org_code=resources.default_org,
                 prompt_id=prompt_id,
                 autoamtic_response_id=automatic_response_id,

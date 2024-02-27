@@ -21,7 +21,7 @@ class UnmatchedPromptDeleted(DomainEvent):
     org_code: str
     prompt_id: UUID
 
-    async def publish(self) -> None:  # noqa: D102
+    async def publish(self) -> None:
         logger.debug(
             "Unmatched prompt {prompt_id} from org {org_code} has been deleted",
             prompt_id=self.prompt_id,
@@ -30,17 +30,17 @@ class UnmatchedPromptDeleted(DomainEvent):
 
 
 @dataclass(frozen=True)
-class Response(ResponseComponent):  # noqa: D101
+class Response(ResponseComponent):
     prompt_id: UUID
 
 
 @dataclass(frozen=True)
-class Command(CommandComponent[Response]):  # noqa: D101
+class Command(CommandComponent[Response]):
     org_code: str
     prompt_id: UUID
     sql_conn: Connection
 
-    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: D102
+    async def run(self, events: list[DomainEvent]) -> Response:
         stmt = text(
             """
             DELETE FROM unmatched_prompts

@@ -13,7 +13,7 @@ from lego_workflows.components import (
 )
 from sqlalchemy import Connection, bindparam, text
 
-from customer_engine.core.automatic_responses.shared import AutomaticResponse
+from customer_engine.core.automatic_responses import core
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 class AutomaticResponseNotFoundError(DomainError):
     """Raised when automatic response does not exists in database."""
 
-    def __init__(self, org_code: str, automatic_response_id: UUID) -> None:  # noqa: D107
+    def __init__(self, org_code: str, automatic_response_id: UUID) -> None:
         super().__init__(
             f"Automatic response not found for {org_code} with ID {automatic_response_id}"
         )
@@ -32,16 +32,16 @@ class AutomaticResponseNotFoundError(DomainError):
 class Response(ResponseComponent):
     """Response data for getting an automatic response."""
 
-    automatic_response: AutomaticResponse
+    automatic_response: core.AutomaticResponse
 
 
 @dataclass(frozen=True)
-class Command(CommandComponent[Response]):  # noqa: D101
+class Command(CommandComponent[Response]):
     org_code: str
     automatic_response_id: UUID
     sql_conn: Connection
 
-    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002, D102
+    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002
         stmt = text(
             """
             SELECT
@@ -71,5 +71,5 @@ class Command(CommandComponent[Response]):  # noqa: D101
             )
 
         return Response(
-            automatic_response=AutomaticResponse.from_row(automatic_response_row)
+            automatic_response=core.AutomaticResponse.from_row(automatic_response_row)
         )

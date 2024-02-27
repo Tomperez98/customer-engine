@@ -17,7 +17,7 @@ async def test_list_unmatched_prompts() -> None:
             prompt_used = f"Unmatched prompt {i}"
 
             created, _ = await lego_workflows.run_and_collect_events(
-                unmatched_prompts.register.Command(
+                unmatched_prompts.cmd.register.Command(
                     org_code="test",
                     prompt=prompt_used,
                     sql_conn=conn,
@@ -27,7 +27,7 @@ async def test_list_unmatched_prompts() -> None:
             created_umatched_prompts.add(created.prompt_id)
 
         listed_umatched_promts, _ = await lego_workflows.run_and_collect_events(
-            cmd=unmatched_prompts.list.Command(org_code="test", sql_conn=conn)
+            cmd=unmatched_prompts.cmd.list.Command(org_code="test", sql_conn=conn)
         )
 
         ids_for_listed: set[UUID] = {
@@ -39,7 +39,7 @@ async def test_list_unmatched_prompts() -> None:
 
         for prompt_id in created_umatched_prompts:
             await lego_workflows.run_and_collect_events(
-                cmd=unmatched_prompts.delete.Command(
+                cmd=unmatched_prompts.cmd.delete.Command(
                     org_code="test", prompt_id=prompt_id, sql_conn=conn
                 )
             )
@@ -48,10 +48,10 @@ async def test_list_unmatched_prompts() -> None:
 @pytest.mark.e2e()
 async def test_get_not_existing() -> None:
     with resources.db_engine.begin() as conn, pytest.raises(
-        unmatched_prompts.get.UnmatchedResponseNotFoundError
+        unmatched_prompts.cmd.get.UnmatchedResponseNotFoundError
     ):
         await lego_workflows.run_and_collect_events(
-            cmd=unmatched_prompts.get.Command(
+            cmd=unmatched_prompts.cmd.get.Command(
                 org_code="test", prompt_id=uuid4(), sql_conn=conn
             )
         )
@@ -61,14 +61,14 @@ async def test_get_not_existing() -> None:
 async def test_get_existing() -> None:
     with resources.db_engine.begin() as conn:
         created, _ = await lego_workflows.run_and_collect_events(
-            unmatched_prompts.register.Command(
+            unmatched_prompts.cmd.register.Command(
                 org_code="test",
                 prompt="Soy un unmatched prompt.",
                 sql_conn=conn,
             )
         )
         existing, _ = await lego_workflows.run_and_collect_events(
-            cmd=unmatched_prompts.get.Command(
+            cmd=unmatched_prompts.cmd.get.Command(
                 org_code="test", prompt_id=created.prompt_id, sql_conn=conn
             )
         )
@@ -77,13 +77,13 @@ async def test_get_existing() -> None:
         assert existing.unmatched_prompt.prompt == "Soy un unmatched prompt."
 
         deleted, _ = await lego_workflows.run_and_collect_events(
-            cmd=unmatched_prompts.delete.Command(
+            cmd=unmatched_prompts.cmd.delete.Command(
                 org_code="test", prompt_id=created.prompt_id, sql_conn=conn
             )
         )
-        with pytest.raises(unmatched_prompts.get.UnmatchedResponseNotFoundError):
+        with pytest.raises(unmatched_prompts.cmd.get.UnmatchedResponseNotFoundError):
             await lego_workflows.run_and_collect_events(
-                cmd=unmatched_prompts.get.Command(
+                cmd=unmatched_prompts.cmd.get.Command(
                     org_code="test", prompt_id=deleted.prompt_id, sql_conn=conn
                 )
             )
@@ -94,7 +94,7 @@ async def test_add_unmatched_as_example() -> None:
     org_code = "test"
     with resources.db_engine.begin() as conn:
         created_automatic_response, _ = await lego_workflows.run_and_collect_events(
-            cmd=automatic_responses.create.Command(
+            cmd=automatic_responses.cmd.create.Command(
                 org_code=org_code,
                 name="Trabajos",
                 examples=["abc"],
@@ -106,7 +106,7 @@ async def test_add_unmatched_as_example() -> None:
         )
 
         created_unmatched_prompt, _ = await lego_workflows.run_and_collect_events(
-            unmatched_prompts.register.Command(
+            unmatched_prompts.cmd.register.Command(
                 org_code=org_code,
                 prompt="Me gustaria trabajar con usteded",
                 sql_conn=conn,
@@ -114,7 +114,7 @@ async def test_add_unmatched_as_example() -> None:
         )
 
         unmatched_prompt, _ = await lego_workflows.run_and_collect_events(
-            cmd=unmatched_prompts.add_as_example_to_automatic_response.Command(
+            cmd=unmatched_prompts.cmd.add_as_example_to_automatic_response.Command(
                 org_code=org_code,
                 prompt_id=created_unmatched_prompt.prompt_id,
                 autoamtic_response_id=created_automatic_response.automatic_response_id,
@@ -124,9 +124,9 @@ async def test_add_unmatched_as_example() -> None:
             )
         )
 
-        with pytest.raises(unmatched_prompts.get.UnmatchedResponseNotFoundError):
+        with pytest.raises(unmatched_prompts.cmd.get.UnmatchedResponseNotFoundError):
             await lego_workflows.run_and_collect_events(
-                cmd=unmatched_prompts.get.Command(
+                cmd=unmatched_prompts.cmd.get.Command(
                     org_code=org_code,
                     prompt_id=unmatched_prompt.prompt_id,
                     sql_conn=conn,
@@ -134,7 +134,7 @@ async def test_add_unmatched_as_example() -> None:
             )
 
         modified_automatic_response, _ = await lego_workflows.run_and_collect_events(
-            cmd=automatic_responses.get.Command(
+            cmd=automatic_responses.cmd.get.Command(
                 org_code=org_code,
                 automatic_response_id=created_automatic_response.automatic_response_id,
                 sql_conn=conn,
@@ -147,7 +147,7 @@ async def test_add_unmatched_as_example() -> None:
         )
 
         await lego_workflows.run_and_collect_events(
-            cmd=automatic_responses.delete.Command(
+            cmd=automatic_responses.cmd.delete.Command(
                 org_code=org_code,
                 automatic_response_id=created_automatic_response.automatic_response_id,
                 sql_conn=conn,
@@ -155,9 +155,9 @@ async def test_add_unmatched_as_example() -> None:
             )
         )
 
-        with pytest.raises(automatic_responses.get.AutomaticResponseNotFoundError):
+        with pytest.raises(automatic_responses.cmd.get.AutomaticResponseNotFoundError):
             await lego_workflows.run_and_collect_events(
-                automatic_responses.get.Command(
+                automatic_responses.cmd.get.Command(
                     org_code=org_code,
                     automatic_response_id=created_automatic_response.automatic_response_id,
                     sql_conn=conn,

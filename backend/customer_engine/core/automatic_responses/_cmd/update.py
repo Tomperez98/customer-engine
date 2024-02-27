@@ -10,8 +10,8 @@ from lego_workflows.components import CommandComponent, DomainEvent, ResponseCom
 from qdrant_client.http.models import Batch
 from sqlalchemy import bindparam, text
 
-from customer_engine.core.automatic_responses import get
-from customer_engine.core.automatic_responses.shared import (
+from customer_engine.core.automatic_responses._cmd import get
+from customer_engine.core.automatic_responses.core import (
     DEFAULT_EMBEDDING_MODEL,
     cohere_embed_examples_and_prompt,
 )
@@ -23,17 +23,17 @@ if TYPE_CHECKING:
     from qdrant_client import AsyncQdrantClient
     from sqlalchemy import Connection
 
-    from customer_engine.core.automatic_responses.shared import AutomaticResponse
+    from customer_engine.core.automatic_responses.core import AutomaticResponse
 
 
 @dataclass(frozen=True)
-class Response(ResponseComponent):  # noqa: D101
+class Response(ResponseComponent):
     updated_automatic_response: AutomaticResponse
     new_embeddings_calculated: bool
 
 
 @dataclass(frozen=True)
-class Command(CommandComponent[Response]):  # noqa: D101
+class Command(CommandComponent[Response]):
     org_code: str
     automatic_response_id: UUID
     new_name: str | None
@@ -43,7 +43,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
     cohere_client: cohere.AsyncClient
     qdrant_client: AsyncQdrantClient
 
-    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002, D102
+    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002
         existing_automatic_response = (
             await lego_workflows.run_and_collect_events(
                 cmd=get.Command(

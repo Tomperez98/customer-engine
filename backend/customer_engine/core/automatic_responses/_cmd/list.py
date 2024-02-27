@@ -7,22 +7,20 @@ import sqlalchemy
 from lego_workflows.components import CommandComponent, DomainEvent, ResponseComponent
 from sqlalchemy import Connection, bindparam, text
 
-from customer_engine.core.automatic_responses.shared import (
-    AutomaticResponse,
-)
+from customer_engine.core.automatic_responses import core
 
 
 @dataclass(frozen=True)
-class Response(ResponseComponent):  # noqa: D101
-    automatic_responses: list[AutomaticResponse]
+class Response(ResponseComponent):
+    automatic_responses: list[core.AutomaticResponse]
 
 
 @dataclass(frozen=True)
-class Command(CommandComponent[Response]):  # noqa: D101
+class Command(CommandComponent[Response]):
     org_code: str
     sql_conn: Connection
 
-    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002, D102
+    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002
         stmt = text(
             """
             SELECT
@@ -41,7 +39,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
 
         return Response(
             automatic_responses=[
-                AutomaticResponse.from_row(row)
+                core.AutomaticResponse.from_row(row)
                 for row in self.sql_conn.execute(statement=stmt).fetchall()
             ]
         )

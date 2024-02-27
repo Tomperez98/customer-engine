@@ -13,8 +13,8 @@ from qdrant_client.http.exceptions import UnexpectedResponse
 from qdrant_client.http.models import Batch, Distance, VectorParams
 from sqlalchemy import bindparam, text
 
-from customer_engine.core.automatic_responses import get
-from customer_engine.core.automatic_responses.shared import (
+from customer_engine.core.automatic_responses._cmd import get
+from customer_engine.core.automatic_responses.core import (
     DEFAULT_EMBEDDING_MODEL,
     cohere_embed_examples_and_prompt,
 )
@@ -28,7 +28,7 @@ if TYPE_CHECKING:
     from qdrant_client import AsyncQdrantClient
     from sqlalchemy import Connection
 
-    from customer_engine.core.automatic_responses.shared import EmbeddingModels
+    from customer_engine.core.automatic_responses.core import EmbeddingModels
 
 
 def _qdrant_vectored_params_per_model(model: EmbeddingModels) -> VectorParams:
@@ -45,7 +45,7 @@ class AutomaticResponseCreated(DomainEvent):
     automatic_response_id: UUID
     created_at: datetime.datetime
 
-    async def publish(self) -> None:  # noqa: D102
+    async def publish(self) -> None:
         logger.info(
             "New automatic response with ID {automatic_response_id} for organization {org_code} has been created at {created_at}.",
             automatic_response_id=self.automatic_response_id,
