@@ -28,11 +28,6 @@ dependencies = [
     "orjson",
 ]
 
-[project.urls]
-Documentation = "https://github.com/pymtech-co/whatsapp_customer_engine#readme"
-Issues = "https://github.com/pymtech-co/whatsapp_customer_engine/issues"
-Source = "https://github.com/pymtech-co/whatsapp_customer_engine"
-
 
 [project.optional-dependencies]
 dev = ["pyrgo < 3", "pytest-asyncio", "types-toml", "alembic", "pytest-cov"]
