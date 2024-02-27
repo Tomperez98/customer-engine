@@ -152,8 +152,6 @@ disallow_untyped_calls = true
 disallow_untyped_defs = true
 explicit_package_bases = true
 
-[tool.pyrgo]
-extra-paths = ["scripts"]
 
 [tool.vulture]
 exclude = ["customer_engine_api/migrations/versions/"]
