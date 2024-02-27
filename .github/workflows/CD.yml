@@ -21,6 +21,6 @@ jobs:
 
       - name: Deploy
         working-directory: backend
-        run: railway up --service fnsghts
+        run: railway up --service customer-engine-api
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
