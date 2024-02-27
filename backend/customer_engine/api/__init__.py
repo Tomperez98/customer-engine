@@ -1,6 +1,8 @@
 """API routes."""
 from __future__ import annotations
 
+from typing import Literal
+
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
@@ -18,6 +20,18 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+class HealthCheckResponse(BaseModel):
+    """Health check response."""
+
+    status: Literal["healthy", "not-healthy"]
+
+
+@app.get(path="/health")
+async def check() -> HealthCheckResponse:
+    """Check application is ready."""
+    return HealthCheckResponse(status="healthy")
 
 
 class DomainErrorResponse(BaseModel):

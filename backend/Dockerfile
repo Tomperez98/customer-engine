@@ -15,4 +15,5 @@ RUN uv clean
 
 EXPOSE $PORT
 
-CMD uvicorn --host "0.0.0.0" --port $PORT customer_engine.api:app
+CMD gunicorn fnsghts.web.__main__:app -w 2 -k uvicorn.workers.UvicornWorker -b 0.0.0.0:$PORT --log-level=info
+

@@ -1,0 +1,5 @@
+*
+!customer_engine/
+!requirements/core.txt
+!pyproject.toml
+!README.md
