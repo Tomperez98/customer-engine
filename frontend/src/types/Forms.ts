@@ -12,3 +12,5 @@ export enum FormKeys {
     name = 'nombre',
     response = 'respuesta',
 }
+
+export type FormKey = keyof Form

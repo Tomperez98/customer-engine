@@ -1,25 +1,24 @@
 'use client'
 
-import React, {useState} from 'react'
+import {useState} from 'react'
 import {MdEdit} from 'react-icons/md'
-import {FormKeys} from '@/types/Forms'
 
 interface EditableInputFieldProps {
     fieldName: string
-    fieldValue: string
+    originalValue: string | string[]
     isEditingForm: boolean
+    label: string
     setIsEditingForm: (isEditingForm: boolean) => void
-    editable?: boolean
     setEditedForm: any
     editedForm: any
 }
 
 const EditableInputField = ({
     fieldName,
-    fieldValue,
-    editable,
+    originalValue,
     isEditingForm,
     setIsEditingForm,
+    label,
     setEditedForm,
     editedForm,
 }: EditableInputFieldProps) => {
@@ -35,27 +34,38 @@ const EditableInputField = ({
     const handleInputFieldChange = (event: any) => {
         setEditedForm({...editedForm, [fieldName]: event.target.value})
     }
+
+    const handleReset = () => {
+        setIsEditing(false)
+        setEditedForm({...editedForm, [fieldName]: originalValue})
+    }
+
     return (
         <div className='mb-1'>
             <div className='flex flex-row items-center gap-2'>
-                <h2 className='text-lg font-extrabold capitalize text-slate-800'>
-                    {FormKeys[fieldName as keyof typeof FormKeys] || fieldName}
-                </h2>
-                {!isEditing && editable && (
+                <label
+                    htmlFor={fieldName}
+                    className='text-lg font-extrabold capitalize text-slate-800'>
+                    {label}
+                </label>
+                {isEditing ? (
+                    <button onClick={handleReset}>reset</button>
+                ) : (
                     <MdEdit
                         className='cursor-pointer'
                         onClick={handleEditField}
                     />
                 )}
             </div>
-            {isEditing && editable ? (
+            {isEditing ? (
                 <input
+                    name={fieldName}
                     className='rounded-md border-2 border-gray-300 px-1 text-slate-500'
                     onChange={handleInputFieldChange}
                     value={editedForm[fieldName]}
                 />
             ) : (
-                <p>{fieldValue}</p>
+                <p>editedForm[fieldName]</p>
             )}
         </div>
     )

@@ -1,8 +1,7 @@
 'use client'
 
-import React, {useState} from 'react'
+import {useState} from 'react'
 import {MdEdit} from 'react-icons/md'
-import {FormKeys} from '@/types/Forms'
 
 interface EditableListFieldProps {
     fieldName: string
@@ -11,6 +10,8 @@ interface EditableListFieldProps {
     editable?: boolean
     setEditedForm: any
     editedForm: any
+    originalValue: any
+    label: string
 }
 
 const EditableListField = ({
@@ -19,6 +20,8 @@ const EditableListField = ({
     setIsEditingForm,
     setEditedForm,
     editedForm,
+    originalValue,
+    label,
 }: EditableListFieldProps) => {
     const [isEditing, setIsEditing] = useState<boolean>(false)
 
@@ -61,14 +64,22 @@ const EditableListField = ({
         }
     }
 
+    const handleReset = () => {
+        setIsEditing(false)
+        setEditedForm({...editedForm, [fieldName]: originalValue})
+    }
+
     return (
         <div className='mb-1'>
             <div className='flex flex-row items-center gap-2'>
                 <h2 className='text-lg font-extrabold capitalize text-slate-800'>
-                    {FormKeys[fieldName as keyof typeof FormKeys] || fieldName}
+                    {label}
                 </h2>
                 {isEditing ? (
-                    <button onClick={handleAddSubField}>add</button>
+                    <div className='flex flex-row gap-2'>
+                        <button onClick={handleAddSubField}>add</button>
+                        <button onClick={handleReset}>reset</button>
+                    </div>
                 ) : (
                     <MdEdit
                         className='cursor-pointer'
