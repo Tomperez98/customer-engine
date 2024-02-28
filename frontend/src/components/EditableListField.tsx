@@ -5,13 +5,14 @@ import {MdEdit} from 'react-icons/md'
 
 interface EditableListFieldProps {
     fieldName: string
-    isEditingForm: boolean
-    setIsEditingForm: (isEditingForm: boolean) => void
+    isEditingForm?: boolean
+    setIsEditingForm?: (isEditingForm: boolean) => void
     editable?: boolean
     setEditedForm: any
     editedForm: any
     originalValue: any
     label: string
+    editableOnly?: boolean
 }
 
 const EditableListField = ({
@@ -22,12 +23,13 @@ const EditableListField = ({
     editedForm,
     originalValue,
     label,
+    editableOnly,
 }: EditableListFieldProps) => {
     const [isEditing, setIsEditing] = useState<boolean>(false)
 
     const handleEditField = () => {
         if (!isEditingForm) {
-            setIsEditingForm(true)
+            setIsEditingForm?.(true)
         }
         setIsEditing(true)
     }
@@ -78,7 +80,9 @@ const EditableListField = ({
                 {isEditing ? (
                     <div className='flex flex-row gap-2'>
                         <button onClick={handleAddSubField}>add</button>
-                        <button onClick={handleReset}>reset</button>
+                        {!editableOnly && (
+                            <button onClick={handleReset}>reset</button>
+                        )}
                     </div>
                 ) : (
                     <MdEdit
@@ -89,7 +93,7 @@ const EditableListField = ({
             </div>
             <div className='flex flex-col gap-2'>
                 {editedForm?.[fieldName].map((field: any, idx: number) => {
-                    return isEditing ? (
+                    return isEditing || editableOnly ? (
                         <div key={idx}>
                             <input
                                 className='mr-2 rounded-md border-2 border-gray-300 px-1 text-slate-500'

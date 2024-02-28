@@ -65,7 +65,7 @@ const EditableInputField = ({
                     value={editedForm[fieldName]}
                 />
             ) : (
-                <p>editedForm[fieldName]</p>
+                <p>{editedForm[fieldName]}</p>
             )}
         </div>
     )

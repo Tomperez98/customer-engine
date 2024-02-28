@@ -4,7 +4,7 @@ type InputField = {
     name: FormKey
     label: string
     editable?: boolean
-    component?: string
+    component: string
 }
 
 export const INPUT_FIELDS: InputField[] = [

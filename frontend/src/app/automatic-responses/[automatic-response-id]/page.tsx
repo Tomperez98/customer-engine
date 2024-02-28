@@ -48,7 +48,7 @@ const FormDetail = ({params}: {params: {'automatic-response-id': string}}) => {
                     Detalles de formulario
                 </h1>
                 <div className='w-full rounded-md bg-white p-8 shadow-md'>
-                    {data && (
+                    {formData && (
                         <>
                             <label
                                 htmlFor='automatic_response_id'
