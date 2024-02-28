@@ -5,7 +5,7 @@ from fastapi import APIRouter
 
 from customer_engine_api.api.ui import automatic_responses, unmatched_prompts
 
-router = APIRouter()
+router = APIRouter(prefix="/ui", tags=["ui"])
 
 
 router.include_router(automatic_responses.router)

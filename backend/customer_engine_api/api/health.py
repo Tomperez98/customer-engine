@@ -15,7 +15,7 @@ class HealthCheckResponse(BaseModel):
     status: Literal["healthy", "not-healthy"]
 
 
-@router.get(path="/health")
+@router.get(path="/check")
 async def check() -> HealthCheckResponse:
     """Check application is ready."""
     return HealthCheckResponse(status="healthy")

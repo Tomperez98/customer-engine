@@ -148,7 +148,7 @@ protobuf==4.25.3
     # via grpcio-tools
 py-serializable==1.0.1
     # via cyclonedx-python-lib
-pydantic==2.6.2
+pydantic==2.6.3
     # via
     #   fastapi
     #   qdrant-client
@@ -207,7 +207,7 @@ toml==0.10.2
     # via pip-audit
 tomli-w==1.0.0
     # via mashumaro
-tomlkit==0.12.3
+tomlkit==0.12.4
     # via pyrgo
 types-toml==0.10.8.7
 typing-extensions==4.10.0

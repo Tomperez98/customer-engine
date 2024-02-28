@@ -83,7 +83,7 @@ portalocker==2.8.2
     # via qdrant-client
 protobuf==4.25.3
     # via grpcio-tools
-pydantic==2.6.2
+pydantic==2.6.3
     # via
     #   fastapi
     #   qdrant-client
