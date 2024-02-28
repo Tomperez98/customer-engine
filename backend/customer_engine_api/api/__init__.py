@@ -11,6 +11,7 @@ from customer_engine_api.api import health, ui
 
 app = FastAPI()
 
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000"],

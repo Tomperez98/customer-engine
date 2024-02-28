@@ -13,6 +13,7 @@ def main() -> None:
         query={
             "title": f"v{version}",
             "tag": f"v{version}",
+            "prereleased": 1,
         },
     )
     webbrowser.open_new_tab(url=f"{repo_url}/releases/new?{params}")
