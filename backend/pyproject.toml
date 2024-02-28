@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "customer-engine-api"
+name = "backend"
 version = "0.0.1"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -75,7 +75,7 @@ ignore = [
     "UP040",
 ]
 select = ["ALL"]
-logger-objects = ["customer_engine_api.logger"]
+logger-objects = ["backend.logger"]
 
 [tool.ruff.lint.flake8-type-checking]
 runtime-evaluated-base-classes = [
@@ -89,10 +89,10 @@ enum = { msg = "`enum` is banned: Python enums are not allowed. Use typing.Liter
 [tool.ruff.lint.per-file-ignores]
 "tests/*.py" = ["INP001", "S101", "D", "SLF001"]
 "scripts/*.py" = ["INP001"]
-"customer_engine_api/migrations/**/*.py" = ["D103"]
+"backend/migrations/**/*.py" = ["D103"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["customer_engine_api"]
+known-first-party = ["backend"]
 combine-as-imports = true
 required-imports = ["from __future__ import annotations"]
 
@@ -110,7 +110,7 @@ addopts = [
     "--import-mode=importlib",
     "--strict-markers",
     "--cov-config=pyproject.toml",
-    "--cov=customer_engine_api",
+    "--cov=backend",
     "--cov-report=term-missing:skip-covered",
 ]
 markers = [
@@ -125,7 +125,7 @@ filterwarnings = ["ignore::DeprecationWarning"]
 branch = true
 parallel = true
 relative_files = true
-omit = ["customer_engine_api/migrations/**", "customer_engine_api/api/**"]
+omit = ["backend/migrations/**", "backend/api/**"]
 
 [tool.coverage.report]
 exclude_lines = [
@@ -154,7 +154,7 @@ explicit_package_bases = true
 
 
 [tool.vulture]
-exclude = ["customer_engine_api/migrations/versions/"]
+exclude = ["backend/migrations/versions/"]
 min_confidence = 80
 
 [[tool.mypy.overrides]]
