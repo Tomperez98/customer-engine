@@ -21,8 +21,16 @@ jobs:
         run: npm i -g @railway/cli
 
       - name: Deploy to staging
-        if: github.event.release.prerelease
+        if: ${{github.event.release.prerelease}}
         working-directory: backend
         run: railway up --service customer-engine-api
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      
+      - name: Deploy to production
+        if: ${{!github.event.release.prerelease}}
+        working-directory: backend
+        run: railway up --service customer-engine-api
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_PROD }}
+
