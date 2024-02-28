@@ -23,14 +23,14 @@ jobs:
       - name: Deploy to staging
         if: ${{github.event.release.prerelease}}
         working-directory: backend
-        run: railway up --service customer-engine-api
+        run: railway up --service backend
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
       
       - name: Deploy to production
         if: ${{!github.event.release.prerelease}}
         working-directory: backend
-        run: railway up --service customer-engine-api
+        run: railway up --service backend
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_PROD }}
 
