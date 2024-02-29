@@ -75,7 +75,7 @@ ignore = [
     "UP040",
 ]
 select = ["ALL"]
-logger-objects = ["backend.logger"]
+logger-objects = ["customer_engine_api.logger"]
 
 [tool.ruff.lint.flake8-type-checking]
 runtime-evaluated-base-classes = [
@@ -154,7 +154,7 @@ explicit_package_bases = true
 
 
 [tool.vulture]
-exclude = ["backend/migrations/versions/"]
+exclude = ["customer_engine_api/migrations/versions/"]
 min_confidence = 80
 
 [[tool.mypy.overrides]]
