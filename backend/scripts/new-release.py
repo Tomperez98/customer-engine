@@ -1,6 +1,10 @@
+"""New release."""
+from __future__ import annotations
+
+import webbrowser
 from pathlib import Path
 from urllib.parse import urlencode
-import webbrowser
+
 import toml
 
 

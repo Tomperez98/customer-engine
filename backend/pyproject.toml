@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "customer-engine-api"
-version = "0.0.1"
+version = "0.1.9"
 readme = "README.md"
 requires-python = ">=3.12"
 classifiers = [
@@ -27,6 +27,11 @@ dependencies = [
     "pydantic >= 2",
     "orjson",
 ]
+
+[project.urls]
+Documentation = "https://github.com/Tomperez98/customer-engine/backend#readme"
+Issues = "https://github.com/Tomperez98/customer-engine/issues"
+Source = "https://github.com/Tomperez98/customer-engine"
 
 
 [project.optional-dependencies]
@@ -88,7 +93,7 @@ enum = { msg = "`enum` is banned: Python enums are not allowed. Use typing.Liter
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*.py" = ["INP001", "S101", "D", "SLF001"]
-"scripts/*.py" = ["INP001"]
+"scripts/*.py" = ["INP001", "D103"]
 "customer_engine_api/migrations/**/*.py" = ["D103"]
 
 [tool.ruff.lint.isort]
@@ -160,3 +165,6 @@ min_confidence = 80
 [[tool.mypy.overrides]]
 module = ["cohere", "cohere.responses.embeddings"]
 ignore_missing_imports = true
+
+[tool.pyrgo]
+extra-paths = ["scripts"]
