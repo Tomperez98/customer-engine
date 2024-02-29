@@ -5,8 +5,8 @@ from uuid import UUID, uuid4
 import lego_workflows
 import pytest
 
-from backend.config import resources
-from backend.core import automatic_responses, unmatched_prompts
+from customer_engine_api.config import resources
+from customer_engine_api.core import automatic_responses, unmatched_prompts
 
 
 @pytest.mark.e2e()

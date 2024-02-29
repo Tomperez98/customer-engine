@@ -1,6 +1,0 @@
-"""Unmatched prompts module."""
-from __future__ import annotations
-
-from backend.core.unmatched_prompts import _cmd as cmd
-
-__all__ = ["cmd"]
