@@ -1,16 +1,17 @@
 'use client'
 
-import {useState} from 'react'
+import {ChangeEvent, useState} from 'react'
 import {MdEdit} from 'react-icons/md'
+import {FormKey, FormTemplate} from '@/types/Forms'
 
 interface EditableListFieldProps {
-    fieldName: string
+    fieldName: FormKey
     isEditingForm?: boolean
     setIsEditingForm?: (isEditingForm: boolean) => void
     editable?: boolean
-    setEditedForm: any
-    editedForm: any
-    originalValue: any
+    setTemplateForm: (formTemplate: FormTemplate) => void
+    templateForm: FormTemplate
+    originalValue: string | string[]
     label: string
     editableOnly?: boolean
 }
@@ -19,13 +20,14 @@ const EditableListField = ({
     fieldName,
     isEditingForm,
     setIsEditingForm,
-    setEditedForm,
-    editedForm,
+    setTemplateForm,
+    templateForm,
     originalValue,
     label,
     editableOnly,
 }: EditableListFieldProps) => {
     const [isEditing, setIsEditing] = useState<boolean>(false)
+    const currentField = templateForm[fieldName] as string[]
 
     const handleEditField = () => {
         if (!isEditingForm) {
@@ -34,33 +36,34 @@ const EditableListField = ({
         setIsEditing(true)
     }
 
-    const handleSubFieldChange = (e: any, idx: number) => {
-        setEditedForm({
-            ...editedForm,
-            [fieldName]: editedForm[fieldName].map(
-                (field: any, subIdx: number) => {
-                    if (subIdx === idx) {
-                        return e.target.value
-                    }
-                    return field
+    const handleSubFieldChange = (
+        e: ChangeEvent<HTMLInputElement>,
+        idx: number
+    ) => {
+        setTemplateForm({
+            ...templateForm,
+            [fieldName]: currentField.map((field: string, subIdx: number) => {
+                if (subIdx === idx) {
+                    return e.target.value
                 }
-            ),
+                return field
+            }),
         })
     }
 
     const handleAddSubField = () => {
-        setEditedForm({
-            ...editedForm,
-            [fieldName]: [...editedForm[fieldName], ''],
+        setTemplateForm({
+            ...templateForm,
+            [fieldName]: [...currentField, ''],
         })
     }
 
-    const handleRemoveSubField = (value: string) => {
-        if (editedForm[fieldName].length > 1) {
-            setEditedForm({
-                ...editedForm,
-                [fieldName]: editedForm[fieldName].filter(
-                    (field: any) => field !== value
+    const handleRemoveSubField = (idx: number) => {
+        if (currentField.length > 1) {
+            setTemplateForm({
+                ...templateForm,
+                [fieldName]: currentField.filter(
+                    (_, filterIdx) => filterIdx !== idx
                 ),
             })
         }
@@ -68,7 +71,7 @@ const EditableListField = ({
 
     const handleReset = () => {
         setIsEditing(false)
-        setEditedForm({...editedForm, [fieldName]: originalValue})
+        setTemplateForm({...templateForm, [fieldName]: originalValue})
     }
 
     return (
@@ -77,7 +80,7 @@ const EditableListField = ({
                 <h2 className='text-lg font-extrabold capitalize text-slate-800'>
                     {label}
                 </h2>
-                {isEditing ? (
+                {isEditing || editableOnly ? (
                     <div className='flex flex-row gap-2'>
                         <button onClick={handleAddSubField}>add</button>
                         {!editableOnly && (
@@ -92,17 +95,20 @@ const EditableListField = ({
                 )}
             </div>
             <div className='flex flex-col gap-2'>
-                {editedForm?.[fieldName].map((field: any, idx: number) => {
+                {currentField.map((field: string, idx: number) => {
                     return isEditing || editableOnly ? (
                         <div key={idx}>
                             <input
                                 className='mr-2 rounded-md border-2 border-gray-300 px-1 text-slate-500'
                                 onChange={(e) => handleSubFieldChange(e, idx)}
-                                value={editedForm[fieldName][idx]}
+                                value={currentField[idx]}
                             />
-                            <button onClick={() => handleRemoveSubField(field)}>
-                                delete
-                            </button>
+                            {currentField.length > 1 && (
+                                <button
+                                    onClick={() => handleRemoveSubField(idx)}>
+                                    delete
+                                </button>
+                            )}
                         </div>
                     ) : (
                         <p key={idx}>{field}</p>

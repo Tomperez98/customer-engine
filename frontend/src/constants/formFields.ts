@@ -1,11 +1,4 @@
-import {FormKey, FormKeys} from '@/types/Forms'
-
-type InputField = {
-    name: FormKey
-    label: string
-    editable?: boolean
-    component: string
-}
+import {FormKeys, InputField} from '@/types/Forms'
 
 export const INPUT_FIELDS: InputField[] = [
     {

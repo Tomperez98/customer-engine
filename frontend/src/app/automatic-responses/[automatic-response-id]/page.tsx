@@ -2,19 +2,18 @@
 import Layout from '@/components/layout'
 import useGetForms from '@/hooks/useGetForms'
 import React, {useEffect, useMemo, useState} from 'react'
-import {Form, FormKey, FormKeys} from '@/types/Forms'
+import {Form, FormKey, FormKeys, FormTemplate} from '@/types/Forms'
 import useEditForm from '@/hooks/useEditForm'
 import EditableInputField from '@/components/EditableInputField'
 import EditableListField from '@/components/EditableListField'
 import {FORM_TEMPLATE, INPUT_FIELDS} from '@/constants/formFields'
 
-const VISIBLE_FIELDS = ['automatic_response_id', 'examples', 'name', 'response']
-
 const FormDetail = ({params}: {params: {'automatic-response-id': string}}) => {
     const {'automatic-response-id': formId} = params
     const {data, isLoading} = useGetForms(formId)
     const [isEditingForm, setIsEditingForm] = useState<boolean>(false)
-    const [editFormTemplate, setEditFormTemplate] = useState<any>(FORM_TEMPLATE)
+    const [editFormTemplate, setEditFormTemplate] =
+        useState<FormTemplate>(FORM_TEMPLATE)
     const {
         submit,
         isLoading: isUpdateLoading,
@@ -37,7 +36,7 @@ const FormDetail = ({params}: {params: {'automatic-response-id': string}}) => {
 
     useEffect(() => {
         if (data) {
-            setEditFormTemplate({...relevantData})
+            setEditFormTemplate({...(relevantData as FormTemplate)})
         }
     }, [data, relevantData])
 
@@ -63,8 +62,10 @@ const FormDetail = ({params}: {params: {'automatic-response-id': string}}) => {
                                 ) {
                                     return (
                                         <EditableInputField
-                                            editedForm={editFormTemplate}
-                                            setEditedForm={setEditFormTemplate}
+                                            formTemplate={editFormTemplate}
+                                            setFormTemplate={
+                                                setEditFormTemplate
+                                            }
                                             isEditingForm={isEditingForm}
                                             fieldName={field.name}
                                             label={field.label}
@@ -79,8 +80,8 @@ const FormDetail = ({params}: {params: {'automatic-response-id': string}}) => {
 
                                 return (
                                     <EditableListField
-                                        editedForm={editFormTemplate}
-                                        setEditedForm={setEditFormTemplate}
+                                        templateForm={editFormTemplate}
+                                        setTemplateForm={setEditFormTemplate}
                                         editable={field.editable}
                                         isEditingForm={isEditingForm}
                                         key={idx}

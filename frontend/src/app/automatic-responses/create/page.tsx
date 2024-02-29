@@ -4,20 +4,34 @@ import EditableListField from '@/components/EditableListField'
 import Layout from '@/components/layout'
 import {FORM_TEMPLATE, INPUT_FIELDS} from '@/constants/formFields'
 import useCreateForm from '@/hooks/useCreateForm'
-import {useCallback, useState} from 'react'
+import {ChangeEvent, useCallback, useState} from 'react'
+import {FormTemplate, FormKey, InputField} from '@/types/Forms'
+import {redirect} from 'next/navigation'
 
 const CreateForm = () => {
-    const [formTemplate, setFormTemplate] = useState(FORM_TEMPLATE)
+    const [formTemplate, setFormTemplate] =
+        useState<FormTemplate>(FORM_TEMPLATE)
     const {submit} = useCreateForm(formTemplate)
-    const handleInputFieldChange = useCallback((event, name) => {
-        setFormTemplate((prevState) => ({
-            ...prevState,
-            [name]: event.target.value,
-        }))
-    }, [])
+    const handleInputFieldChange = useCallback(
+        (
+            event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+            name: FormKey
+        ) => {
+            setFormTemplate((prevState) => ({
+                ...prevState,
+                [name]: event.target.value,
+            }))
+        },
+        []
+    )
+
+    const handleCreateForm = useCallback(async () => {
+        await submit()
+        redirect('/')
+    }, [submit])
 
     const getInputElement = useCallback(
-        (field, idx) => {
+        (field: InputField, idx: number) => {
             const {name, component, label} = field
 
             if (component === 'input') {
@@ -57,12 +71,12 @@ const CreateForm = () => {
             if (component === 'list') {
                 return (
                     <EditableListField
-                        editedForm={formTemplate}
-                        setEditedForm={setFormTemplate}
+                        templateForm={formTemplate}
+                        setTemplateForm={setFormTemplate}
                         key={idx}
                         fieldName={name}
                         label={label}
-                        originalValue={formTemplate[name]}
+                        originalValue={formTemplate[name] || []}
                         editableOnly
                     />
                 )
@@ -71,8 +85,6 @@ const CreateForm = () => {
         },
         [formTemplate, handleInputFieldChange]
     )
-
-    console.log(formTemplate)
 
     return (
         <Layout>
@@ -88,7 +100,7 @@ const CreateForm = () => {
                         <button>Descartar</button>
                         <button
                             className='disabled:text-gray-300'
-                            onClick={async () => await submit()}>
+                            onClick={handleCreateForm}>
                             Guardar
                         </button>
                     </div>

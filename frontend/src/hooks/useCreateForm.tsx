@@ -1,9 +1,9 @@
 'use client'
 import {useState} from 'react'
-import {Form} from '@/types/Forms'
+import {FormTemplate} from '@/types/Forms'
 import {BASE_URL} from '@/constants/url'
 
-const useCreateForm = (data: any) => {
+const useCreateForm = (data: FormTemplate) => {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState(null)
 

@@ -1,16 +1,17 @@
 'use client'
 
-import {useState} from 'react'
+import {ChangeEvent, useState} from 'react'
 import {MdEdit} from 'react-icons/md'
+import {FormKey, FormTemplate} from '@/types/Forms'
 
 interface EditableInputFieldProps {
-    fieldName: string
+    fieldName: FormKey
     originalValue: string | string[]
     isEditingForm: boolean
     label: string
     setIsEditingForm: (isEditingForm: boolean) => void
-    setEditedForm: any
-    editedForm: any
+    setFormTemplate: (formTemplate: FormTemplate) => void
+    formTemplate: FormTemplate
 }
 
 const EditableInputField = ({
@@ -19,8 +20,8 @@ const EditableInputField = ({
     isEditingForm,
     setIsEditingForm,
     label,
-    setEditedForm,
-    editedForm,
+    setFormTemplate,
+    formTemplate,
 }: EditableInputFieldProps) => {
     const [isEditing, setIsEditing] = useState<boolean>(false)
 
@@ -31,13 +32,13 @@ const EditableInputField = ({
         setIsEditing(true)
     }
 
-    const handleInputFieldChange = (event: any) => {
-        setEditedForm({...editedForm, [fieldName]: event.target.value})
+    const handleInputFieldChange = (event: ChangeEvent<HTMLInputElement>) => {
+        setFormTemplate({...formTemplate, [fieldName]: event.target.value})
     }
 
     const handleReset = () => {
         setIsEditing(false)
-        setEditedForm({...editedForm, [fieldName]: originalValue})
+        setFormTemplate({...formTemplate, [fieldName]: originalValue})
     }
 
     return (
@@ -62,10 +63,10 @@ const EditableInputField = ({
                     name={fieldName}
                     className='rounded-md border-2 border-gray-300 px-1 text-slate-500'
                     onChange={handleInputFieldChange}
-                    value={editedForm[fieldName]}
+                    value={formTemplate[fieldName]}
                 />
             ) : (
-                <p>{editedForm[fieldName]}</p>
+                <p>{formTemplate[fieldName]}</p>
             )}
         </div>
     )
