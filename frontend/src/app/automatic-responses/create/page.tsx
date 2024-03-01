@@ -7,10 +7,12 @@ import useCreateForm from '@/hooks/useCreateForm'
 import {ChangeEvent, useCallback, useState} from 'react'
 import {FormTemplate, FormKey, InputField} from '@/types/Forms'
 import {redirect} from 'next/navigation'
+import {validateNoEmptyFields} from '@/utils/validateFormFields'
 
 const CreateForm = () => {
     const [formTemplate, setFormTemplate] =
         useState<FormTemplate>(FORM_TEMPLATE)
+    const [invalidFields, setInvalidFields] = useState<string[]>([])
     const {submit} = useCreateForm(formTemplate)
     const handleInputFieldChange = useCallback(
         (
@@ -97,8 +99,11 @@ const CreateForm = () => {
                         return getInputElement(field, idx)
                     })}
                     <div className='flex w-full flex-row items-center justify-end gap-2'>
-                        <button>Descartar</button>
+                        <button onClick={() => setFormTemplate(FORM_TEMPLATE)}>
+                            Descartar
+                        </button>
                         <button
+                            disabled={!validateNoEmptyFields(formTemplate)}
                             className='disabled:text-gray-300'
                             onClick={handleCreateForm}>
                             Guardar

@@ -7,6 +7,10 @@ import useEditForm from '@/hooks/useEditForm'
 import EditableInputField from '@/components/EditableInputField'
 import EditableListField from '@/components/EditableListField'
 import {FORM_TEMPLATE, INPUT_FIELDS} from '@/constants/formFields'
+import {
+    validateFormHasChanges,
+    validateNoEmptyFields,
+} from '@/utils/validateFormFields'
 
 const FormDetail = ({params}: {params: {'automatic-response-id': string}}) => {
     const {'automatic-response-id': formId} = params
@@ -39,6 +43,10 @@ const FormDetail = ({params}: {params: {'automatic-response-id': string}}) => {
             setEditFormTemplate({...(relevantData as FormTemplate)})
         }
     }, [data, relevantData])
+
+    const areChangesValid =
+        validateNoEmptyFields(editFormTemplate) &&
+        validateFormHasChanges(editFormTemplate, relevantData as FormTemplate)
 
     return (
         <Layout>
@@ -98,6 +106,7 @@ const FormDetail = ({params}: {params: {'automatic-response-id': string}}) => {
                         <div className='flex w-full flex-row items-center justify-end gap-2'>
                             <button>Descartar</button>
                             <button
+                                disabled={!areChangesValid}
                                 className='disabled:text-gray-300'
                                 onClick={async () => await submit()}>
                                 Guardar
