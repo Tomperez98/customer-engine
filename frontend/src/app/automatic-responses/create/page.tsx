@@ -9,10 +9,13 @@ import {FormTemplate, FormKey, InputField} from '@/types/Forms'
 import {redirect} from 'next/navigation'
 import {validateNoEmptyFields} from '@/utils/validateFormFields'
 
+import RichTextEditor from '@/components/RichTextEditor'
+import Input from '@/components/Input'
+
 const CreateForm = () => {
     const [formTemplate, setFormTemplate] =
         useState<FormTemplate>(FORM_TEMPLATE)
-    const [invalidFields, setInvalidFields] = useState<string[]>([])
+
     const {submit} = useCreateForm(formTemplate)
     const handleInputFieldChange = useCallback(
         (
@@ -44,10 +47,9 @@ const CreateForm = () => {
                             className='text-lg font-extrabold capitalize text-slate-800'>
                             {label}
                         </label>
-                        <input
+                        <Input
                             name={name}
-                            className='rounded-md border-2 border-gray-300 px-1 text-slate-500'
-                            onChange={(e) => handleInputFieldChange(e, name)}
+                            onChange={handleInputFieldChange}
                             value={formTemplate[name] || ''}
                         />
                     </div>
@@ -61,10 +63,9 @@ const CreateForm = () => {
                             className='text-lg font-extrabold capitalize text-slate-800'>
                             {label}
                         </label>
-                        <textarea
+                        <RichTextEditor
                             name={name}
-                            className='rounded-md border-2 border-gray-300 px-1 text-slate-500'
-                            onChange={(e) => handleInputFieldChange(e, name)}
+                            onChange={handleInputFieldChange}
                             value={formTemplate[name] || ''}
                         />
                     </div>
@@ -92,7 +93,7 @@ const CreateForm = () => {
         <Layout>
             <section className='flex flex-col'>
                 <h1 className='mb-4 text-3xl font-extrabold text-slate-800'>
-                    Crear formulario
+                    Crear formularios
                 </h1>
                 <div className='w-full rounded-md bg-white p-8 shadow-md'>
                     {INPUT_FIELDS.map((field, idx) => {

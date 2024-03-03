@@ -99,7 +99,7 @@ const EditableListField = ({
                     return isEditing || editableOnly ? (
                         <div key={idx}>
                             <input
-                                className='mr-2 rounded-md border-2 border-gray-300 px-1 text-slate-500'
+                                className='mr-2 w-11/12 rounded-md border-2 border-gray-300 px-1 text-slate-500'
                                 onChange={(e) => handleSubFieldChange(e, idx)}
                                 value={currentField[idx]}
                             />

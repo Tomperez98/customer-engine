@@ -1,8 +1,10 @@
 'use client'
 
-import {ChangeEvent, useState} from 'react'
+import {ChangeEvent, useCallback, useState} from 'react'
 import {MdEdit} from 'react-icons/md'
 import {FormKey, FormTemplate} from '@/types/Forms'
+import Input from './Input'
+import RichTextEditor from './RichTextEditor'
 
 interface EditableInputFieldProps {
     fieldName: FormKey
@@ -12,16 +14,18 @@ interface EditableInputFieldProps {
     setIsEditingForm: (isEditingForm: boolean) => void
     setFormTemplate: (formTemplate: FormTemplate) => void
     formTemplate: FormTemplate
+    type: 'input' | 'textarea'
 }
 
 const EditableInputField = ({
     fieldName,
-    originalValue,
-    isEditingForm,
-    setIsEditingForm,
-    label,
-    setFormTemplate,
     formTemplate,
+    isEditingForm,
+    label,
+    originalValue,
+    setIsEditingForm,
+    setFormTemplate,
+    type,
 }: EditableInputFieldProps) => {
     const [isEditing, setIsEditing] = useState<boolean>(false)
 
@@ -32,17 +36,45 @@ const EditableInputField = ({
         setIsEditing(true)
     }
 
-    const handleInputFieldChange = (event: ChangeEvent<HTMLInputElement>) => {
-        setFormTemplate({...formTemplate, [fieldName]: event.target.value})
-    }
+    const handleInputFieldChange = useCallback(
+        (
+            event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+            name: FormKey
+        ) => {
+            setFormTemplate({...formTemplate, [name]: event.target.value})
+        },
+        [formTemplate, setFormTemplate]
+    )
 
     const handleReset = () => {
         setIsEditing(false)
         setFormTemplate({...formTemplate, [fieldName]: originalValue})
     }
 
+    const getInputElement = useCallback(() => {
+        if (type === 'input') {
+            return (
+                <Input
+                    name={fieldName}
+                    onChange={handleInputFieldChange}
+                    value={formTemplate[fieldName] || ''}
+                />
+            )
+        }
+        if (type === 'textarea') {
+            return (
+                <RichTextEditor
+                    name={fieldName}
+                    onChange={handleInputFieldChange}
+                    value={formTemplate[fieldName] || ''}
+                />
+            )
+        }
+        return null
+    }, [fieldName, formTemplate, handleInputFieldChange, type])
+
     return (
-        <div className='mb-1'>
+        <div className='mb-1 w-full'>
             <div className='flex flex-row items-center gap-2'>
                 <label
                     htmlFor={fieldName}
@@ -58,16 +90,7 @@ const EditableInputField = ({
                     />
                 )}
             </div>
-            {isEditing ? (
-                <input
-                    name={fieldName}
-                    className='rounded-md border-2 border-gray-300 px-1 text-slate-500'
-                    onChange={handleInputFieldChange}
-                    value={formTemplate[fieldName]}
-                />
-            ) : (
-                <p>{formTemplate[fieldName]}</p>
-            )}
+            {isEditing ? getInputElement() : <p>{formTemplate[fieldName]}</p>}
         </div>
     )
 }

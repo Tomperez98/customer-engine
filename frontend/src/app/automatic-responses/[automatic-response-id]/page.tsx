@@ -70,18 +70,19 @@ const FormDetail = ({params}: {params: {'automatic-response-id': string}}) => {
                                 ) {
                                     return (
                                         <EditableInputField
-                                            formTemplate={editFormTemplate}
-                                            setFormTemplate={
-                                                setEditFormTemplate
-                                            }
-                                            isEditingForm={isEditingForm}
                                             fieldName={field.name}
+                                            formTemplate={editFormTemplate}
+                                            isEditingForm={isEditingForm}
+                                            key={idx}
                                             label={field.label}
                                             originalValue={
                                                 formData[field?.name]
                                             }
-                                            key={idx}
+                                            setFormTemplate={
+                                                setEditFormTemplate
+                                            }
                                             setIsEditingForm={setIsEditingForm}
+                                            type={field.component}
                                         />
                                     )
                                 }
