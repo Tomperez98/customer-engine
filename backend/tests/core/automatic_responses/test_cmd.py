@@ -11,8 +11,9 @@ from customer_engine_api.core import automatic_responses
 
 @pytest.mark.e2e()
 async def test_get_not_existing_automatic_response() -> None:
-    with resources.db_engine.connect() as conn, pytest.raises(
-        automatic_responses.cmd.get.AutomaticResponseNotFoundError
+    with (
+        resources.db_engine.connect() as conn,
+        pytest.raises(automatic_responses.cmd.get.AutomaticResponseNotFoundError),
     ):
         await lego_workflows.run_and_collect_events(
             cmd=automatic_responses.cmd.get.Command(

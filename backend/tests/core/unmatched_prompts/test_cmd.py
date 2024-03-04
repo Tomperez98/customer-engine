@@ -47,8 +47,9 @@ async def test_list_unmatched_prompts() -> None:
 
 @pytest.mark.e2e()
 async def test_get_not_existing() -> None:
-    with resources.db_engine.begin() as conn, pytest.raises(
-        unmatched_prompts.cmd.get.UnmatchedResponseNotFoundError
+    with (
+        resources.db_engine.begin() as conn,
+        pytest.raises(unmatched_prompts.cmd.get.UnmatchedResponseNotFoundError),
     ):
         await lego_workflows.run_and_collect_events(
             cmd=unmatched_prompts.cmd.get.Command(

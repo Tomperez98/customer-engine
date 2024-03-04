@@ -1,4 +1,5 @@
 """Automatic responses shared."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

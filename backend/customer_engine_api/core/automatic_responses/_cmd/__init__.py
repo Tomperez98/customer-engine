@@ -1,4 +1,5 @@
 """Automatic responses commands."""
+
 from __future__ import annotations
 
 from customer_engine_api.core.automatic_responses._cmd import (

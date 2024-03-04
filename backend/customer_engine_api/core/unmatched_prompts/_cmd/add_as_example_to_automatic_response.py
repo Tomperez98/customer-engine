@@ -1,4 +1,5 @@
 """Add unmatched prompt as an example to automatic response."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass

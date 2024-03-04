@@ -1,4 +1,5 @@
 """List unmatched prompts."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
