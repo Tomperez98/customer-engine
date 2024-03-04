@@ -1,6 +1,6 @@
 'use client'
 
-import {ChangeEvent, useState} from 'react'
+import {ChangeEvent, useEffect, useState} from 'react'
 import {MdEdit} from 'react-icons/md'
 import {FormKey, FormTemplate} from '@/types/Forms'
 
@@ -14,6 +14,7 @@ interface EditableListFieldProps {
     originalValue: string | string[]
     label: string
     editableOnly?: boolean
+    souldForceReset?: boolean
 }
 
 const EditableListField = ({
@@ -25,6 +26,7 @@ const EditableListField = ({
     originalValue,
     label,
     editableOnly,
+    souldForceReset,
 }: EditableListFieldProps) => {
     const [isEditing, setIsEditing] = useState<boolean>(false)
     const currentField = templateForm[fieldName] as string[]
@@ -73,6 +75,12 @@ const EditableListField = ({
         setIsEditing(false)
         setTemplateForm({...templateForm, [fieldName]: originalValue})
     }
+
+    useEffect(() => {
+        if (souldForceReset) {
+            setIsEditing(false)
+        }
+    }, [souldForceReset])
 
     return (
         <div className='mb-1'>

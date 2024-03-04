@@ -4,7 +4,7 @@ import EditableListField from '@/components/EditableListField'
 import Layout from '@/components/layout'
 import {FORM_TEMPLATE, INPUT_FIELDS} from '@/constants/formFields'
 import useCreateForm from '@/hooks/useCreateForm'
-import {ChangeEvent, useCallback, useState} from 'react'
+import {ChangeEvent, useCallback, useEffect, useState} from 'react'
 import {FormTemplate, FormKey, InputField} from '@/types/Forms'
 import {redirect} from 'next/navigation'
 import {validateNoEmptyFields} from '@/utils/validateFormFields'
@@ -15,7 +15,7 @@ import Input from '@/components/Input'
 const CreateForm = () => {
     const [formTemplate, setFormTemplate] =
         useState<FormTemplate>(FORM_TEMPLATE)
-
+    const [shouldRedirect, setShouldRedirect] = useState<boolean>(false)
     const {submit} = useCreateForm(formTemplate)
     const handleInputFieldChange = useCallback(
         (
@@ -32,8 +32,14 @@ const CreateForm = () => {
 
     const handleCreateForm = useCallback(async () => {
         await submit()
-        redirect('/')
+        setShouldRedirect(true)
     }, [submit])
+
+    useEffect(() => {
+        if (shouldRedirect) {
+            redirect('/')
+        }
+    }, [shouldRedirect])
 
     const getInputElement = useCallback(
         (field: InputField, idx: number) => {
@@ -93,7 +99,7 @@ const CreateForm = () => {
         <Layout>
             <section className='flex flex-col'>
                 <h1 className='mb-4 text-3xl font-extrabold text-slate-800'>
-                    Crear formularios
+                    Crear formulario
                 </h1>
                 <div className='w-full rounded-md bg-white p-8 shadow-md'>
                     {INPUT_FIELDS.map((field, idx) => {

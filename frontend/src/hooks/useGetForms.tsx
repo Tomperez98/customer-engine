@@ -1,4 +1,3 @@
-'use client'
 import {useEffect, useState} from 'react'
 import {Form} from '@/types/Forms'
 import {BASE_URL} from '@/constants/url'
@@ -34,11 +33,16 @@ const useGetForms = (id?: string) => {
             setIsLoading(false)
         }
     }
+
     useEffect(() => {
         fetchForms()
     }, [])
 
-    return {data, isLoading}
+    const refetch = () => {
+        fetchForms()
+    }
+
+    return {data, isLoading, refetch}
 }
 
 export default useGetForms

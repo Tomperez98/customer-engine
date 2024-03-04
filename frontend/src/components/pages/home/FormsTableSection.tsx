@@ -34,14 +34,16 @@ const FormsTableSection: React.FC = () => {
                             target='_blank'>
                             <FaMagnifyingGlass color='#455d7a' />
                         </Link>
-                        <FaTrash
-                            onClick={async () =>
-                                deleteForm(
-                                    row.getValue('automatic_response_id')
-                                )
-                            }
-                            color='#f95959'
-                        />
+                        <div className='cursor-pointer'>
+                            <FaTrash
+                                onClick={async () =>
+                                    deleteForm(
+                                        row.getValue('automatic_response_id')
+                                    )
+                                }
+                                color='#f95959'
+                            />
+                        </div>
                     </div>
                 )
             },

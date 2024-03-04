@@ -1,6 +1,6 @@
 'use client'
 
-import {ChangeEvent, useCallback, useState} from 'react'
+import {ChangeEvent, useCallback, useEffect, useState} from 'react'
 import {MdEdit} from 'react-icons/md'
 import {FormKey, FormTemplate} from '@/types/Forms'
 import Input from './Input'
@@ -15,6 +15,7 @@ interface EditableInputFieldProps {
     setFormTemplate: (formTemplate: FormTemplate) => void
     formTemplate: FormTemplate
     type: 'input' | 'textarea'
+    souldForceReset?: boolean
 }
 
 const EditableInputField = ({
@@ -26,6 +27,7 @@ const EditableInputField = ({
     setIsEditingForm,
     setFormTemplate,
     type,
+    souldForceReset,
 }: EditableInputFieldProps) => {
     const [isEditing, setIsEditing] = useState<boolean>(false)
 
@@ -50,6 +52,12 @@ const EditableInputField = ({
         setIsEditing(false)
         setFormTemplate({...formTemplate, [fieldName]: originalValue})
     }
+
+    useEffect(() => {
+        if (souldForceReset) {
+            setIsEditing(false)
+        }
+    }, [souldForceReset])
 
     const getInputElement = useCallback(() => {
         if (type === 'input') {

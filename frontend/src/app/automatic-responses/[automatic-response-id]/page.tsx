@@ -14,7 +14,9 @@ import {
 
 const FormDetail = ({params}: {params: {'automatic-response-id': string}}) => {
     const {'automatic-response-id': formId} = params
-    const {data, isLoading} = useGetForms(formId)
+    const {data, isLoading, refetch} = useGetForms(formId)
+    const [resetAllFormFields, setResetAllFormFields] = useState<boolean>(false)
+    const [shouldRefetch, setShouldRefetch] = useState<boolean>(false)
     const [isEditingForm, setIsEditingForm] = useState<boolean>(false)
     const [editFormTemplate, setEditFormTemplate] =
         useState<FormTemplate>(FORM_TEMPLATE)
@@ -38,15 +40,34 @@ const FormDetail = ({params}: {params: {'automatic-response-id': string}}) => {
         )
     }, [data, formData])
 
+    const areChangesValid =
+        validateNoEmptyFields(editFormTemplate) &&
+        validateFormHasChanges(editFormTemplate, relevantData as FormTemplate)
+
+    const handleSaveChanges = async () => {
+        await submit()
+        setShouldRefetch(true)
+        setResetAllFormFields(true)
+    }
+
+    const handleRefetch = () => {
+        refetch()
+        setResetAllFormFields(false)
+        setIsEditingForm(false)
+        setShouldRefetch(false)
+    }
+
     useEffect(() => {
         if (data) {
             setEditFormTemplate({...(relevantData as FormTemplate)})
         }
     }, [data, relevantData])
 
-    const areChangesValid =
-        validateNoEmptyFields(editFormTemplate) &&
-        validateFormHasChanges(editFormTemplate, relevantData as FormTemplate)
+    useEffect(() => {
+        if (shouldRefetch) {
+            handleRefetch()
+        }
+    }, [shouldRefetch])
 
     return (
         <Layout>
@@ -82,6 +103,7 @@ const FormDetail = ({params}: {params: {'automatic-response-id': string}}) => {
                                                 setEditFormTemplate
                                             }
                                             setIsEditingForm={setIsEditingForm}
+                                            souldForceReset={resetAllFormFields}
                                             type={field.component}
                                         />
                                     )
@@ -98,6 +120,7 @@ const FormDetail = ({params}: {params: {'automatic-response-id': string}}) => {
                                         label={field.label}
                                         originalValue={formData[field?.name]}
                                         setIsEditingForm={setIsEditingForm}
+                                        souldForceReset={resetAllFormFields}
                                     />
                                 )
                             })}
@@ -109,7 +132,7 @@ const FormDetail = ({params}: {params: {'automatic-response-id': string}}) => {
                             <button
                                 disabled={!areChangesValid}
                                 className='disabled:text-gray-300'
-                                onClick={async () => await submit()}>
+                                onClick={handleSaveChanges}>
                                 Guardar
                             </button>
                         </div>
