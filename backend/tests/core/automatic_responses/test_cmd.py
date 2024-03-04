@@ -43,7 +43,7 @@ async def test_list_org_automated_responses() -> None:
             created_automated_responses.add(created_response.automatic_response_id)
 
         list_response, _ = await lego_workflows.run_and_collect_events(
-            automatic_responses.cmd.list.Command(org_code="test", sql_conn=conn)
+            automatic_responses.cmd.list_all.Command(org_code="test", sql_conn=conn)
         )
 
         ids_for_listed: set[UUID] = {

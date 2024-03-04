@@ -29,6 +29,8 @@ certifi==2024.2.2
     #   httpcore
     #   httpx
     #   requests
+cffi==1.16.0
+    # via cryptography
 charset-normalizer==3.3.2
     # via requests
 click==8.1.7
@@ -38,6 +40,7 @@ click==8.1.7
 cohere==4.52
 coverage==7.4.3
     # via pytest-cov
+cryptography==42.0.5
 cyclonedx-python-lib==6.4.3
     # via pip-audit
 defusedxml==0.7.1
@@ -148,6 +151,8 @@ protobuf==4.25.3
     # via grpcio-tools
 py-serializable==1.0.2
     # via cyclonedx-python-lib
+pycparser==2.21
+    # via cffi
 pydantic==2.6.3
     # via
     #   fastapi

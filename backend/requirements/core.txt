@@ -22,11 +22,14 @@ certifi==2024.2.2
     #   httpcore
     #   httpx
     #   requests
+cffi==1.16.0
+    # via cryptography
 charset-normalizer==3.3.2
     # via requests
 click==8.1.7
     # via uvicorn
 cohere==4.52
+cryptography==42.0.5
 fastapi==0.110.0
 fastavro==1.9.4
     # via cohere
@@ -83,6 +86,8 @@ portalocker==2.8.2
     # via qdrant-client
 protobuf==4.25.3
     # via grpcio-tools
+pycparser==2.21
+    # via cffi
 pydantic==2.6.3
     # via
     #   fastapi

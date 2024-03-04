@@ -123,7 +123,7 @@ async def list_automatic_responses() -> ResponseListAutomaticResponse:  # noqa: 
             listed_automatic_responses,
             events,
         ) = await lego_workflows.run_and_collect_events(
-            cmd=automatic_responses.cmd.list.Command(
+            cmd=automatic_responses.cmd.list_all.Command(
                 org_code=resources.default_org, sql_conn=conn
             )
         )

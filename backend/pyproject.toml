@@ -26,6 +26,7 @@ dependencies = [
     "cohere < 5",
     "pydantic >= 2",
     "orjson",
+    "cryptography",
 ]
 
 [project.urls]

@@ -6,13 +6,13 @@ from customer_engine_api.core.automatic_responses._cmd import (
     create,
     delete,
     get,
-    list,
+    list_all,
     search_by_prompt,
     update,
 )
 
 __all__ = [
-    "list",
+    "list_all",
     "create",
     "get",
     "delete",

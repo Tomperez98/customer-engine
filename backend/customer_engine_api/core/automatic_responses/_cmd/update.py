@@ -11,11 +11,8 @@ from lego_workflows.components import CommandComponent, DomainEvent, ResponseCom
 from qdrant_client.http.models import Batch
 from sqlalchemy import bindparam, text
 
+from customer_engine_api.core.automatic_responses import core
 from customer_engine_api.core.automatic_responses._cmd import get
-from customer_engine_api.core.automatic_responses.core import (
-    DEFAULT_EMBEDDING_MODEL,
-    cohere_embed_examples_and_prompt,
-)
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -110,9 +107,9 @@ class Command(CommandComponent[Response]):
                 new_embeddings_calculated=requires_new_embeddings,
             )
 
-        embedding_model_to_use = DEFAULT_EMBEDDING_MODEL
+        embedding_model_to_use = core.DEFAULT_EMBEDDING_MODEL
 
-        new_examples_embeddings = await cohere_embed_examples_and_prompt(
+        new_examples_embeddings = await core.cohere_embed_examples_and_prompt(
             client=self.cohere_client,
             model=embedding_model_to_use,
             examples_or_prompt=existing_automatic_response.examples,

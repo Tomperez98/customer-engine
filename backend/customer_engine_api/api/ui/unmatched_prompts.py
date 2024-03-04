@@ -24,7 +24,7 @@ async def list_unmatched_prompts() -> ResponseListUnmatchedPrompts:
     """List unmatched prompts."""
     with resources.db_engine.begin() as conn:
         listed_unmatched_prompts, events = await lego_workflows.run_and_collect_events(
-            cmd=unmatched_prompts.cmd.list.Command(
+            cmd=unmatched_prompts.cmd.list_all.Command(
                 org_code=resources.default_org, sql_conn=conn
             )
         )

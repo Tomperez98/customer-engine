@@ -27,7 +27,7 @@ async def test_list_unmatched_prompts() -> None:
             created_umatched_prompts.add(created.prompt_id)
 
         listed_umatched_promts, _ = await lego_workflows.run_and_collect_events(
-            cmd=unmatched_prompts.cmd.list.Command(org_code="test", sql_conn=conn)
+            cmd=unmatched_prompts.cmd.list_all.Command(org_code="test", sql_conn=conn)
         )
 
         ids_for_listed: set[UUID] = {

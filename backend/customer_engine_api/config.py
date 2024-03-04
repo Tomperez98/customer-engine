@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import assert_never, cast
 
 import cohere
+from cryptography.fernet import Fernet
 from qdrant_client import AsyncQdrantClient
 from sqlalchemy import Engine, create_engine
 
@@ -48,6 +49,7 @@ class _Resources:
             cohere=cohere.AsyncClient(api_key=os.environ["COHERE_API_KEY"]),
         )
         self.default_org = "default"
+        self.fernet: Fernet = Fernet(key=os.environ["ENCRYPT_KEY"])
 
 
 resources = _Resources()
