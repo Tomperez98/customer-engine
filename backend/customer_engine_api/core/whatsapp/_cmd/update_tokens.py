@@ -14,8 +14,8 @@ from lego_workflows.components import (
 from sqlalchemy import Connection, bindparam, text
 
 from customer_engine_api.config import resources
-from customer_engine_api.core.whatsapp_tokens import core
-from customer_engine_api.core.whatsapp_tokens._cmd import get
+from customer_engine_api.core.whatsapp import core
+from customer_engine_api.core.whatsapp._cmd import get_tokens
 from customer_engine_api.logging import logger
 
 
@@ -44,7 +44,7 @@ class Command(CommandComponent[Response]):
     async def run(self, events: list[DomainEvent]) -> Response:
         existing_whatsapp_token = (
             await lego_workflows.run_and_collect_events(
-                cmd=get.Command(org_code=self.org_code, sql_conn=self.sql_conn)
+                cmd=get_tokens.Command(org_code=self.org_code, sql_conn=self.sql_conn)
             )
         )[0].whatsapp_token
 

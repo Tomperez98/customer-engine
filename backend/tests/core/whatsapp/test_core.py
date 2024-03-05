@@ -4,7 +4,7 @@ import hashlib
 
 import pytest
 
-from customer_engine_api.core.whatsapp_tokens import core
+from customer_engine_api.core.whatsapp import core
 
 
 @pytest.mark.unit()

@@ -34,9 +34,18 @@ Documentation = "https://github.com/Tomperez98/customer-engine/backend#readme"
 Issues = "https://github.com/Tomperez98/customer-engine/issues"
 Source = "https://github.com/Tomperez98/customer-engine"
 
+[project.scripts]
+customer-engine = "customer_engine_api.cli.__main__:cli"
 
 [project.optional-dependencies]
-dev = ["pyrgo < 3", "pytest-asyncio", "types-toml", "alembic", "pytest-cov"]
+dev = [
+    "pyrgo < 3",
+    "pytest-asyncio",
+    "types-toml",
+    "alembic",
+    "pytest-cov",
+    "click",
+]
 
 [tool.ruff]
 line-length = 88

@@ -13,7 +13,7 @@ from lego_workflows.components import (
 )
 from sqlalchemy import Connection, bindparam, text
 
-from customer_engine_api.core.whatsapp_tokens.core import WhatsappTokens
+from customer_engine_api.core.whatsapp.core import WhatsappTokens
 
 
 class WhatsappTokenNotFoundError(DomainError):

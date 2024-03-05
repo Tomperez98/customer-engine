@@ -8,7 +8,7 @@ from fastapi.responses import ORJSONResponse
 from lego_workflows.components import DomainError
 from pydantic import BaseModel
 
-from customer_engine_api.api import health, ui
+from customer_engine_api.api import health, ui, webhooks
 
 app = FastAPI()
 
@@ -41,3 +41,4 @@ async def handle_domain_errors(req: Request, exc: DomainError) -> ORJSONResponse
 
 app.include_router(router=health.router)
 app.include_router(router=ui.router)
+app.include_router(router=webhooks.router)

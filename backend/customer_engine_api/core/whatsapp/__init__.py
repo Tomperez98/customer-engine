@@ -2,6 +2,6 @@
 
 from __future__ import annotations
 
-from customer_engine_api.core.whatsapp_tokens import _cmd as cmd
+from customer_engine_api.core.whatsapp import _cmd as cmd
 
 __all__ = ["cmd"]
