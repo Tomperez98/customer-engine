@@ -25,6 +25,7 @@ jobs:
       LOG_LEVEL: DEBUG
       ENVIRONMENT: development
       DB_URL: ${{ vars.DB_URL }}
+      ENCRYPT_KEY: ${{ secrets.ENCRYPT_KEY }}
     permissions:
       contents: read
     strategy:
