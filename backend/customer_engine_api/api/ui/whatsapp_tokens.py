@@ -36,6 +36,7 @@ async def get_whatsapp_tokens() -> ResponseGetWhatsappTokens:
 class CreateWhatsappTokens(BaseModel):  # noqa: D101
     access_token: str
     user_token: str
+    phone_number_id: int
 
 
 class ResponseCreateWhatsappTokens(BaseModel):  # noqa: D101
@@ -54,6 +55,7 @@ async def create_whatsapp_tokens(
                 sql_conn=conn,
                 access_token=req.access_token,
                 user_token=req.user_token,
+                phone_number_id=req.phone_number_id,
             )
         )
     await lego_workflows.publish_events(events=events)
@@ -80,6 +82,7 @@ async def delete_whatsapp_tokens() -> ResponseDeleteWhatsappTokens:  # noqa: D10
 class PatchWhatsappTokens(BaseModel):  # noqa: D101
     new_access_token: str | None
     new_user_token: str | None
+    new_phone_number_id: int | None
 
 
 class ResponsePatchWhatsappTokens(BaseModel):  # noqa: D101
@@ -97,6 +100,7 @@ async def patch_whatsapp_tokens(  # noqa: D103
                 new_access_token=req.new_access_token,
                 new_user_token=req.new_user_token,
                 sql_conn=conn,
+                new_phone_number_id=req.new_phone_number_id,
             )
         )
 

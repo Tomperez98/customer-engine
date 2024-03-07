@@ -46,6 +46,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
     org_code: str
     access_token: str
     user_token: str
+    phone_number_id: int
     sql_conn: Connection
 
     def _register_new(self, events: list[DomainEvent]) -> Response:
@@ -54,11 +55,13 @@ class Command(CommandComponent[Response]):  # noqa: D101
             INSERT INTO whatsapp_tokens (
             org_code,
             access_token,
-            user_token
+            user_token,
+            phone_number_id
             ) VALUES (
             :org_code,
             :access_token,
-            :user_token
+            :user_token,
+            :phone_number_id
             )
             """
         ).bindparams(
@@ -78,6 +81,11 @@ class Command(CommandComponent[Response]):  # noqa: D101
                 key="user_token",
                 value=hash_string(string=self.user_token, algo="sha256"),
                 type_=sqlalchemy.String(),
+            ),
+            bindparam(
+                "phone_number_id",
+                value=self.phone_number_id,
+                type_=sqlalchemy.Integer(),
             ),
         )
         self.sql_conn.execute(stmt)

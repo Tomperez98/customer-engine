@@ -35,6 +35,7 @@ async def test_get_existing() -> None:
                 access_token=test_access_token,
                 sql_conn=conn,
                 user_token="HELLO",  # noqa: S106
+                phone_number_id=123,
             )
         )
         whatsapp_token = (
@@ -47,6 +48,7 @@ async def test_get_existing() -> None:
         assert check_same_hashed(
             hashed=whatsapp_token.user_token, string="HELLO", algo="sha256"
         )
+        assert whatsapp_token.phone_number_id == 123  # noqa: PLR2004
         assert (
             resources.fernet.decrypt(token=whatsapp_token.access_token).decode()
             == test_access_token
@@ -70,6 +72,7 @@ async def test_update() -> None:
                 access_token="123",  # noqa: S106
                 sql_conn=conn,
                 user_token="HELLO",  # noqa: S106
+                phone_number_id=123,
             )
         )
         await lego_workflows.run_and_collect_events(
@@ -78,6 +81,7 @@ async def test_update() -> None:
                 new_access_token="567",  # noqa: S106
                 new_user_token="BYE",  # noqa: S106
                 sql_conn=conn,
+                new_phone_number_id=457,
             )
         )
         whatsapp_token = (
@@ -93,6 +97,7 @@ async def test_update() -> None:
             resources.fernet.decrypt(token=whatsapp_token.access_token).decode()
             == "567"
         )
+        assert whatsapp_token.phone_number_id == 457  # noqa: PLR2004
         await lego_workflows.run_and_collect_events(
             cmd=delete_tokens.Command(org_code=org_code, sql_conn=conn)
         )

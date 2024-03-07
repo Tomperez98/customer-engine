@@ -23,6 +23,7 @@ class WhatsappTokens(DataClassORJSONMixin, SqlQueriable):
     org_code: str
     access_token: str
     user_token: str
+    phone_number_id: int
 
     @classmethod
     def from_row(cls: type[Self], row: Row[Any]) -> Self:

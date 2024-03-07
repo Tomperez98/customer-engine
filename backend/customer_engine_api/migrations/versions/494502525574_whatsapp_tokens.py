@@ -33,6 +33,7 @@ def upgrade() -> None:
         sa.Column("org_code", sa.String(), primary_key=True),
         sa.Column("access_token", sa.String(), nullable=False),
         sa.Column("user_token", sa.String(), nullable=False),
+        sa.Column("phone_number_id", sa.Integer(), nullable=False),
     )
 
 
