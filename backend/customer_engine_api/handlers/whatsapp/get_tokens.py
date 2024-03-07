@@ -39,8 +39,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
                 SELECT
                     org_code,
                     access_token,
-                    user_token,
-                    phone_number_id
+                    user_token
                 FROM whatsapp_tokens
                 WHERE org_code = :org_code
             """
