@@ -8,9 +8,9 @@ import lego_workflows
 from fastapi import APIRouter
 from pydantic import BaseModel
 
+from customer_engine_api import handlers
 from customer_engine_api.config import resources
-from customer_engine_api.core import whatsapp
-from customer_engine_api.core.whatsapp.core import WhatsappTokens
+from customer_engine_api.core.whatsapp import WhatsappTokens
 
 router = APIRouter(prefix="/whatsapp-tokens", tags=["whatsapp-tokens"])
 
@@ -24,7 +24,7 @@ async def get_whatsapp_tokens() -> ResponseGetWhatsappTokens:
     """Get whatsapp tokens."""
     with resources.db_engine.begin() as conn:
         whatsapp_token, events = await lego_workflows.run_and_collect_events(
-            cmd=whatsapp.cmd.get_tokens.Command(
+            cmd=handlers.whatsapp.get_tokens.Command(
                 org_code=resources.default_org, sql_conn=conn
             )
         )
@@ -49,7 +49,7 @@ async def create_whatsapp_tokens(
     """Create a whatsapp token."""
     with resources.db_engine.begin() as conn:
         _, events = await lego_workflows.run_and_collect_events(
-            cmd=whatsapp.cmd.register_tokens.Command(
+            cmd=handlers.whatsapp.register_tokens.Command(
                 org_code=resources.default_org,
                 sql_conn=conn,
                 access_token=req.access_token,
@@ -68,7 +68,7 @@ class ResponseDeleteWhatsappTokens(BaseModel):  # noqa: D101
 async def delete_whatsapp_tokens() -> ResponseDeleteWhatsappTokens:  # noqa: D103
     with resources.db_engine.begin() as conn:
         _, events = await lego_workflows.run_and_collect_events(
-            cmd=whatsapp.cmd.delete_tokens.Command(
+            cmd=handlers.whatsapp.delete_tokens.Command(
                 org_code=resources.default_org,
                 sql_conn=conn,
             )
@@ -92,7 +92,7 @@ async def patch_whatsapp_tokens(  # noqa: D103
 ) -> ResponsePatchWhatsappTokens:
     with resources.db_engine.begin() as conn:
         _, events = await lego_workflows.run_and_collect_events(
-            cmd=whatsapp.cmd.update_tokens.Command(
+            cmd=handlers.whatsapp.update_tokens.Command(
                 org_code=resources.default_org,
                 new_access_token=req.new_access_token,
                 new_user_token=req.new_user_token,
