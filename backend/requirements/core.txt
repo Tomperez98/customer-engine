@@ -98,7 +98,7 @@ python-dotenv==1.0.1
     # via uvicorn
 pyyaml==6.0.1
     # via uvicorn
-qdrant-client==1.7.3
+qdrant-client==1.8.0
 requests==2.31.0
     # via cohere
 setuptools==69.1.1
