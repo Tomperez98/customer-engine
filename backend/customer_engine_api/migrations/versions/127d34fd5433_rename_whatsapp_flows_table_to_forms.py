@@ -6,6 +6,7 @@ Revises: 4fd3a4014721
 Create Date: 2024-02-15 09:01:46.107922
 
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
