@@ -1,4 +1,5 @@
 """Unmatched prompts."""
+
 from __future__ import annotations
 
 from uuid import UUID
@@ -7,9 +8,9 @@ import lego_workflows
 from fastapi import APIRouter
 from pydantic import BaseModel
 
+from customer_engine_api import handlers
 from customer_engine_api.config import resources
-from customer_engine_api.core import unmatched_prompts
-from customer_engine_api.core.unmatched_prompts.core import UnmatchedPrompt
+from customer_engine_api.core.unmatched_prompts import UnmatchedPrompt
 
 router = APIRouter(prefix="/unmatched-prompts", tags=["unmatched-prompts"])
 
@@ -23,7 +24,7 @@ async def list_unmatched_prompts() -> ResponseListUnmatchedPrompts:
     """List unmatched prompts."""
     with resources.db_engine.begin() as conn:
         listed_unmatched_prompts, events = await lego_workflows.run_and_collect_events(
-            cmd=unmatched_prompts.cmd.list.Command(
+            cmd=handlers.unmatched_prompts.list_all.Command(
                 org_code=resources.default_org, sql_conn=conn
             )
         )
@@ -43,7 +44,7 @@ class ResponseDeleteUnmatchedPrompt(BaseModel):  # noqa: D101
 async def delete_unmatched_prompt(prompt_id: UUID) -> ResponseDeleteUnmatchedPrompt:  # noqa: D103
     with resources.db_engine.begin() as conn:
         deleted, events = await lego_workflows.run_and_collect_events(
-            cmd=unmatched_prompts.cmd.delete.Command(
+            cmd=handlers.unmatched_prompts.delete.Command(
                 org_code=resources.default_org, prompt_id=prompt_id, sql_conn=conn
             )
         )
@@ -65,7 +66,7 @@ async def add_as_example_to_automatic_response(  # noqa: D103
             added_to_automatic_response,
             events,
         ) = await lego_workflows.run_and_collect_events(
-            cmd=unmatched_prompts.cmd.add_as_example_to_automatic_response.Command(
+            cmd=handlers.unmatched_prompts.add_as_example_to_automatic_response.Command(
                 org_code=resources.default_org,
                 prompt_id=prompt_id,
                 autoamtic_response_id=automatic_response_id,

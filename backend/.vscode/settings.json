@@ -8,4 +8,5 @@
     "editor.formatOnSave": true,
     "python.analysis.typeCheckingMode": "basic",
     "python.analysis.autoImportCompletions": true,
+    "editor.formatOnSaveMode": "file"
 }
