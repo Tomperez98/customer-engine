@@ -65,6 +65,7 @@ const FormsTableSection: React.FC = () => {
             <h2 className='mb-4 text-3xl font-extrabold text-slate-800'>
                 Formularios
             </h2>
+
             {forms && <Table columns={columns} data={forms as Form[]} />}
         </section>
     )

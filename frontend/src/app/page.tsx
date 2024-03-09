@@ -1,14 +1,18 @@
 'use client'
 
-import Layout from '@/components/layout'
-import FormsTableSection from '../components/pages/home/FormsTableSection'
+import {RegisterLink, LoginLink} from '@kinde-oss/kinde-auth-nextjs/components'
 
-const Home = () => {
+const Login = () => {
     return (
-        <Layout>
-            <FormsTableSection />
-        </Layout>
+        <main className='flex h-screen w-screen items-center justify-center'>
+            <section className='flex flex-col items-center justify-center'>
+                <h1>Welcome to Customer engine</h1>
+                <RegisterLink>Register</RegisterLink>
+                <p>- or -</p>
+                <LoginLink>Sign in</LoginLink>
+            </section>
+        </main>
     )
 }
 
-export default Home
+export default Login
