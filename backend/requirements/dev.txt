@@ -37,7 +37,7 @@ click==8.1.7
     # via
     #   pyrgo
     #   uvicorn
-cohere==4.52
+cohere==4.53
 coverage==7.4.3
     # via pytest-cov
 cryptography==42.0.5
@@ -54,11 +54,11 @@ frozenlist==1.4.1
     # via
     #   aiohttp
     #   aiosignal
-grpcio==1.62.0
+grpcio==1.62.1
     # via
     #   grpcio-tools
     #   qdrant-client
-grpcio-tools==1.62.0
+grpcio-tools==1.62.1
     # via qdrant-client
 gunicorn==21.2.0
 h11==0.14.0
@@ -116,7 +116,7 @@ multidict==6.0.5
     # via
     #   aiohttp
     #   yarl
-mypy==1.8.0
+mypy==1.9.0
     # via pyrgo
 mypy-extensions==1.0.0
     # via mypy
@@ -126,7 +126,7 @@ orjson==3.9.15
     # via mashumaro
 packageurl-python==0.14.0
     # via cyclonedx-python-lib
-packaging==23.2
+packaging==24.0
     # via
     #   build
     #   gunicorn
@@ -173,7 +173,7 @@ pytest==7.4.4
     #   pyrgo
     #   pytest-asyncio
     #   pytest-cov
-pytest-asyncio==0.23.5
+pytest-asyncio==0.23.5.post1
 pytest-cov==4.1.0
 python-dotenv==1.0.1
     # via uvicorn
@@ -189,7 +189,7 @@ result==0.16.1
     # via pyrgo
 rich==13.7.1
     # via pip-audit
-ruff==0.3.1
+ruff==0.3.2
     # via pyrgo
 setuptools==69.1.1
     # via grpcio-tools
@@ -214,7 +214,7 @@ tomli-w==1.0.0
     # via mashumaro
 tomlkit==0.12.4
     # via pyrgo
-types-toml==0.10.8.7
+types-toml==0.10.8.20240310
 typing-extensions==4.10.0
     # via
     #   alembic
@@ -230,9 +230,9 @@ urllib3==2.2.1
     #   cohere
     #   qdrant-client
     #   requests
-uv==0.1.15
+uv==0.1.17
     # via pyrgo
-uvicorn==0.27.1
+uvicorn==0.28.0
 uvloop==0.19.0
     # via uvicorn
 vulture==2.11

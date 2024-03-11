@@ -28,7 +28,7 @@ charset-normalizer==3.3.2
     # via requests
 click==8.1.7
     # via uvicorn
-cohere==4.52
+cohere==4.53
 cryptography==42.0.5
 fastapi==0.110.0
 fastavro==1.9.4
@@ -37,11 +37,11 @@ frozenlist==1.4.1
     # via
     #   aiohttp
     #   aiosignal
-grpcio==1.62.0
+grpcio==1.62.1
     # via
     #   grpcio-tools
     #   qdrant-client
-grpcio-tools==1.62.0
+grpcio-tools==1.62.1
     # via qdrant-client
 gunicorn==21.2.0
 h11==0.14.0
@@ -80,7 +80,7 @@ multidict==6.0.5
 numpy==1.26.4
     # via qdrant-client
 orjson==3.9.15
-packaging==23.2
+packaging==24.0
     # via gunicorn
 portalocker==2.8.2
     # via qdrant-client
@@ -125,7 +125,7 @@ urllib3==2.2.1
     #   cohere
     #   qdrant-client
     #   requests
-uvicorn==0.27.1
+uvicorn==0.28.0
 uvloop==0.19.0
     # via uvicorn
 watchfiles==0.21.0
