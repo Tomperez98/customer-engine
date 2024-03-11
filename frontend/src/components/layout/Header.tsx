@@ -3,7 +3,7 @@
 import {LogoutLink, useKindeBrowserClient} from '@kinde-oss/kinde-auth-nextjs'
 
 const Header = (): JSX.Element => {
-    const {user} = useKindeBrowserClient()
+    const {user, organization} = useKindeBrowserClient()
 
     const userName = user
         ? `${user.given_name} 

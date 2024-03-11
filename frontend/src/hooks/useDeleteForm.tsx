@@ -1,15 +1,17 @@
 import {useState} from 'react'
 import {BASE_URL} from '@/constants/url'
+import {useKindeBrowserClient} from '@kinde-oss/kinde-auth-nextjs'
 
 const useDeleteForm = () => {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState(null)
+    const {organization} = useKindeBrowserClient()
 
     const deleteForm = async (id: string) => {
         setIsLoading(true)
         setError(null)
         try {
-            const response = await fetch(`${BASE_URL}/${id}`, {
+            const response = await fetch(`${BASE_URL}/${organization}/${id}`, {
                 method: 'DELETE',
             })
             setIsLoading(false)

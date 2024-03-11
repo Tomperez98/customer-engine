@@ -37,7 +37,7 @@ const CreateForm = () => {
 
     useEffect(() => {
         if (shouldRedirect) {
-            redirect('/')
+            redirect('/dashboard')
         }
     }, [shouldRedirect])
 
@@ -73,6 +73,8 @@ const CreateForm = () => {
                             name={name}
                             onChange={handleInputFieldChange}
                             value={formTemplate[name] || ''}
+                            formTemplate={formTemplate}
+                            setFormTemplate={setFormTemplate}
                         />
                     </div>
                 )
@@ -105,6 +107,7 @@ const CreateForm = () => {
                     {INPUT_FIELDS.map((field, idx) => {
                         return getInputElement(field, idx)
                     })}
+                    {/* <SimpleEditor content={formTemplate['response']} /> */}
                     <div className='flex w-full flex-row items-center justify-end gap-2'>
                         <button onClick={() => setFormTemplate(FORM_TEMPLATE)}>
                             Descartar
