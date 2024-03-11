@@ -19,13 +19,13 @@ class ResponseListUnmatchedPrompts(BaseModel):  # noqa: D101
     unmatched_prompts: list[UnmatchedPrompt]
 
 
-@router.get("")
-async def list_unmatched_prompts() -> ResponseListUnmatchedPrompts:
+@router.get("/{org_code}")
+async def list_unmatched_prompts(org_code: str) -> ResponseListUnmatchedPrompts:
     """List unmatched prompts."""
     with resources.db_engine.begin() as conn:
         listed_unmatched_prompts, events = await lego_workflows.run_and_collect_events(
             cmd=handlers.unmatched_prompts.list_all.Command(
-                org_code=resources.default_org, sql_conn=conn
+                org_code=org_code, sql_conn=conn
             )
         )
 
@@ -40,12 +40,15 @@ class ResponseDeleteUnmatchedPrompt(BaseModel):  # noqa: D101
     deleted_unmatched_prompt: UUID
 
 
-@router.delete("/{prompt_id}")
-async def delete_unmatched_prompt(prompt_id: UUID) -> ResponseDeleteUnmatchedPrompt:  # noqa: D103
+@router.delete("/{org_code}/{prompt_id}")
+async def delete_unmatched_prompt(
+    org_code: str, prompt_id: UUID
+) -> ResponseDeleteUnmatchedPrompt:
+    """Delete unmatched prompt."""
     with resources.db_engine.begin() as conn:
         deleted, events = await lego_workflows.run_and_collect_events(
             cmd=handlers.unmatched_prompts.delete.Command(
-                org_code=resources.default_org, prompt_id=prompt_id, sql_conn=conn
+                org_code=org_code, prompt_id=prompt_id, sql_conn=conn
             )
         )
 
@@ -57,9 +60,9 @@ class ResponseAddAsExampleToAutomaticResponse(BaseModel):  # noqa: D101
     prompt_id: UUID
 
 
-@router.post(path="/add-as-example/to-automatic-response")
+@router.post(path="/{org_code}/add-as-example-to-automatic-response")
 async def add_as_example_to_automatic_response(  # noqa: D103
-    prompt_id: UUID, automatic_response_id: UUID
+    org_code: str, prompt_id: UUID, automatic_response_id: UUID
 ) -> ResponseAddAsExampleToAutomaticResponse:
     with resources.db_engine.begin() as conn:
         (
@@ -67,7 +70,7 @@ async def add_as_example_to_automatic_response(  # noqa: D103
             events,
         ) = await lego_workflows.run_and_collect_events(
             cmd=handlers.unmatched_prompts.add_as_example_to_automatic_response.Command(
-                org_code=resources.default_org,
+                org_code=org_code,
                 prompt_id=prompt_id,
                 autoamtic_response_id=automatic_response_id,
                 sql_conn=conn,

@@ -48,7 +48,6 @@ class _Resources:
             ),
             cohere=cohere.AsyncClient(api_key=os.environ["COHERE_API_KEY"]),
         )
-        self.default_org = "default"
         self.fernet: Fernet = Fernet(key=os.environ["ENCRYPT_KEY"])
 
 

@@ -32,13 +32,13 @@ async def suscribe_whatsapp_webhooks(org_code: str, req: Request) -> Response:  
 
 
 @router.post("/whatsapp/{org_code}")
-async def whatsapp_webhooks(org_code: str, req: Request) -> None:  # noqa: ARG001, D103
+async def whatsapp_webhooks(org_code: str, req: Request) -> None:  # noqa: D103
     payload = await req.json()
 
     with resources.db_engine.begin() as conn:
         most_similar_response, events = await lego_workflows.run_and_collect_events(
             cmd=handlers.whatsapp.reply_message.Command(
-                org_code=resources.default_org,
+                org_code=org_code,
                 received_msg=payload,
                 sql_conn=conn,
                 cohere_client=resources.clients.cohere,
