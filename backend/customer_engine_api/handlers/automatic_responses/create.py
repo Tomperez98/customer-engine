@@ -14,13 +14,13 @@ from qdrant_client.http.exceptions import UnexpectedResponse
 from qdrant_client.http.models import Batch, Distance, VectorParams
 from sqlalchemy import bindparam, text
 
-from customer_engine_api.core.automatic_responses import (
+from customer_engine_api.core.automatic_responses.embeddings import (
     DEFAULT_EMBEDDING_MODEL,
     EmbeddingModels,
-    cohere_embed_examples_and_prompt,
+    embed_examples_and_prompt,
 )
+from customer_engine_api.core.logging import logger
 from customer_engine_api.handlers.automatic_responses import get
-from customer_engine_api.logging import logger
 
 if TYPE_CHECKING:
     import datetime
@@ -137,7 +137,7 @@ class Command(CommandComponent[Response]):
                 msg = f"Unable to create collection {self.org_code}"
                 raise RuntimeError(msg)
 
-        examples_embeddings = await cohere_embed_examples_and_prompt(
+        examples_embeddings = await embed_examples_and_prompt(
             client=self.cohere_client,
             model=embedding_model_to_use,
             examples_or_prompt=self.examples,

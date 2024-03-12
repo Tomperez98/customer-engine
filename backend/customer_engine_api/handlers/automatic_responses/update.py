@@ -11,11 +11,7 @@ from lego_workflows.components import CommandComponent, DomainEvent, ResponseCom
 from qdrant_client.http.models import Batch
 from sqlalchemy import bindparam, text
 
-from customer_engine_api.core.automatic_responses import (
-    DEFAULT_EMBEDDING_MODEL,
-    AutomaticResponse,
-    cohere_embed_examples_and_prompt,
-)
+from customer_engine_api.core import automatic_responses
 from customer_engine_api.handlers.automatic_responses import get
 
 if TYPE_CHECKING:
@@ -28,7 +24,7 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class Response(ResponseComponent):  # noqa: D101
-    updated_automatic_response: AutomaticResponse
+    updated_automatic_response: automatic_responses.AutomaticResponse
     new_embeddings_calculated: bool
 
 
@@ -109,12 +105,14 @@ class Command(CommandComponent[Response]):  # noqa: D101
                 new_embeddings_calculated=requires_new_embeddings,
             )
 
-        embedding_model_to_use = DEFAULT_EMBEDDING_MODEL
+        embedding_model_to_use = automatic_responses.embeddings.DEFAULT_EMBEDDING_MODEL
 
-        new_examples_embeddings = await cohere_embed_examples_and_prompt(
-            client=self.cohere_client,
-            model=embedding_model_to_use,
-            examples_or_prompt=existing_automatic_response.examples,
+        new_examples_embeddings = (
+            await automatic_responses.embeddings.embed_examples_and_prompt(
+                client=self.cohere_client,
+                model=embedding_model_to_use,
+                examples_or_prompt=existing_automatic_response.examples,
+            )
         )
         await self.qdrant_client.upsert(
             collection_name=self.org_code,

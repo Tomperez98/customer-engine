@@ -2,20 +2,20 @@
 
 from __future__ import annotations
 
-import hashlib
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Literal, Self, TypeAlias, assert_never
+from typing import TYPE_CHECKING, Any, Self
 
 import httpx
 from mashumaro.mixins.orjson import DataClassORJSONMixin
 
 from customer_engine_api.core.interfaces import SqlQueriable
+from customer_engine_api.core.whatsapp import hashing
 
 if TYPE_CHECKING:
     from cryptography.fernet import Fernet
     from sqlalchemy import Row
 
-HashAlgorithms: TypeAlias = Literal["sha256"]
+__all__ = ["hashing"]
 
 
 class AsyncWhatsappClient:
@@ -59,18 +59,3 @@ class WhatsappTokens(DataClassORJSONMixin, SqlQueriable):
     def decrypt_access_token(self, fernet: Fernet) -> str:
         """Decrypt access token."""
         return fernet.decrypt(token=self.access_token).decode()
-
-
-def hash_string(string: str, algo: HashAlgorithms) -> str:
-    """Hash string."""
-    hashed_string: str
-    if algo == "sha256":
-        hashed_string = hashlib.sha256(string.encode()).hexdigest()
-    else:
-        assert_never(algo)
-    return hashed_string
-
-
-def check_same_hashed(hashed: str, string: str, algo: HashAlgorithms) -> bool:
-    """Check if user token is equal to class user token."""
-    return hashed == hash_string(string=string, algo=algo)

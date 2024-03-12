@@ -7,9 +7,9 @@ from fastapi import APIRouter, Request, Response, status
 from fastapi.exceptions import HTTPException
 
 from customer_engine_api import handlers
-from customer_engine_api.config import resources
-from customer_engine_api.core.whatsapp import check_same_hashed
-from customer_engine_api.logging import logger
+from customer_engine_api.core import whatsapp
+from customer_engine_api.core.config import resources
+from customer_engine_api.core.logging import logger
 
 router = APIRouter(prefix="/webhooks", tags=["webhooks"])
 
@@ -23,7 +23,7 @@ async def suscribe_whatsapp_webhooks(org_code: str, req: Request) -> Response:  
         )
     await lego_workflows.publish_events(events=events)
     stored_tokens = response.whatsapp_token
-    if not check_same_hashed(
+    if not whatsapp.hashing.check_same_hashed(
         hashed=stored_tokens.user_token, string=verify_token, algo="sha256"
     ):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)

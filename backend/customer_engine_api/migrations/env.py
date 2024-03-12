@@ -7,7 +7,7 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from customer_engine_api.config import resources
+from customer_engine_api.core.config import resources
 
 config = context.config
 

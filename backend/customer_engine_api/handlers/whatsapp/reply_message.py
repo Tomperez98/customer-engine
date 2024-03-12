@@ -7,12 +7,14 @@ https://developers.facebook.com/docs/whatsapp/cloud-api/webhooks/payload-example
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, assert_never
+from uuid import UUID
 
 import lego_workflows
 from lego_workflows.components import CommandComponent, DomainEvent, ResponseComponent
 
-from customer_engine_api.config import resources
+from customer_engine_api.core.automatic_responses import AutomaticResponse
+from customer_engine_api.core.config import resources
 from customer_engine_api.core.whatsapp import AsyncWhatsappClient
 from customer_engine_api.handlers.automatic_responses import search_by_prompt
 from customer_engine_api.handlers.whatsapp import get_tokens
@@ -58,9 +60,6 @@ class Command(CommandComponent[Response]):  # noqa: D101
             )
         )
         events.extend(search_by_prompt_events)
-        if search_by_prompt_response.automatic_response is None:
-            raise NotImplementedError
-
         wa_token_response = (
             await lego_workflows.run_and_collect_events(
                 cmd=get_tokens.Command(org_code=self.org_code, sql_conn=self.sql_conn)
@@ -74,8 +73,22 @@ class Command(CommandComponent[Response]):  # noqa: D101
             phone_number_id=specific_webhook_payload["metadata"]["phone_number_id"],
         )
 
-        await whatsapp_client.send_text_msg(
-            text=search_by_prompt_response.automatic_response.response,
-            to_wa_id=specific_webhook_payload["contacts"][0]["wa_id"],
-        )
+        to_wa_id: str = specific_webhook_payload["contacts"][0]["wa_id"]
+        if isinstance(
+            search_by_prompt_response.response_or_unmatched_prompt_id, AutomaticResponse
+        ):
+            await whatsapp_client.send_text_msg(
+                text=search_by_prompt_response.response_or_unmatched_prompt_id.response,
+                to_wa_id=to_wa_id,
+            )
+
+        elif isinstance(
+            search_by_prompt_response.response_or_unmatched_prompt_id, UUID
+        ):
+            await whatsapp_client.send_text_msg(
+                text="No response found for this prompt",
+                to_wa_id=to_wa_id,
+            )
+        else:
+            assert_never(search_by_prompt_response.response_or_unmatched_prompt_id)
         return Response()

@@ -7,6 +7,13 @@ from customer_engine_api.handlers.unmatched_prompts import (
     delete,
     get,
     list_all,
+    register,
 )
 
-__all__ = ["add_as_example_to_automatic_response", "delete", "list_all", "get"]
+__all__ = [
+    "add_as_example_to_automatic_response",
+    "delete",
+    "list_all",
+    "get",
+    "register",
+]

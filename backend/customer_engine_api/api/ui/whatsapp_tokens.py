@@ -9,7 +9,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from customer_engine_api import handlers
-from customer_engine_api.config import resources
+from customer_engine_api.core.config import resources
 from customer_engine_api.core.whatsapp import WhatsappTokens
 
 router = APIRouter(prefix="/whatsapp-tokens", tags=["whatsapp-tokens"])

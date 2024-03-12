@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from typing import assert_never
 from uuid import UUID
 
 import lego_workflows
@@ -9,8 +10,8 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from customer_engine_api import handlers
-from customer_engine_api.config import resources
 from customer_engine_api.core.automatic_responses import AutomaticResponse
+from customer_engine_api.core.config import resources
 
 router = APIRouter(prefix="/automatic-responses", tags=["automatic-responses"])
 
@@ -187,6 +188,15 @@ async def search_by_prompt(
 
     await lego_workflows.publish_events(events=events)
 
+    if isinstance(
+        result_automatic_response.response_or_unmatched_prompt_id, AutomaticResponse
+    ):
+        automatic_response = result_automatic_response.response_or_unmatched_prompt_id
+    elif isinstance(result_automatic_response.response_or_unmatched_prompt_id, UUID):
+        automatic_response = None
+    else:
+        assert_never(result_automatic_response.response_or_unmatched_prompt_id)
+
     return ResponseSearchByPromptAutomaticResponse(
-        automatic_response=result_automatic_response.automatic_response
+        automatic_response=automatic_response
     )

@@ -15,10 +15,10 @@ from lego_workflows.components import (
 )
 from sqlalchemy import bindparam, text
 
-from customer_engine_api.config import resources
-from customer_engine_api.core.whatsapp import hash_string
+from customer_engine_api.core import whatsapp
+from customer_engine_api.core.config import resources
+from customer_engine_api.core.logging import logger
 from customer_engine_api.handlers.whatsapp import get_tokens
-from customer_engine_api.logging import logger
 
 if TYPE_CHECKING:
     from sqlalchemy import Connection
@@ -76,7 +76,9 @@ class Command(CommandComponent[Response]):  # noqa: D101
             ),
             bindparam(
                 key="user_token",
-                value=hash_string(string=self.user_token, algo="sha256"),
+                value=whatsapp.hashing.hash_string(
+                    string=self.user_token, algo="sha256"
+                ),
                 type_=sqlalchemy.String(),
             ),
         )

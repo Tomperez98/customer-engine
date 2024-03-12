@@ -9,11 +9,7 @@ from uuid import UUID
 import lego_workflows
 from lego_workflows.components import CommandComponent, DomainEvent, ResponseComponent
 
-from customer_engine_api.core.automatic_responses import (
-    DEFAULT_EMBEDDING_MODEL,
-    AutomaticResponse,
-    cohere_embed_examples_and_prompt,
-)
+from customer_engine_api.core import automatic_responses
 from customer_engine_api.handlers.automatic_responses import get
 from customer_engine_api.handlers.unmatched_prompts import register
 
@@ -25,8 +21,7 @@ if TYPE_CHECKING:
 
 @dataclass(frozen=True)
 class Response(ResponseComponent):  # noqa: D101
-    automatic_response: AutomaticResponse | None
-    unmatched_prompt_id: UUID | None
+    response_or_unmatched_prompt_id: automatic_responses.AutomaticResponse | UUID
 
 
 @dataclass(frozen=True)
@@ -38,11 +33,13 @@ class Command(CommandComponent[Response]):  # noqa: D101
     qdrant_client: AsyncQdrantClient
 
     async def run(self, events: list[DomainEvent]) -> Response:  # noqa: D102
-        embedding_model_to_use = DEFAULT_EMBEDDING_MODEL
-        prompt_embeddings = await cohere_embed_examples_and_prompt(
-            client=self.cohere_client,
-            model=embedding_model_to_use,
-            examples_or_prompt=self.prompt,
+        embedding_model_to_use = automatic_responses.embeddings.DEFAULT_EMBEDDING_MODEL
+        prompt_embeddings = (
+            await automatic_responses.embeddings.embed_examples_and_prompt(
+                client=self.cohere_client,
+                model=embedding_model_to_use,
+                examples_or_prompt=self.prompt,
+            )
         )
         relevant_points = await self.qdrant_client.search(
             collection_name=self.org_code,
@@ -64,8 +61,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
             )
             events.extend(register_prompt_events)
             return Response(
-                automatic_response=None,
-                unmatched_prompt_id=unmatched_prompt.prompt_id,
+                response_or_unmatched_prompt_id=unmatched_prompt.prompt_id,
             )
 
         most_relevant = relevant_points[0]
@@ -84,6 +80,5 @@ class Command(CommandComponent[Response]):  # noqa: D101
         )[0].automatic_response
 
         return Response(
-            automatic_response=relevant_automatic_response,
-            unmatched_prompt_id=None,
+            response_or_unmatched_prompt_id=relevant_automatic_response,
         )

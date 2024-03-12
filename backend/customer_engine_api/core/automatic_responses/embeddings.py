@@ -1,46 +1,21 @@
-"""Automatic responses core."""
+"""Embeddings."""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Literal, Self, TypeAlias, assert_never
-from uuid import UUID
+from typing import TYPE_CHECKING, Literal, TypeAlias, assert_never
 
-import orjson
 from cohere.responses.embeddings import EmbeddingsByType
-from mashumaro.mixins.orjson import DataClassORJSONMixin
-
-from customer_engine_api.core.interfaces import SqlQueriable
 
 if TYPE_CHECKING:
     import cohere
-    from sqlalchemy import Row
+
 
 EmbeddingModels: TypeAlias = Literal["cohere:embed-multilingual-light-v3.0"]
 
 DEFAULT_EMBEDDING_MODEL: EmbeddingModels = "cohere:embed-multilingual-light-v3.0"
 
 
-@dataclass(frozen=False)
-class AutomaticResponse(DataClassORJSONMixin, SqlQueriable):
-    """Automatic response."""
-
-    org_code: str
-    automatic_response_id: UUID
-    name: str
-    examples: list[str]
-    embedding_model: EmbeddingModels
-    response: str
-
-    @classmethod
-    def from_row(cls: type[Self], row: Row[Any]) -> Self:
-        """Instantiate from row."""
-        row_data = row._asdict()
-        row_data["examples"] = orjson.loads(row_data["examples"])
-        return cls.from_dict(row_data)
-
-
-async def cohere_embed_examples_and_prompt(
+async def embed_examples_and_prompt(
     client: cohere.AsyncClient,
     model: EmbeddingModels,
     examples_or_prompt: list[str] | str,

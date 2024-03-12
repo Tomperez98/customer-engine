@@ -8,12 +8,12 @@ from typing import TYPE_CHECKING
 import lego_workflows
 from lego_workflows.components import CommandComponent, DomainEvent, ResponseComponent
 
+from customer_engine_api.core.logging import logger
 from customer_engine_api.handlers.automatic_responses import (
     get as get_automatic_response,
     update as update_automatic_response,
 )
 from customer_engine_api.handlers.unmatched_prompts import delete, get
-from customer_engine_api.logging import logger
 
 if TYPE_CHECKING:
     from uuid import UUID
