@@ -37,6 +37,7 @@ class _Resources:
             self.db_engine = create_engine(
                 url=f"sqlite+{db_url}/?authToken={db_auth_token}",
                 echo=False,
+                connect_args={"timeout": 60},
             )
         else:
             assert_never(environment)
