@@ -62,9 +62,9 @@ const FormsTableSection: React.FC = () => {
 
     return (
         <section className='w-full'>
-            <h2 className='mb-4 text-3xl font-extrabold text-slate-800'>
+            <h1 className='mb-4 text-3xl font-extrabold text-neutral-800'>
                 Formularios
-            </h2>
+            </h1>
 
             {forms && <Table columns={columns} data={forms as Form[]} />}
         </section>

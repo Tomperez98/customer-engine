@@ -103,7 +103,7 @@ const EditableListField = ({
                 )}
             </div>
             <div className='flex flex-col gap-2'>
-                {currentField.map((field: string, idx: number) => {
+                {currentField?.map((field: string, idx: number) => {
                     return isEditing || editableOnly ? (
                         <div key={idx}>
                             <input

@@ -17,7 +17,7 @@ const useGetForms = (id?: string) => {
     const {organization} = useKindeBrowserClient()
 
     const url = id
-        ? `${BASE_URL}/${organization}${id}`
+        ? `${BASE_URL}/${organization}/${id}`
         : `${BASE_URL}/${organization}`
 
     const fetchForms = async () => {

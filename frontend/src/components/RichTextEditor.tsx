@@ -93,30 +93,38 @@ const RichTextEditor = ({
     }
 
     return (
-        <div className='w-100 flex flex-row'>
-            <div className='w-9/12 rounded-md border-2 border-gray-300'>
-                {/* <div className='flex gap-2 border-b-2 border-gray-300 bg-gray-200 p-1'>
-                    <button onClick={() => handleFormatText('bold')}>
-                        bold
-                    </button>
-                    <button onClick={() => handleFormatText('italic')}>
-                        italic
-                    </button>
-                    <button onClick={() => handleFormatText('strikeTrough')}>
-                        crossed
-                    </button>
-                </div> */}
-                <textarea
-                    className='w-full text-slate-500 focus:border-transparent focus:ring-transparent'
-                    name={name}
-                    onChange={(e) => onChange(e, name)}
-                    ref={textareaRef}
-                    rows={10}
-                    value={value || ''}
-                />
-            </div>
-            {/* <div>{ReactHtmlParser(value as string)}</div> */}
-        </div>
+        <textarea
+            className='w-full rounded-md border-2 border-gray-300 text-slate-500 focus:border-transparent focus:ring-transparent'
+            name={name}
+            onChange={(e) => onChange(e, name)}
+            ref={textareaRef}
+            rows={10}
+            value={value || ''}
+        />
+        // <div className='w-100 flex flex-row'>
+        //     <div className='w-9/12 rounded-md border-2 border-gray-300'>
+        //         {/* <div className='flex gap-2 border-b-2 border-gray-300 bg-gray-200 p-1'>
+        //             <button onClick={() => handleFormatText('bold')}>
+        //                 bold
+        //             </button>
+        //             <button onClick={() => handleFormatText('italic')}>
+        //                 italic
+        //             </button>
+        //             <button onClick={() => handleFormatText('strikeTrough')}>
+        //                 crossed
+        //             </button>
+        //         </div> */}
+        //         <textarea
+        //             className='w-full text-slate-500 focus:border-transparent focus:ring-transparent'
+        //             name={name}
+        //             onChange={(e) => onChange(e, name)}
+        //             ref={textareaRef}
+        //             rows={10}
+        //             value={value || ''}
+        //         />
+        //     </div>
+        //     {/* <div>{ReactHtmlParser(value as string)}</div> */}
+        // </div>
     )
 }
 

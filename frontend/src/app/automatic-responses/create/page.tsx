@@ -11,6 +11,7 @@ import {validateNoEmptyFields} from '@/utils/validateFormFields'
 
 import RichTextEditor from '@/components/RichTextEditor'
 import Input from '@/components/Input'
+import Button from '@/components/Button'
 
 const CreateForm = () => {
     const [formTemplate, setFormTemplate] =
@@ -107,17 +108,17 @@ const CreateForm = () => {
                     {INPUT_FIELDS.map((field, idx) => {
                         return getInputElement(field, idx)
                     })}
-                    {/* <SimpleEditor content={formTemplate['response']} /> */}
-                    <div className='flex w-full flex-row items-center justify-end gap-2'>
-                        <button onClick={() => setFormTemplate(FORM_TEMPLATE)}>
-                            Descartar
-                        </button>
-                        <button
+                    <div className='mt-4 flex w-full flex-row items-center justify-end gap-2'>
+                        <Button
+                            label='Descartar'
+                            onClick={() => setFormTemplate(FORM_TEMPLATE)}
+                            style='secondary'
+                        />
+                        <Button
                             disabled={!validateNoEmptyFields(formTemplate)}
-                            className='disabled:text-gray-300'
-                            onClick={handleCreateForm}>
-                            Guardar
-                        </button>
+                            label='Guardar'
+                            onClick={handleCreateForm}
+                        />
                     </div>
                 </div>
             </section>
