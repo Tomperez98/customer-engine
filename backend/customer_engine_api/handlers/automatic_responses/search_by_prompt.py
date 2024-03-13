@@ -79,26 +79,28 @@ class Command(CommandComponent[Response]):  # noqa: D101
             relevant_points = await self.qdrant_client.search(
                 collection_name=self.org_code,
                 query_vector=prompt_embeddings[0],
-                limit=1,
+                limit=5,
                 score_threshold=0.65,
             )
 
             if len(relevant_points) == 0:
                 return await self._register_unmatched_prompt(events=events)
 
-            most_relevant = relevant_points[0]
+            automatic_response: automatic_responses.AutomaticResponse | None = None
+            for relevant_point in relevant_points:
+                try:
+                    automatic_response = await self._get_automatic_response(
+                        most_relevant=relevant_point
+                    )
+                except get.AutomaticResponseNotFoundError:
+                    await self.qdrant_client.delete(
+                        collection_name=self.org_code,
+                        points_selector=PointIdsList(points=[relevant_point.id]),
+                    )
 
-            try:
-                automatic_response = await self._get_automatic_response(
-                    most_relevant=most_relevant
-                )
-            except get.AutomaticResponseNotFoundError:
-                await self.qdrant_client.delete(
-                    collection_name=self.org_code,
-                    points_selector=PointIdsList(points=[most_relevant.id]),
-                )
-                continue
-            break
+            if automatic_response is not None:
+                break
+
         return Response(
             response_or_unmatched_prompt_id=automatic_response,
         )
