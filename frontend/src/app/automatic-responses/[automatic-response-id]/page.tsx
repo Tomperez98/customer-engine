@@ -1,9 +1,9 @@
 'use client'
 import Layout from '@/components/layout'
-import useGetForms from '@/hooks/useGetForms'
+import useGetForms from '@/hooks/forms/useGetForms'
 import React, {useEffect, useMemo, useState} from 'react'
 import {Form, FormKey, FormKeys, FormTemplate} from '@/types/Forms'
-import useEditForm from '@/hooks/useEditForm'
+import useEditForm from '@/hooks/forms/useEditForm'
 import EditableInputField from '@/components/EditableInputField'
 import EditableListField from '@/components/EditableListField'
 import {FORM_TEMPLATE, INPUT_FIELDS} from '@/constants/formFields'
@@ -11,6 +11,7 @@ import {
     validateFormHasChanges,
     validateNoEmptyFields,
 } from '@/utils/validateFormFields'
+import Button from '@/components/Button'
 
 const FormDetail = ({params}: {params: {'automatic-response-id': string}}) => {
     const {'automatic-response-id': formId} = params
@@ -77,13 +78,15 @@ const FormDetail = ({params}: {params: {'automatic-response-id': string}}) => {
                 </h1>
                 <div className='w-full rounded-md bg-white p-8 shadow-md'>
                     {formData && (
-                        <>
-                            <label
-                                htmlFor='automatic_response_id'
-                                className='text-lg font-extrabold capitalize text-slate-800'>
-                                {FormKeys['automatic_response_id']}
-                            </label>
-                            <p>{formData?.automatic_response_id}</p>
+                        <div className='flex flex-col gap-2'>
+                            <>
+                                <label
+                                    htmlFor='automatic_response_id'
+                                    className='text-lg font-semibold capitalize text-neutral-800'>
+                                    {FormKeys['automatic_response_id']}
+                                </label>
+                                <p>{formData?.automatic_response_id}</p>
+                            </>
                             {INPUT_FIELDS.map((field, idx: number) => {
                                 if (
                                     field.component === 'input' ||
@@ -124,17 +127,15 @@ const FormDetail = ({params}: {params: {'automatic-response-id': string}}) => {
                                     />
                                 )
                             })}
-                        </>
+                        </div>
                     )}
                     {isEditingForm && (
-                        <div className='flex w-full flex-row items-center justify-end gap-2'>
-                            <button>Descartar</button>
-                            <button
+                        <div className='mt-4 flex w-full flex-row items-center justify-end gap-4'>
+                            <Button
                                 disabled={!areChangesValid}
-                                className='disabled:text-gray-300'
-                                onClick={handleSaveChanges}>
-                                Guardar
-                            </button>
+                                onClick={handleSaveChanges}
+                                label='Guardar'
+                            />
                         </div>
                     )}
                 </div>

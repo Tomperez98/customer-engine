@@ -3,6 +3,9 @@
 import {ChangeEvent, useEffect, useState} from 'react'
 import {MdEdit} from 'react-icons/md'
 import {FormKey, FormTemplate} from '@/types/Forms'
+import {MdAddCircle} from 'react-icons/md'
+import {MdDelete} from 'react-icons/md'
+import IconButton from './IconButton'
 
 interface EditableListFieldProps {
     fieldName: FormKey
@@ -85,37 +88,43 @@ const EditableListField = ({
     return (
         <div className='mb-1'>
             <div className='flex flex-row items-center gap-2'>
-                <h2 className='text-lg font-extrabold capitalize text-slate-800'>
+                <h2 className='text-lg font-semibold capitalize text-slate-800'>
                     {label}
                 </h2>
                 {isEditing || editableOnly ? (
-                    <div className='flex flex-row gap-2'>
-                        <button onClick={handleAddSubField}>add</button>
+                    <div className='flex flex-row items-center gap-2'>
+                        <IconButton
+                            onClick={handleAddSubField}
+                            Icon={MdAddCircle}
+                        />
                         {!editableOnly && (
                             <button onClick={handleReset}>reset</button>
                         )}
                     </div>
                 ) : (
-                    <MdEdit
-                        className='cursor-pointer'
-                        onClick={handleEditField}
-                    />
+                    <IconButton onClick={handleEditField} Icon={MdEdit} />
                 )}
             </div>
-            <div className='flex flex-col gap-2'>
+            <div className='flex w-full flex-col gap-2'>
                 {currentField?.map((field: string, idx: number) => {
                     return isEditing || editableOnly ? (
-                        <div key={idx}>
+                        <div
+                            key={idx}
+                            className='flex w-full max-w-full flex-row items-center gap-2'>
                             <input
-                                className='mr-2 w-11/12 rounded-md border-2 border-gray-300 px-1 text-slate-500'
+                                className='my-2  flex-grow rounded-md border-2 border-gray-300 px-1 text-slate-500'
                                 onChange={(e) => handleSubFieldChange(e, idx)}
                                 value={currentField[idx]}
                             />
-                            {currentField.length > 1 && (
-                                <button
-                                    onClick={() => handleRemoveSubField(idx)}>
-                                    delete
-                                </button>
+                            {currentField.length > 1 && idx > 0 && (
+                                <div className='shrink-0'>
+                                    <IconButton
+                                        onClick={() =>
+                                            handleRemoveSubField(idx)
+                                        }
+                                        Icon={MdDelete}
+                                    />
+                                </div>
                             )}
                         </div>
                     ) : (

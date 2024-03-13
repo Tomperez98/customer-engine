@@ -11,6 +11,11 @@ export const validateNoEmptyFields = (form: FormTemplate): boolean => {
     return objValuesArr.every((element: any) => element.trim())
 }
 
+export const validateAllEmptyFields = (form: FormTemplate): boolean => {
+    const objValuesArr = flattenObject(form)
+    return objValuesArr.every((element: any) => !element.trim())
+}
+
 export const validateFormHasChanges = (
     form1: FormTemplate,
     form2: FormTemplate

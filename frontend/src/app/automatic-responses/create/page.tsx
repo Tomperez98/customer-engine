@@ -3,11 +3,14 @@
 import EditableListField from '@/components/EditableListField'
 import Layout from '@/components/layout'
 import {FORM_TEMPLATE, INPUT_FIELDS} from '@/constants/formFields'
-import useCreateForm from '@/hooks/useCreateForm'
+import useCreateForm from '@/hooks/forms/useCreateForm'
 import {ChangeEvent, useCallback, useEffect, useState} from 'react'
 import {FormTemplate, FormKey, InputField} from '@/types/Forms'
 import {redirect} from 'next/navigation'
-import {validateNoEmptyFields} from '@/utils/validateFormFields'
+import {
+    validateAllEmptyFields,
+    validateNoEmptyFields,
+} from '@/utils/validateFormFields'
 
 import RichTextEditor from '@/components/RichTextEditor'
 import Input from '@/components/Input'
@@ -51,7 +54,7 @@ const CreateForm = () => {
                     <div key={idx} className='flex flex-col'>
                         <label
                             htmlFor={name}
-                            className='text-lg font-extrabold capitalize text-slate-800'>
+                            className='mb-2 text-lg font-semibold capitalize text-neutral-800'>
                             {label}
                         </label>
                         <Input
@@ -67,7 +70,7 @@ const CreateForm = () => {
                     <div key={idx} className='flex flex-col'>
                         <label
                             htmlFor={name}
-                            className='text-lg font-extrabold capitalize text-slate-800'>
+                            className='mb-2 text-lg font-semibold capitalize text-neutral-800'>
                             {label}
                         </label>
                         <RichTextEditor
@@ -101,18 +104,19 @@ const CreateForm = () => {
     return (
         <Layout>
             <section className='flex flex-col'>
-                <h1 className='mb-4 text-3xl font-extrabold text-slate-800'>
+                <h1 className='mb-4 text-3xl font-extrabold text-neutral-800'>
                     Crear formulario
                 </h1>
-                <div className='w-full rounded-md bg-white p-8 shadow-md'>
+                <div className='flex w-full flex-col gap-4 rounded-md bg-white p-8 shadow-md'>
                     {INPUT_FIELDS.map((field, idx) => {
                         return getInputElement(field, idx)
                     })}
-                    <div className='mt-4 flex w-full flex-row items-center justify-end gap-2'>
+                    <div className='mt-4 flex w-full flex-row items-center justify-end gap-4'>
                         <Button
                             label='Descartar'
                             onClick={() => setFormTemplate(FORM_TEMPLATE)}
                             style='secondary'
+                            disabled={validateAllEmptyFields(formTemplate)}
                         />
                         <Button
                             disabled={!validateNoEmptyFields(formTemplate)}

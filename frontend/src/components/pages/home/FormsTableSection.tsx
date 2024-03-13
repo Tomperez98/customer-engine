@@ -1,11 +1,12 @@
 import Table from '@/components/Table'
-import useGetForms from '@/hooks/useGetForms'
+import useGetForms from '@/hooks/forms/useGetForms'
 import {createColumnHelper, Row} from '@tanstack/react-table'
 import {Form, FormKeys} from '@/types/Forms'
 import Link from 'next/link'
 import {useMemo, useEffect, useState} from 'react'
-import {FaMagnifyingGlass, FaTrash} from 'react-icons/fa6'
-import useDeleteForm from '@/hooks/useDeleteForm'
+import useDeleteForm from '@/hooks/forms/useDeleteForm'
+import IconButton from '@/components/IconButton'
+import {MdDelete, MdInfo} from 'react-icons/md'
 
 const FormsTableSection: React.FC = () => {
     const {data, isLoading, refetch} = useGetForms()
@@ -32,22 +33,21 @@ const FormsTableSection: React.FC = () => {
             id: 'actions',
             header: () => null,
             cell: ({row}: {row: Row<Form>}) => (
-                <div className='flex flex-row gap-4'>
+                <div className='flex flex-row items-center gap-4'>
                     <Link
+                        className='flex items-center'
                         href={`/automatic-responses/${row.getValue('automatic_response_id')}`}
                         target='_blank'>
-                        <FaMagnifyingGlass color='#455d7a' />
+                        <IconButton Icon={MdInfo} onClick={() => null} />
                     </Link>
-                    <div className='cursor-pointer'>
-                        <FaTrash
-                            onClick={() =>
-                                handleDeleteForm(
-                                    row.getValue('automatic_response_id')
-                                )
-                            }
-                            color='#f95959'
-                        />
-                    </div>
+                    <IconButton
+                        Icon={MdDelete}
+                        onClick={() =>
+                            handleDeleteForm(
+                                row.getValue('automatic_response_id')
+                            )
+                        }
+                    />
                 </div>
             ),
         },

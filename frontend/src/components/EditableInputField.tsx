@@ -86,7 +86,7 @@ const EditableInputField = ({
             <div className='flex flex-row items-center gap-2'>
                 <label
                     htmlFor={fieldName}
-                    className='text-lg font-extrabold capitalize text-slate-800'>
+                    className='text-lg font-semibold capitalize text-neutral-800'>
                     {label}
                 </label>
                 {isEditing ? (
