@@ -2,14 +2,16 @@
 
 from __future__ import annotations
 
-from typing import assert_never
+from typing import Annotated, assert_never
 from uuid import UUID
 
 import lego_workflows
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer  # noqa: TCH002
 from pydantic import BaseModel
 
 from customer_engine_api import handlers
+from customer_engine_api.core import jwt
 from customer_engine_api.core.automatic_responses import AutomaticResponse
 from customer_engine_api.core.config import resources
 
@@ -26,16 +28,16 @@ class ResponseCreateAutomaticResponse(BaseModel):  # noqa: D101
     automatic_response_id: UUID
 
 
-@router.post("/{org_code}")
+@router.post("/")
 async def create_automatic_response(
-    org_code: str,
+    auth_token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
     req: CreateAutomaticResponse,
 ) -> ResponseCreateAutomaticResponse:
     """Create a new automatic response."""
     with resources.db_engine.begin() as conn:
         created_response, events = await lego_workflows.run_and_collect_events(
             cmd=handlers.automatic_responses.create.Command(
-                org_code=org_code,
+                org_code=jwt.decode_token(auth_token.credentials).org_code,
                 name=req.name,
                 examples=req.examples,
                 response=req.response,
@@ -55,9 +57,9 @@ class ResponseGetAutomaticResponse(BaseModel):  # noqa: D101
     automatic_response: AutomaticResponse
 
 
-@router.get("/{org_code}/{automatic_response_id}")
+@router.get("/{automatic_response_id}")
 async def get_automatic_response(
-    org_code: str,
+    auth_token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
     automatic_response_id: UUID,
 ) -> ResponseGetAutomaticResponse:
     """Get automatic response."""
@@ -67,7 +69,7 @@ async def get_automatic_response(
             events,
         ) = await lego_workflows.run_and_collect_events(
             cmd=handlers.automatic_responses.get.Command(
-                org_code=org_code,
+                org_code=jwt.decode_token(auth_token.credentials).org_code,
                 automatic_response_id=automatic_response_id,
                 sql_conn=conn,
             )
@@ -90,16 +92,16 @@ class ResponsePatchAutomaticResponse(BaseModel):  # noqa: D101
     updated_automatic_response: AutomaticResponse
 
 
-@router.patch("/{org_code}/{automatic_response_id}")
+@router.patch("/{automatic_response_id}")
 async def patch_automatic_response(  # noqa: D103
-    org_code: str,
+    auth_token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
     automatic_response_id: UUID,
     req: PatchAutomaticResponse,
 ) -> ResponsePatchAutomaticResponse:
     with resources.db_engine.begin() as conn:
         updated_response, events = await lego_workflows.run_and_collect_events(
             cmd=handlers.automatic_responses.update.Command(
-                org_code=org_code,
+                org_code=jwt.decode_token(auth_token.credentials).org_code,
                 automatic_response_id=automatic_response_id,
                 new_name=req.name,
                 new_examples=req.examples,
@@ -120,15 +122,18 @@ class ResponseListAutomaticResponse(BaseModel):  # noqa: D101
     automatic_response: list[AutomaticResponse]
 
 
-@router.get("/{org_code}")
-async def list_automatic_responses(org_code: str) -> ResponseListAutomaticResponse:  # noqa: D103
+@router.get("/")
+async def list_automatic_responses(  # noqa: D103
+    auth_token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
+) -> ResponseListAutomaticResponse:
     with resources.db_engine.begin() as conn:
         (
             listed_automatic_responses,
             events,
         ) = await lego_workflows.run_and_collect_events(
             cmd=handlers.automatic_responses.list_all.Command(
-                org_code=org_code, sql_conn=conn
+                org_code=jwt.decode_token(auth_token.credentials).org_code,
+                sql_conn=conn,
             )
         )
 
@@ -142,15 +147,15 @@ class ResponseDeleteAutomaticResponse(BaseModel):  # noqa: D101
     automatic_response_id: UUID
 
 
-@router.delete("/{org_code}/{automatic_response_id}")
+@router.delete("/{automatic_response_id}")
 async def delete_automatic_response(  # noqa: D103
-    org_code: str,
+    auth_token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
     automatic_response_id: UUID,
 ) -> ResponseDeleteAutomaticResponse:
     with resources.db_engine.begin() as conn:
         deleted_response, events = await lego_workflows.run_and_collect_events(
             cmd=handlers.automatic_responses.delete.Command(
-                org_code=org_code,
+                org_code=jwt.decode_token(auth_token.credentials).org_code,
                 automatic_response_id=automatic_response_id,
                 sql_conn=conn,
                 qdrant_client=resources.clients.qdrant,
@@ -167,9 +172,10 @@ class ResponseSearchByPromptAutomaticResponse(BaseModel):  # noqa: D101
     automatic_response: AutomaticResponse | None
 
 
-@router.get("/{org_code}/search/by-prompt")
+@router.get("/search/by-prompt")
 async def search_by_prompt(
-    org_code: str, prompt: str
+    auth_token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
+    prompt: str,
 ) -> ResponseSearchByPromptAutomaticResponse:
     """Search automatic response by prompt."""
     with resources.db_engine.begin() as conn:
@@ -178,7 +184,7 @@ async def search_by_prompt(
             events,
         ) = await lego_workflows.run_and_collect_events(
             handlers.automatic_responses.search_by_prompt.Command(
-                org_code=org_code,
+                org_code=jwt.decode_token(auth_token.credentials).org_code,
                 prompt=prompt,
                 sql_conn=conn,
                 cohere_client=resources.clients.cohere,

@@ -94,6 +94,7 @@ pydantic==2.6.4
     #   qdrant-client
 pydantic-core==2.16.3
     # via pydantic
+pyjwt==2.8.0
 python-dotenv==1.0.1
     # via uvicorn
 pyyaml==6.0.1

@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+from typing import Annotated
 from uuid import UUID
 
 import lego_workflows
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer  # noqa: TCH002
 from pydantic import BaseModel
 
 from customer_engine_api import handlers
+from customer_engine_api.core import jwt
 from customer_engine_api.core.config import resources
 from customer_engine_api.core.unmatched_prompts import UnmatchedPrompt
 
@@ -19,13 +22,16 @@ class ResponseListUnmatchedPrompts(BaseModel):  # noqa: D101
     unmatched_prompts: list[UnmatchedPrompt]
 
 
-@router.get("/{org_code}")
-async def list_unmatched_prompts(org_code: str) -> ResponseListUnmatchedPrompts:
+@router.get("/")
+async def list_unmatched_prompts(
+    auth_token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
+) -> ResponseListUnmatchedPrompts:
     """List unmatched prompts."""
     with resources.db_engine.begin() as conn:
         listed_unmatched_prompts, events = await lego_workflows.run_and_collect_events(
             cmd=handlers.unmatched_prompts.list_all.Command(
-                org_code=org_code, sql_conn=conn
+                org_code=jwt.decode_token(auth_token.credentials).org_code,
+                sql_conn=conn,
             )
         )
 
@@ -40,15 +46,18 @@ class ResponseDeleteUnmatchedPrompt(BaseModel):  # noqa: D101
     deleted_unmatched_prompt: UUID
 
 
-@router.delete("/{org_code}/{prompt_id}")
+@router.delete("/{prompt_id}")
 async def delete_unmatched_prompt(
-    org_code: str, prompt_id: UUID
+    auth_token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
+    prompt_id: UUID,
 ) -> ResponseDeleteUnmatchedPrompt:
     """Delete unmatched prompt."""
     with resources.db_engine.begin() as conn:
         deleted, events = await lego_workflows.run_and_collect_events(
             cmd=handlers.unmatched_prompts.delete.Command(
-                org_code=org_code, prompt_id=prompt_id, sql_conn=conn
+                org_code=jwt.decode_token(auth_token.credentials).org_code,
+                prompt_id=prompt_id,
+                sql_conn=conn,
             )
         )
 
@@ -60,9 +69,11 @@ class ResponseAddAsExampleToAutomaticResponse(BaseModel):  # noqa: D101
     prompt_id: UUID
 
 
-@router.post(path="/{org_code}/add-as-example-to-automatic-response")
+@router.post(path="/add-as-example-to-automatic-response")
 async def add_as_example_to_automatic_response(  # noqa: D103
-    org_code: str, prompt_id: UUID, automatic_response_id: UUID
+    auth_token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
+    prompt_id: UUID,
+    automatic_response_id: UUID,
 ) -> ResponseAddAsExampleToAutomaticResponse:
     with resources.db_engine.begin() as conn:
         (
@@ -70,7 +81,7 @@ async def add_as_example_to_automatic_response(  # noqa: D103
             events,
         ) = await lego_workflows.run_and_collect_events(
             cmd=handlers.unmatched_prompts.add_as_example_to_automatic_response.Command(
-                org_code=org_code,
+                org_code=jwt.decode_token(auth_token.credentials).org_code,
                 prompt_id=prompt_id,
                 autoamtic_response_id=automatic_response_id,
                 sql_conn=conn,

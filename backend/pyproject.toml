@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "customer-engine-api"
-version = "0.1.13"
+version = "0.1.14"
 readme = "README.md"
 requires-python = ">=3.12"
 classifiers = [
@@ -27,6 +27,7 @@ dependencies = [
     "pydantic >= 2",
     "orjson",
     "cryptography",
+    "pyjwt < 3",
 ]
 
 [project.urls]
