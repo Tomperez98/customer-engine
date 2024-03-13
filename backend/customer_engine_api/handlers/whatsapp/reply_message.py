@@ -13,9 +13,9 @@ from uuid import UUID
 import lego_workflows
 from lego_workflows.components import CommandComponent, DomainEvent, ResponseComponent
 
+from customer_engine_api.core.api_clients.whatsapp import AsyncWhatsappClient
 from customer_engine_api.core.automatic_responses import AutomaticResponse
 from customer_engine_api.core.config import resources
-from customer_engine_api.core.whatsapp import AsyncWhatsappClient
 from customer_engine_api.handlers.automatic_responses import search_by_prompt
 from customer_engine_api.handlers.whatsapp import get_tokens
 

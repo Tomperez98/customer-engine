@@ -37,7 +37,7 @@ click==8.1.7
     # via
     #   pyrgo
     #   uvicorn
-cohere==4.53
+cohere==4.54
 coverage==7.4.3
     # via pytest-cov
 cryptography==42.0.5
@@ -124,7 +124,7 @@ numpy==1.26.4
     # via qdrant-client
 orjson==3.9.15
     # via mashumaro
-packageurl-python==0.14.0
+packageurl-python==0.15.0
     # via cyclonedx-python-lib
 packaging==24.0
     # via
@@ -153,7 +153,7 @@ py-serializable==1.0.2
     # via cyclonedx-python-lib
 pycparser==2.21
     # via cffi
-pydantic==2.6.3
+pydantic==2.6.4
     # via
     #   fastapi
     #   qdrant-client

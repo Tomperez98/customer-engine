@@ -28,7 +28,7 @@ charset-normalizer==3.3.2
     # via requests
 click==8.1.7
     # via uvicorn
-cohere==4.53
+cohere==4.54
 cryptography==42.0.5
 fastapi==0.110.0
 fastavro==1.9.4
@@ -88,7 +88,7 @@ protobuf==4.25.3
     # via grpcio-tools
 pycparser==2.21
     # via cffi
-pydantic==2.6.3
+pydantic==2.6.4
     # via
     #   fastapi
     #   qdrant-client
