@@ -38,15 +38,21 @@ const FormsTableSection: React.FC = () => {
                         className='flex items-center'
                         href={`/automatic-responses/${row.getValue('automatic_response_id')}`}
                         target='_blank'>
-                        <IconButton Icon={MdInfo} onClick={() => null} />
+                        <IconButton
+                            Icon={MdInfo}
+                            onClick={() => null}
+                            size='text-lg'
+                        />
                     </Link>
                     <IconButton
+                        fill='text-red-500'
                         Icon={MdDelete}
                         onClick={() =>
                             handleDeleteForm(
                                 row.getValue('automatic_response_id')
                             )
                         }
+                        size='text-lg'
                     />
                 </div>
             ),

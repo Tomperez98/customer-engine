@@ -11,7 +11,7 @@ const useDeleteForm = () => {
         setIsLoading(true)
         setError(null)
         try {
-            const response = await fetch(`${BASE_URL}/${organization}/${id}`, {
+            const response = await fetch(`${BASE_URL}/${id}`, {
                 method: 'DELETE',
             })
             setIsLoading(false)

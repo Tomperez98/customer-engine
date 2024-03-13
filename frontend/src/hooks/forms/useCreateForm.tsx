@@ -13,7 +13,7 @@ const useCreateForm = (data: FormTemplate) => {
         setIsLoading(true)
         setError(null)
         try {
-            const response = await fetch(`${BASE_URL}/${organization}`, {
+            const response = await fetch(BASE_URL, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

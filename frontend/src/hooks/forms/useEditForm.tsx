@@ -14,7 +14,7 @@ const useEditForm = (id: string, data: Form) => {
         setError(null)
         try {
             Reflect.deleteProperty(data, 'automatic_response_id')
-            const response = await fetch(`${BASE_URL}/${organization}/${id}`, {
+            const response = await fetch(`${BASE_URL}/${id}`, {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',

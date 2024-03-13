@@ -96,6 +96,7 @@ const EditableListField = ({
                         <IconButton
                             onClick={handleAddSubField}
                             Icon={MdAddCircle}
+                            size='text-lg'
                         />
                         {!editableOnly && (
                             <button onClick={handleReset}>reset</button>
@@ -123,6 +124,8 @@ const EditableListField = ({
                                             handleRemoveSubField(idx)
                                         }
                                         Icon={MdDelete}
+                                        size='text-lg'
+                                        fill='text-red-500'
                                     />
                                 </div>
                             )}

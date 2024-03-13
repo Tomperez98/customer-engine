@@ -14,17 +14,24 @@ export type FormResponse = {
 const useGetForms = (id?: string) => {
     const [data, setData] = useState<FormListResponse | FormResponse>()
     const [isLoading, setIsLoading] = useState<boolean>(false)
-    const {organization} = useKindeBrowserClient()
+    const {accessTokenEncoded} = useKindeBrowserClient()
 
-    const url = id
-        ? `${BASE_URL}/${organization}/${id}`
-        : `${BASE_URL}/${organization}`
+    const url = id ? `${BASE_URL}/${id}` : BASE_URL
 
     const fetchForms = async () => {
-        if (!organization) return
+        if (!accessTokenEncoded) return
+        const headers = {
+            Autorizattion: `Bearer ${accessTokenEncoded}`,
+        }
         setIsLoading(true)
+        console.log('ANDY')
+        console.log(headers, 'TEST')
+
         try {
-            const res = await fetch(url)
+            const res = await fetch(url, {
+                // mode: 'cors',
+                headers,
+            })
             const resJson = await res.json()
 
             if (id) {
@@ -40,10 +47,10 @@ const useGetForms = (id?: string) => {
     }
 
     useEffect(() => {
-        if (organization) {
+        if (accessTokenEncoded) {
             fetchForms()
         }
-    }, [organization])
+    }, [accessTokenEncoded])
 
     const refetch = () => {
         fetchForms()

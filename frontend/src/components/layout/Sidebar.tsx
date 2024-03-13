@@ -27,13 +27,12 @@ const Sidebar = () => {
             <div className='my-8 border-y border-slate-300 py-8'>
                 <Link href='/dashboard'>
                     <div className='flex w-full  flex-row items-center gap-1 py-1 text-xl font-medium'>
-                        <MdOutlineHome height={36} /> {isExpanded && 'Inicio'}
+                        <MdOutlineHome /> {isExpanded && 'Inicio'}
                     </div>
                 </Link>
                 <Link href='/automatic-responses/create'>
                     <div className='text-md flex  w-full flex-row items-center gap-1 py-1 font-medium'>
-                        <MdOutlineAddBox height={36} />{' '}
-                        {isExpanded && 'Crear Formulario'}
+                        <MdOutlineAddBox /> {isExpanded && 'Crear Formulario'}
                     </div>
                 </Link>
             </div>

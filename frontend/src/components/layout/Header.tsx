@@ -4,11 +4,7 @@ import {LogoutLink, useKindeBrowserClient} from '@kinde-oss/kinde-auth-nextjs'
 import Button from '../Button'
 
 const Header = (): JSX.Element => {
-    const {user, accessToken} = useKindeBrowserClient()
-
-    const test = useKindeBrowserClient()
-
-    console.log(test)
+    const {user, accessTokenEncoded} = useKindeBrowserClient()
 
     const userName = user
         ? `${user.given_name} 

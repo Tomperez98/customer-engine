@@ -6,9 +6,10 @@ interface IconButtonProps {
     onClick: () => void
     disabled?: boolean
     fill?: string
+    size?: string
 }
 
-const IconButton = ({disabled, fill, Icon, onClick}: IconButtonProps) => {
+const IconButton = ({disabled, fill, Icon, size, onClick}: IconButtonProps) => {
     const animationProps = disabled
         ? {}
         : {
@@ -17,7 +18,10 @@ const IconButton = ({disabled, fill, Icon, onClick}: IconButtonProps) => {
           }
     return (
         <motion.button
-            className={classNames(fill || 'text-neutral-800')}
+            className={classNames(
+                fill || 'text-neutral-800 hover:text-cyan-400',
+                size || 'text-sm'
+            )}
             onClick={onClick}
             {...animationProps}>
             <Icon />
