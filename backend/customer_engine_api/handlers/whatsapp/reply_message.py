@@ -7,7 +7,7 @@ https://developers.facebook.com/docs/whatsapp/cloud-api/webhooks/payload-example
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, assert_never
+from typing import TYPE_CHECKING, assert_never
 from uuid import UUID
 
 import lego_workflows
@@ -24,8 +24,13 @@ if TYPE_CHECKING:
     from qdrant_client import AsyncQdrantClient
     from sqlalchemy import Connection
 
+    from customer_engine_api.core.typing import JsonResponse
 
-def _extract_specific_webhook_payload(recieved_msg: dict[str, Any]) -> dict[str, Any]:
+
+def _extract_specific_webhook_payload(recieved_msg: JsonResponse) -> JsonResponse:
+    if isinstance(recieved_msg, list):
+        msg = "List payload not expected."
+        raise TypeError(msg)
     return recieved_msg["entry"][0]["changes"][0].pop("value")
 
 
@@ -36,7 +41,7 @@ class Response(ResponseComponent): ...  # noqa: D101
 @dataclass(frozen=True)
 class Command(CommandComponent[Response]):  # noqa: D101
     org_code: str
-    received_msg: dict[str, Any]
+    received_msg: JsonResponse
     sql_conn: Connection
     cohere_client: cohere.AsyncClient
     qdrant_client: AsyncQdrantClient
@@ -45,6 +50,9 @@ class Command(CommandComponent[Response]):  # noqa: D101
         specific_webhook_payload = _extract_specific_webhook_payload(
             recieved_msg=self.received_msg
         )
+        if isinstance(specific_webhook_payload, list):
+            msg = "List payload not expected."
+            raise TypeError(msg)
         text_prompt = specific_webhook_payload["messages"][0]["text"]["body"]
 
         (

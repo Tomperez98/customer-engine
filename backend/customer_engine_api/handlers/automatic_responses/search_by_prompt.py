@@ -8,6 +8,7 @@ from uuid import UUID
 
 import lego_workflows
 from lego_workflows.components import CommandComponent, DomainEvent, ResponseComponent
+from qdrant_client.models import PointIdsList, ScoredPoint
 
 from customer_engine_api.core import automatic_responses
 from customer_engine_api.handlers.automatic_responses import get
@@ -32,44 +33,30 @@ class Command(CommandComponent[Response]):  # noqa: D101
     cohere_client: cohere.AsyncClient
     qdrant_client: AsyncQdrantClient
 
-    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: D102
-        embedding_model_to_use = automatic_responses.embeddings.DEFAULT_EMBEDDING_MODEL
-        prompt_embeddings = (
-            await automatic_responses.embeddings.embed_examples_and_prompt(
-                client=self.cohere_client,
-                model=embedding_model_to_use,
-                examples_or_prompt=self.prompt,
+    async def _register_unmatched_prompt(self, events: list[DomainEvent]) -> Response:
+        (
+            unmatched_prompt,
+            register_prompt_events,
+        ) = await lego_workflows.run_and_collect_events(
+            register.Command(
+                org_code=self.org_code,
+                prompt=self.prompt,
+                sql_conn=self.sql_conn,
             )
         )
-        relevant_points = await self.qdrant_client.search(
-            collection_name=self.org_code,
-            query_vector=prompt_embeddings[0],
-            limit=1,
-            score_threshold=0.65,
+        events.extend(register_prompt_events)
+        return Response(
+            response_or_unmatched_prompt_id=unmatched_prompt.prompt_id,
         )
 
-        if len(relevant_points) == 0:
-            (
-                unmatched_prompt,
-                register_prompt_events,
-            ) = await lego_workflows.run_and_collect_events(
-                register.Command(
-                    org_code=self.org_code,
-                    prompt=self.prompt,
-                    sql_conn=self.sql_conn,
-                )
-            )
-            events.extend(register_prompt_events)
-            return Response(
-                response_or_unmatched_prompt_id=unmatched_prompt.prompt_id,
-            )
-
-        most_relevant = relevant_points[0]
+    async def _get_automatic_response(
+        self, most_relevant: ScoredPoint
+    ) -> automatic_responses.AutomaticResponse:
         if isinstance(most_relevant.id, int):
             msg = "Most relevant id type not expected."
             raise TypeError(msg)
 
-        relevant_automatic_response = (
+        return (
             await lego_workflows.run_and_collect_events(
                 get.Command(
                     org_code=self.org_code,
@@ -79,6 +66,39 @@ class Command(CommandComponent[Response]):  # noqa: D101
             )
         )[0].automatic_response
 
+    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: D102
+        embedding_model_to_use = automatic_responses.embeddings.DEFAULT_EMBEDDING_MODEL
+        prompt_embeddings = (
+            await automatic_responses.embeddings.embed_examples_and_prompt(
+                client=self.cohere_client,
+                model=embedding_model_to_use,
+                examples_or_prompt=self.prompt,
+            )
+        )
+        while True:
+            relevant_points = await self.qdrant_client.search(
+                collection_name=self.org_code,
+                query_vector=prompt_embeddings[0],
+                limit=1,
+                score_threshold=0.65,
+            )
+
+            if len(relevant_points) == 0:
+                return await self._register_unmatched_prompt(events=events)
+
+            most_relevant = relevant_points[0]
+
+            try:
+                automatic_response = await self._get_automatic_response(
+                    most_relevant=most_relevant
+                )
+            except get.AutomaticResponseNotFoundError:
+                await self.qdrant_client.delete(
+                    collection_name=self.org_code,
+                    points_selector=PointIdsList(points=[most_relevant.id]),
+                )
+                continue
+            break
         return Response(
-            response_or_unmatched_prompt_id=relevant_automatic_response,
+            response_or_unmatched_prompt_id=automatic_response,
         )

@@ -9,7 +9,7 @@ from typing import assert_never, cast
 import cohere
 from cryptography.fernet import Fernet
 from qdrant_client import AsyncQdrantClient
-from sqlalchemy import Engine, create_engine
+from sqlalchemy import create_engine
 
 from customer_engine_api.core.typing import Environment
 
@@ -26,21 +26,21 @@ class _Resources:
         db_auth_token = os.environ["DB_AUTH_TOKEN"]
         environment = cast(Environment, os.environ["ENVIRONMENT"])
 
-        self.db_engine: Engine
+        echo_db: bool
         if environment == "development":
-            self.db_engine = create_engine(
-                url=f"sqlite+{db_url}/?authToken={db_auth_token}",
-                echo=True,
-            )
-
+            echo_db = True
         elif environment == "staging":
-            self.db_engine = create_engine(
-                url=f"sqlite+{db_url}/?authToken={db_auth_token}",
-                echo=False,
-                connect_args={"timeout": 60},
-            )
+            echo_db = False
+
         else:
             assert_never(environment)
+
+        self.db_engine = create_engine(
+            url=f"sqlite+{db_url}/?authToken={db_auth_token}",
+            echo=echo_db,
+            pool_pre_ping=True,
+            connect_args={"timeout": 60},
+        )
 
         qdrant_url = os.environ["QDRANT_URL"]
         self.clients = _Clients(
