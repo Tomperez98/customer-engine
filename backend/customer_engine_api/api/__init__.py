@@ -15,7 +15,7 @@ app = FastAPI(
     middleware=[
         Middleware(
             CORSMiddleware,
-            allow_origins=["http://localhost:3000"],
+            allow_origins=["http://localhost:3000/dashboard", "http://localhost:3000/"],
             allow_credentials=True,
             allow_methods=["*"],
             allow_headers=["*"],
