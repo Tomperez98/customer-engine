@@ -15,7 +15,10 @@ app = FastAPI(
     middleware=[
         Middleware(
             CORSMiddleware,
-            allow_origins=["http://localhost:3000"],
+            allow_origins=[
+                "http://localhost:3000",
+                "https://api-staging-54f3.up.railway.app",
+            ],
             allow_credentials=True,
             allow_methods=["*"],
             allow_headers=["*"],
