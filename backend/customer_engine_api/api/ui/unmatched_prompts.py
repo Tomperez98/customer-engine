@@ -9,7 +9,9 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from customer_engine_api import handlers
-from customer_engine_api.config import resources
+from customer_engine_api.api.ui._deps import BearerToken  # noqa: TCH001
+from customer_engine_api.core import jwt
+from customer_engine_api.core.config import resources
 from customer_engine_api.core.unmatched_prompts import UnmatchedPrompt
 
 router = APIRouter(prefix="/unmatched-prompts", tags=["unmatched-prompts"])
@@ -19,13 +21,16 @@ class ResponseListUnmatchedPrompts(BaseModel):  # noqa: D101
     unmatched_prompts: list[UnmatchedPrompt]
 
 
-@router.get("")
-async def list_unmatched_prompts() -> ResponseListUnmatchedPrompts:
+@router.get("/")
+async def list_unmatched_prompts(
+    auth_token: BearerToken,
+) -> ResponseListUnmatchedPrompts:
     """List unmatched prompts."""
     with resources.db_engine.begin() as conn:
         listed_unmatched_prompts, events = await lego_workflows.run_and_collect_events(
             cmd=handlers.unmatched_prompts.list_all.Command(
-                org_code=resources.default_org, sql_conn=conn
+                org_code=jwt.decode_token(auth_token.credentials).org_code,
+                sql_conn=conn,
             )
         )
 
@@ -41,11 +46,17 @@ class ResponseDeleteUnmatchedPrompt(BaseModel):  # noqa: D101
 
 
 @router.delete("/{prompt_id}")
-async def delete_unmatched_prompt(prompt_id: UUID) -> ResponseDeleteUnmatchedPrompt:  # noqa: D103
+async def delete_unmatched_prompt(
+    auth_token: BearerToken,
+    prompt_id: UUID,
+) -> ResponseDeleteUnmatchedPrompt:
+    """Delete unmatched prompt."""
     with resources.db_engine.begin() as conn:
         deleted, events = await lego_workflows.run_and_collect_events(
             cmd=handlers.unmatched_prompts.delete.Command(
-                org_code=resources.default_org, prompt_id=prompt_id, sql_conn=conn
+                org_code=jwt.decode_token(auth_token.credentials).org_code,
+                prompt_id=prompt_id,
+                sql_conn=conn,
             )
         )
 
@@ -57,9 +68,11 @@ class ResponseAddAsExampleToAutomaticResponse(BaseModel):  # noqa: D101
     prompt_id: UUID
 
 
-@router.post(path="/add-as-example/to-automatic-response")
+@router.post(path="/add-as-example-to-automatic-response")
 async def add_as_example_to_automatic_response(  # noqa: D103
-    prompt_id: UUID, automatic_response_id: UUID
+    auth_token: BearerToken,
+    prompt_id: UUID,
+    automatic_response_id: UUID,
 ) -> ResponseAddAsExampleToAutomaticResponse:
     with resources.db_engine.begin() as conn:
         (
@@ -67,7 +80,7 @@ async def add_as_example_to_automatic_response(  # noqa: D103
             events,
         ) = await lego_workflows.run_and_collect_events(
             cmd=handlers.unmatched_prompts.add_as_example_to_automatic_response.Command(
-                org_code=resources.default_org,
+                org_code=jwt.decode_token(auth_token.credentials).org_code,
                 prompt_id=prompt_id,
                 autoamtic_response_id=automatic_response_id,
                 sql_conn=conn,

@@ -9,7 +9,7 @@ import sqlalchemy
 from lego_workflows.components import CommandComponent, DomainEvent, ResponseComponent
 from sqlalchemy import bindparam, text
 
-from customer_engine_api.logging import logger
+from customer_engine_api.core.logging import logger
 
 if TYPE_CHECKING:
     from sqlalchemy import Connection

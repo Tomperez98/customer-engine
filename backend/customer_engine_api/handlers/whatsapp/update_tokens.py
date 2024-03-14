@@ -13,10 +13,10 @@ from lego_workflows.components import (
 )
 from sqlalchemy import Connection, bindparam, text
 
-from customer_engine_api.config import resources
-from customer_engine_api.core.whatsapp import hash_string
+from customer_engine_api.core import whatsapp
+from customer_engine_api.core.config import resources
+from customer_engine_api.core.logging import logger
 from customer_engine_api.handlers.whatsapp import get_tokens
-from customer_engine_api.logging import logger
 
 
 @dataclass(frozen=True)
@@ -53,7 +53,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
                 self.new_access_token.encode()
             ).decode()
         if self.new_user_token is not None:
-            existing_whatsapp_token.user_token = hash_string(
+            existing_whatsapp_token.user_token = whatsapp.hashing.hash_string(
                 string=self.new_user_token, algo="sha256"
             )
 

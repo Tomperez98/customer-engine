@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "customer-engine-api"
-version = "0.1.9"
+version = "0.1.17"
 readme = "README.md"
 requires-python = ">=3.12"
 classifiers = [
@@ -13,7 +13,7 @@ classifiers = [
 ]
 authors = [{ name = "Author name", email = "author@email.com" }]
 dependencies = [
-    "lego-workflows >= 0.0.6",
+    "lego-workflows >= 0.0.6, < 0.1.0",
     "sqlalchemy-libsql",
     "python-dotenv < 2",
     "fastapi < 1",
@@ -27,6 +27,7 @@ dependencies = [
     "pydantic >= 2",
     "orjson",
     "cryptography",
+    "pyjwt < 3",
 ]
 
 [project.urls]
