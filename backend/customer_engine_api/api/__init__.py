@@ -11,6 +11,9 @@ from starlette.middleware.cors import CORSMiddleware
 from customer_engine_api.api import health, ui, webhooks
 
 app = FastAPI()
+app.include_router(router=health.router)
+app.include_router(router=ui.router)
+app.include_router(router=webhooks.router)
 
 
 app.add_middleware(
@@ -37,8 +40,3 @@ async def handle_domain_errors(req: Request, exc: DomainError) -> ORJSONResponse
         },
         status_code=status.HTTP_400_BAD_REQUEST,
     )
-
-
-app.include_router(router=health.router)
-app.include_router(router=ui.router)
-app.include_router(router=webhooks.router)
