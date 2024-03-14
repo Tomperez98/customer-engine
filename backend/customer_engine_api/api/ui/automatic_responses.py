@@ -28,7 +28,7 @@ class ResponseCreateAutomaticResponse(BaseModel):  # noqa: D101
     automatic_response_id: UUID
 
 
-@router.post("/")
+@router.post("")
 async def create_automatic_response(
     auth_token: BearerToken,
     req: CreateAutomaticResponse,
@@ -59,7 +59,6 @@ class ResponseGetAutomaticResponse(BaseModel):  # noqa: D101
 
 @router.get("/{automatic_response_id}")
 async def get_automatic_response(
-    auth_token: BearerToken,
     automatic_response_id: UUID,
 ) -> ResponseGetAutomaticResponse:
     """Get automatic response."""
@@ -69,7 +68,7 @@ async def get_automatic_response(
             events,
         ) = await lego_workflows.run_and_collect_events(
             cmd=handlers.automatic_responses.get.Command(
-                org_code=jwt.decode_token(auth_token.credentials).org_code,
+                org_code=jwt.decode_token("sd").org_code,
                 automatic_response_id=automatic_response_id,
                 sql_conn=conn,
             )
@@ -122,7 +121,7 @@ class ResponseListAutomaticResponse(BaseModel):  # noqa: D101
     automatic_response: list[AutomaticResponse]
 
 
-@router.get("/")
+@router.get("")
 async def list_automatic_responses(  # noqa: D103
     auth_token: BearerToken,
 ) -> ResponseListAutomaticResponse:

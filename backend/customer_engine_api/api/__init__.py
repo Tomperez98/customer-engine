@@ -4,10 +4,10 @@ from __future__ import annotations
 
 from fastapi import FastAPI, Request, status
 from fastapi.middleware import Middleware
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
 from lego_workflows.components import DomainError
 from pydantic import BaseModel
+from starlette.middleware.cors import CORSMiddleware
 
 from customer_engine_api.api import health, ui, webhooks
 
@@ -19,7 +19,6 @@ app = FastAPI(
             allow_credentials=True,
             allow_methods=["*"],
             allow_headers=["*"],
-            expose_headers=["*"],
         )
     ]
 )

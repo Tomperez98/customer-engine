@@ -21,7 +21,7 @@ class ResponseListUnmatchedPrompts(BaseModel):  # noqa: D101
     unmatched_prompts: list[UnmatchedPrompt]
 
 
-@router.get("/")
+@router.get("")
 async def list_unmatched_prompts(
     auth_token: BearerToken,
 ) -> ResponseListUnmatchedPrompts:

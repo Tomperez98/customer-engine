@@ -21,7 +21,7 @@ class ResponseGetWhatsappTokens(BaseModel):  # noqa: D101
     token: WhatsappTokens
 
 
-@router.get("/")
+@router.get("")
 async def get_whatsapp_tokens(
     auth_token: BearerToken,
 ) -> ResponseGetWhatsappTokens:
@@ -47,7 +47,7 @@ class ResponseCreateWhatsappTokens(BaseModel):  # noqa: D101
     status: Literal["created"]
 
 
-@router.post("/")
+@router.post("")
 async def create_whatsapp_tokens(
     auth_token: BearerToken,
     req: CreateWhatsappTokens,
@@ -70,7 +70,7 @@ class ResponseDeleteWhatsappTokens(BaseModel):  # noqa: D101
     status: Literal["deleted"]
 
 
-@router.delete("/")
+@router.delete("")
 async def delete_whatsapp_tokens(  # noqa: D103
     auth_token: BearerToken,
 ) -> ResponseDeleteWhatsappTokens:
@@ -94,7 +94,7 @@ class ResponsePatchWhatsappTokens(BaseModel):  # noqa: D101
     status: Literal["updated"]
 
 
-@router.patch("/")
+@router.patch("")
 async def patch_whatsapp_tokens(
     auth_token: BearerToken,
     req: PatchWhatsappTokens,
