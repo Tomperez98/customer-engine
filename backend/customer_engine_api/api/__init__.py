@@ -3,26 +3,28 @@
 from __future__ import annotations
 
 from fastapi import FastAPI, Request, status
+from fastapi.middleware import Middleware
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import ORJSONResponse
 from lego_workflows.components import DomainError
 from pydantic import BaseModel
-from starlette.middleware.cors import CORSMiddleware
 
 from customer_engine_api.api import health, ui, webhooks
 
-app = FastAPI()
+app = FastAPI(
+    middleware=[
+        Middleware(
+            CORSMiddleware,
+            allow_origins=["http://localhost:3000"],
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
+    ]
+)
 app.include_router(router=health.router)
 app.include_router(router=ui.router)
 app.include_router(router=webhooks.router)
-
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 
 class DomainErrorResponse(BaseModel):
