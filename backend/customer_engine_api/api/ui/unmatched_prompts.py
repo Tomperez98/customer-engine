@@ -2,15 +2,14 @@
 
 from __future__ import annotations
 
-from typing import Annotated
 from uuid import UUID
 
 import lego_workflows
-from fastapi import APIRouter, Depends
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer  # noqa: TCH002
+from fastapi import APIRouter
 from pydantic import BaseModel
 
 from customer_engine_api import handlers
+from customer_engine_api.api.ui._deps import BearerToken  # noqa: TCH001
 from customer_engine_api.core import jwt
 from customer_engine_api.core.config import resources
 from customer_engine_api.core.unmatched_prompts import UnmatchedPrompt
@@ -24,7 +23,7 @@ class ResponseListUnmatchedPrompts(BaseModel):  # noqa: D101
 
 @router.get("/")
 async def list_unmatched_prompts(
-    auth_token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
+    auth_token: BearerToken,
 ) -> ResponseListUnmatchedPrompts:
     """List unmatched prompts."""
     with resources.db_engine.begin() as conn:
@@ -48,7 +47,7 @@ class ResponseDeleteUnmatchedPrompt(BaseModel):  # noqa: D101
 
 @router.delete("/{prompt_id}")
 async def delete_unmatched_prompt(
-    auth_token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
+    auth_token: BearerToken,
     prompt_id: UUID,
 ) -> ResponseDeleteUnmatchedPrompt:
     """Delete unmatched prompt."""
@@ -71,7 +70,7 @@ class ResponseAddAsExampleToAutomaticResponse(BaseModel):  # noqa: D101
 
 @router.post(path="/add-as-example-to-automatic-response")
 async def add_as_example_to_automatic_response(  # noqa: D103
-    auth_token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
+    auth_token: BearerToken,
     prompt_id: UUID,
     automatic_response_id: UUID,
 ) -> ResponseAddAsExampleToAutomaticResponse:

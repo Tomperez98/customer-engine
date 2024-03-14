@@ -2,15 +2,15 @@
 
 from __future__ import annotations
 
-from typing import Annotated, assert_never
+from typing import assert_never
 from uuid import UUID
 
 import lego_workflows
-from fastapi import APIRouter, Depends
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer  # noqa: TCH002
+from fastapi import APIRouter
 from pydantic import BaseModel
 
 from customer_engine_api import handlers
+from customer_engine_api.api.ui._deps import BearerToken  # noqa: TCH001
 from customer_engine_api.core import jwt
 from customer_engine_api.core.automatic_responses import AutomaticResponse
 from customer_engine_api.core.config import resources
@@ -30,7 +30,7 @@ class ResponseCreateAutomaticResponse(BaseModel):  # noqa: D101
 
 @router.post("/")
 async def create_automatic_response(
-    auth_token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
+    auth_token: BearerToken,
     req: CreateAutomaticResponse,
 ) -> ResponseCreateAutomaticResponse:
     """Create a new automatic response."""
@@ -59,7 +59,7 @@ class ResponseGetAutomaticResponse(BaseModel):  # noqa: D101
 
 @router.get("/{automatic_response_id}")
 async def get_automatic_response(
-    auth_token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
+    auth_token: BearerToken,
     automatic_response_id: UUID,
 ) -> ResponseGetAutomaticResponse:
     """Get automatic response."""
@@ -94,7 +94,7 @@ class ResponsePatchAutomaticResponse(BaseModel):  # noqa: D101
 
 @router.patch("/{automatic_response_id}")
 async def patch_automatic_response(  # noqa: D103
-    auth_token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
+    auth_token: BearerToken,
     automatic_response_id: UUID,
     req: PatchAutomaticResponse,
 ) -> ResponsePatchAutomaticResponse:
@@ -124,7 +124,7 @@ class ResponseListAutomaticResponse(BaseModel):  # noqa: D101
 
 @router.get("/")
 async def list_automatic_responses(  # noqa: D103
-    auth_token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
+    auth_token: BearerToken,
 ) -> ResponseListAutomaticResponse:
     with resources.db_engine.begin() as conn:
         (
@@ -149,7 +149,7 @@ class ResponseDeleteAutomaticResponse(BaseModel):  # noqa: D101
 
 @router.delete("/{automatic_response_id}")
 async def delete_automatic_response(  # noqa: D103
-    auth_token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
+    auth_token: BearerToken,
     automatic_response_id: UUID,
 ) -> ResponseDeleteAutomaticResponse:
     with resources.db_engine.begin() as conn:
@@ -174,7 +174,7 @@ class ResponseSearchByPromptAutomaticResponse(BaseModel):  # noqa: D101
 
 @router.get("/search/by-prompt")
 async def search_by_prompt(
-    auth_token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
+    auth_token: BearerToken,
     prompt: str,
 ) -> ResponseSearchByPromptAutomaticResponse:
     """Search automatic response by prompt."""

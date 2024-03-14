@@ -37,7 +37,7 @@ click==8.1.7
     # via
     #   pyrgo
     #   uvicorn
-cohere==4.55
+cohere==4.56
 coverage==7.4.3
     # via pytest-cov
 cryptography==42.0.5
@@ -231,7 +231,7 @@ urllib3==2.2.1
     #   cohere
     #   qdrant-client
     #   requests
-uv==0.1.18
+uv==0.1.21
     # via pyrgo
 uvicorn==0.28.0
 uvloop==0.19.0

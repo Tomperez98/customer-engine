@@ -2,14 +2,14 @@
 
 from __future__ import annotations
 
-from typing import Annotated, Literal
+from typing import Literal
 
 import lego_workflows
-from fastapi import APIRouter, Depends
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer  # noqa: TCH002
+from fastapi import APIRouter
 from pydantic import BaseModel
 
 from customer_engine_api import handlers
+from customer_engine_api.api.ui._deps import BearerToken  # noqa: TCH001
 from customer_engine_api.core import jwt
 from customer_engine_api.core.config import resources
 from customer_engine_api.core.whatsapp import WhatsappTokens
@@ -23,7 +23,7 @@ class ResponseGetWhatsappTokens(BaseModel):  # noqa: D101
 
 @router.get("/")
 async def get_whatsapp_tokens(
-    auth_token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
+    auth_token: BearerToken,
 ) -> ResponseGetWhatsappTokens:
     """Get whatsapp tokens."""
     with resources.db_engine.begin() as conn:
@@ -49,7 +49,7 @@ class ResponseCreateWhatsappTokens(BaseModel):  # noqa: D101
 
 @router.post("/")
 async def create_whatsapp_tokens(
-    auth_token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
+    auth_token: BearerToken,
     req: CreateWhatsappTokens,
 ) -> ResponseCreateWhatsappTokens:
     """Create a whatsapp token."""
@@ -72,7 +72,7 @@ class ResponseDeleteWhatsappTokens(BaseModel):  # noqa: D101
 
 @router.delete("/")
 async def delete_whatsapp_tokens(  # noqa: D103
-    auth_token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
+    auth_token: BearerToken,
 ) -> ResponseDeleteWhatsappTokens:
     with resources.db_engine.begin() as conn:
         _, events = await lego_workflows.run_and_collect_events(
@@ -96,7 +96,7 @@ class ResponsePatchWhatsappTokens(BaseModel):  # noqa: D101
 
 @router.patch("/")
 async def patch_whatsapp_tokens(
-    auth_token: Annotated[HTTPAuthorizationCredentials, Depends(HTTPBearer())],
+    auth_token: BearerToken,
     req: PatchWhatsappTokens,
 ) -> ResponsePatchWhatsappTokens:
     """Patch whatsapp token."""
