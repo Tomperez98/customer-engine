@@ -4,14 +4,20 @@
 {% endblock header %}
 
 {% block content %}
-
-<h1 class="mb-3">fasthx example with Jinja2</h1>
-
-<p class="my-3">Normal Request to `/user-list` endpoint</p>
-<a href="/htmx/user-list" target="_blank">Get User List Data</a>
-
-
-<p class="my-3">HTMX Request to `/user-list` endpoint</p>
-<button type="button" class="btn btn-primary" hx-get="/htmx/user-list" hx-swap="outerHTML">User List Data</button>
-
+<form hx-post="/htmx/search" hx-target="#search-result">
+    <div>
+      <label>First Name</label>
+      <input type="text" name="name" value="Joe" class="form-control">
+    </div>
+    <div class="form-group">
+      <label>Last Name</label>
+      <input type="text" name="last_name" value="Blow" class="form-control">
+    </div>
+    <div class="form-group">
+      <label>Email Address</label>
+      <input type="email" name="email" value="joe@blow.com" class="form-control">
+    </div>
+    <button class="btn">Submit</button>
+  </form>
+  <div id="search-result"></div>
 {% endblock content %}

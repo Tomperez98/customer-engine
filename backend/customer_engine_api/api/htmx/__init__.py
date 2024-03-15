@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Form, Request
 from fastapi.responses import HTMLResponse  # noqa: TCH002
 from pydantic import BaseModel
 
 from customer_engine_api.core.config import resources
+from customer_engine_api.core.logging import logger
 
 router = APIRouter(prefix="/htmx", tags=["htmx"])
 
@@ -14,6 +15,18 @@ router = APIRouter(prefix="/htmx", tags=["htmx"])
 @router.get("")
 def index(req: Request) -> HTMLResponse:  # noqa: D103
     return resources.templates.TemplateResponse(request=req, name="index.html")
+
+
+@router.post("/search")
+def search(  # noqa: D103
+    req: Request, name: str = Form(), last_name: str = Form(), email: str = Form()
+) -> HTMLResponse:
+    logger.info(name)
+    logger.info(last_name)
+    logger.info(email)
+    return resources.templates.TemplateResponse(
+        request=req, name="search-result.html", context={"result": "sd"}
+    )
 
 
 class User(BaseModel):  # noqa: D101
