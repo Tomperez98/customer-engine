@@ -11,7 +11,7 @@ from pydantic import BaseModel
 
 from customer_engine_api import handlers
 from customer_engine_api.api.ui._deps import BearerToken  # noqa: TCH001
-from customer_engine_api.core import jwt
+from customer_engine_api.core import jwt, time
 from customer_engine_api.core.automatic_responses import AutomaticResponse
 from customer_engine_api.core.config import resources
 
@@ -39,6 +39,7 @@ async def create_automatic_response(
             cmd=handlers.automatic_responses.create.Command(
                 org_code=jwt.decode_token(
                     auth_token.credentials,
+                    current_time=time.now(),
                 ).org_code,
                 name=req.name,
                 examples=req.examples,
@@ -71,7 +72,10 @@ async def get_automatic_response(
             events,
         ) = await lego_workflows.run_and_collect_events(
             cmd=handlers.automatic_responses.get.Command(
-                org_code=jwt.decode_token(auth_token.credentials).org_code,
+                org_code=jwt.decode_token(
+                    auth_token.credentials,
+                    current_time=time.now(),
+                ).org_code,
                 automatic_response_id=automatic_response_id,
                 sql_conn=conn,
             )
@@ -103,7 +107,10 @@ async def patch_automatic_response(  # noqa: D103
     with resources.db_engine.begin() as conn:
         updated_response, events = await lego_workflows.run_and_collect_events(
             cmd=handlers.automatic_responses.update.Command(
-                org_code=jwt.decode_token(auth_token.credentials).org_code,
+                org_code=jwt.decode_token(
+                    auth_token.credentials,
+                    current_time=time.now(),
+                ).org_code,
                 automatic_response_id=automatic_response_id,
                 new_name=req.name,
                 new_examples=req.examples,
@@ -134,7 +141,10 @@ async def list_automatic_responses(  # noqa: D103
             events,
         ) = await lego_workflows.run_and_collect_events(
             cmd=handlers.automatic_responses.list_all.Command(
-                org_code=jwt.decode_token(auth_token.credentials).org_code,
+                org_code=jwt.decode_token(
+                    auth_token.credentials,
+                    current_time=time.now(),
+                ).org_code,
                 sql_conn=conn,
             )
         )
@@ -157,7 +167,10 @@ async def delete_automatic_response(  # noqa: D103
     with resources.db_engine.begin() as conn:
         deleted_response, events = await lego_workflows.run_and_collect_events(
             cmd=handlers.automatic_responses.delete.Command(
-                org_code=jwt.decode_token(auth_token.credentials).org_code,
+                org_code=jwt.decode_token(
+                    auth_token.credentials,
+                    current_time=time.now(),
+                ).org_code,
                 automatic_response_id=automatic_response_id,
                 sql_conn=conn,
                 qdrant_client=resources.clients.qdrant,
@@ -186,7 +199,10 @@ async def search_by_prompt(
             events,
         ) = await lego_workflows.run_and_collect_events(
             handlers.automatic_responses.search_by_prompt.Command(
-                org_code=jwt.decode_token(auth_token.credentials).org_code,
+                org_code=jwt.decode_token(
+                    auth_token.credentials,
+                    current_time=time.now(),
+                ).org_code,
                 prompt=prompt,
                 sql_conn=conn,
                 cohere_client=resources.clients.cohere,

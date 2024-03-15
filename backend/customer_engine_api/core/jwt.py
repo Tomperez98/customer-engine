@@ -10,8 +10,6 @@ from lego_workflows.components import DomainError
 from mashumaro import field_options
 from mashumaro.mixins.orjson import DataClassORJSONMixin
 
-from customer_engine_api.core import time
-
 
 class TokenExpiredError(DomainError):
     """Raised when token has expired."""
@@ -38,7 +36,7 @@ class KindeToken(DataClassORJSONMixin):
         )
 
 
-def decode_token(encoded_token: str) -> KindeToken:
+def decode_token(encoded_token: str, current_time: datetime.datetime) -> KindeToken:
     """Decode JWT token."""
     token = KindeToken.from_dict(
         jwt.decode(
@@ -47,7 +45,7 @@ def decode_token(encoded_token: str) -> KindeToken:
             algorithms=[jwt.get_unverified_header(encoded_token)["alg"]],
         )
     )
-    if token.is_expired(current_time=time.now()):
+    if token.is_expired(current_time=current_time):
         raise TokenExpiredError
 
     return token

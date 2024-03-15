@@ -10,7 +10,7 @@ from pydantic import BaseModel
 
 from customer_engine_api import handlers
 from customer_engine_api.api.ui._deps import BearerToken  # noqa: TCH001
-from customer_engine_api.core import jwt
+from customer_engine_api.core import jwt, time
 from customer_engine_api.core.config import resources
 from customer_engine_api.core.unmatched_prompts import UnmatchedPrompt
 
@@ -29,7 +29,10 @@ async def list_unmatched_prompts(
     with resources.db_engine.begin() as conn:
         listed_unmatched_prompts, events = await lego_workflows.run_and_collect_events(
             cmd=handlers.unmatched_prompts.list_all.Command(
-                org_code=jwt.decode_token(auth_token.credentials).org_code,
+                org_code=jwt.decode_token(
+                    auth_token.credentials,
+                    current_time=time.now(),
+                ).org_code,
                 sql_conn=conn,
             )
         )
@@ -54,7 +57,10 @@ async def delete_unmatched_prompt(
     with resources.db_engine.begin() as conn:
         deleted, events = await lego_workflows.run_and_collect_events(
             cmd=handlers.unmatched_prompts.delete.Command(
-                org_code=jwt.decode_token(auth_token.credentials).org_code,
+                org_code=jwt.decode_token(
+                    auth_token.credentials,
+                    current_time=time.now(),
+                ).org_code,
                 prompt_id=prompt_id,
                 sql_conn=conn,
             )
@@ -80,7 +86,10 @@ async def add_as_example_to_automatic_response(  # noqa: D103
             events,
         ) = await lego_workflows.run_and_collect_events(
             cmd=handlers.unmatched_prompts.add_as_example_to_automatic_response.Command(
-                org_code=jwt.decode_token(auth_token.credentials).org_code,
+                org_code=jwt.decode_token(
+                    auth_token.credentials,
+                    current_time=time.now(),
+                ).org_code,
                 prompt_id=prompt_id,
                 autoamtic_response_id=automatic_response_id,
                 sql_conn=conn,
