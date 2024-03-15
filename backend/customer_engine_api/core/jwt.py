@@ -16,7 +16,7 @@ from customer_engine_api.core import time
 class TokenExpiredError(DomainError):
     """Raised when token has expired."""
 
-    def __init__(self) -> None:
+    def __init__(self) -> None:  # noqa: D107
         super().__init__("Token expired.")
 
 
