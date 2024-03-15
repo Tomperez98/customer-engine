@@ -8,6 +8,7 @@ from typing import assert_never, cast
 
 import cohere
 from cryptography.fernet import Fernet
+from fastapi.templating import Jinja2Templates
 from qdrant_client import AsyncQdrantClient
 from sqlalchemy import create_engine
 
@@ -50,6 +51,7 @@ class _Resources:
             cohere=cohere.AsyncClient(api_key=os.environ["COHERE_API_KEY"]),
         )
         self.fernet: Fernet = Fernet(key=os.environ["ENCRYPT_KEY"])
+        self.templates = Jinja2Templates("templates")
 
 
 resources = _Resources()

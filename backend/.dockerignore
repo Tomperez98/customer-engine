@@ -1,5 +1,6 @@
 *
 !customer_engine_api/
+!templates/
 !requirements/core.txt
 !pyproject.toml
 !README.md

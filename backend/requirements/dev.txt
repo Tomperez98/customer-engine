@@ -46,10 +46,8 @@ cyclonedx-python-lib==6.4.3
 defusedxml==0.7.1
     # via py-serializable
 fastapi==0.110.0
-    # via fasthx
 fastavro==1.9.4
     # via cohere
-fasthx==0.2402.2
 filelock==3.13.1
     # via cachecontrol
 frozenlist==1.4.1
@@ -222,7 +220,6 @@ typing-extensions==4.10.0
     # via
     #   alembic
     #   fastapi
-    #   fasthx
     #   libsql-client
     #   mashumaro
     #   mypy

@@ -2,32 +2,35 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from fastapi import APIRouter, Request
+from fastapi.responses import HTMLResponse  # noqa: TCH002
+from pydantic import BaseModel
 
-from fastapi import APIRouter
-from fastapi.templating import Jinja2Templates
-from fasthx import Jinja
+from customer_engine_api.core.config import resources
 
 router = APIRouter(prefix="/htmx", tags=["htmx"])
-jinja = Jinja(Jinja2Templates("templates"))
 
 
-@router.get("/")
-@jinja.page("index.html")
-def index() -> None: ...
+@router.get("")
+def index(req: Request) -> HTMLResponse:  # noqa: D103
+    return resources.templates.TemplateResponse(request=req, name="index.html")
 
 
-@dataclass(frozen=True)
-class User:
+class User(BaseModel):  # noqa: D101
     first_name: str
     last_name: str
 
 
 @router.get("/user-list")
-@jinja.hx("user-list.html")
-def htmx_or_data() -> tuple[User, ...]:
-    """This route can serve both JSON and HTML, depending on if the request is an HTMX request or not."""
-    return (
-        User(first_name="Peter", last_name="Volf"),
-        User(first_name="Hasan", last_name="Tasan"),
+def htmx_or_data(req: Request) -> HTMLResponse:
+    """This route can serve both JSON and HTML, depending on if the request is an HTMX request or not."""  # noqa: D401, D404
+    return resources.templates.TemplateResponse(
+        request=req,
+        name="user-list.html",
+        context={
+            "items": (
+                User(first_name="Peter", last_name="Volf"),
+                User(first_name="Hasan", last_name="Tasan"),
+            )
+        },
     )

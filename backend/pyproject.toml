@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "customer-engine-api"
-version = "0.1.25"
+version = "0.1.26"
 readme = "README.md"
 requires-python = ">=3.12"
 classifiers = [
@@ -28,7 +28,7 @@ dependencies = [
     "orjson",
     "cryptography",
     "pyjwt < 3",
-    "fasthx",
+
 ]
 
 [project.urls]
