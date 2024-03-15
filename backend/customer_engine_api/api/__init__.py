@@ -9,7 +9,7 @@ from lego_workflows.components import DomainError
 from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
 
-from customer_engine_api.api import health, ui, webhooks
+from customer_engine_api.api import health, htmx, ui, webhooks
 
 app = FastAPI(
     middleware=[
@@ -25,6 +25,7 @@ app = FastAPI(
 app.include_router(router=health.router)
 app.include_router(router=ui.router)
 app.include_router(router=webhooks.router)
+app.include_router(router=htmx.router)
 
 
 class DomainErrorResponse(BaseModel):

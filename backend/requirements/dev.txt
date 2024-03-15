@@ -38,7 +38,7 @@ click==8.1.7
     #   pyrgo
     #   uvicorn
 cohere==4.56
-coverage==7.4.3
+coverage==7.4.4
     # via pytest-cov
 cryptography==42.0.5
 cyclonedx-python-lib==6.4.3
@@ -46,8 +46,10 @@ cyclonedx-python-lib==6.4.3
 defusedxml==0.7.1
     # via py-serializable
 fastapi==0.110.0
+    # via fasthx
 fastavro==1.9.4
     # via cohere
+fasthx==0.2402.2
 filelock==3.13.1
     # via cachecontrol
 frozenlist==1.4.1
@@ -220,6 +222,7 @@ typing-extensions==4.10.0
     # via
     #   alembic
     #   fastapi
+    #   fasthx
     #   libsql-client
     #   mashumaro
     #   mypy
@@ -246,5 +249,5 @@ websockets==12.0
     # via uvicorn
 yarl==1.9.4
     # via aiohttp
-zipp==3.18.0
+zipp==3.18.1
     # via importlib-metadata

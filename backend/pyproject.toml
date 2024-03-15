@@ -11,7 +11,7 @@ classifiers = [
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
 ]
-authors = [{ name = "Author name", email = "author@email.com" }]
+authors = [{ name = "Tomas Perez", email = "tomasperezalvarez@gmail.com" }]
 dependencies = [
     "lego-workflows >= 0.0.6, < 0.1.0",
     "sqlalchemy-libsql",
@@ -28,6 +28,7 @@ dependencies = [
     "orjson",
     "cryptography",
     "pyjwt < 3",
+    "fasthx",
 ]
 
 [project.urls]
