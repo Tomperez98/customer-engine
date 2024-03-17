@@ -5,7 +5,8 @@ from __future__ import annotations
 from typing import Literal
 
 import lego_workflows
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
+from lego_workflows.components import DomainError
 from pydantic import BaseModel
 
 from customer_engine_api import handlers
@@ -26,16 +27,25 @@ async def get_whatsapp_tokens(
     auth_token: BearerToken,
 ) -> ResponseGetWhatsappTokens:
     """Get whatsapp tokens."""
-    with resources.db_engine.begin() as conn:
-        whatsapp_token, events = await lego_workflows.run_and_collect_events(
-            cmd=handlers.whatsapp.get_tokens.Command(
-                org_code=jwt.decode_token(
-                    auth_token.credentials,
-                    current_time=time.now(),
-                ).org_code,
-                sql_conn=conn,
+    try:
+        with resources.db_engine.begin() as conn:
+            whatsapp_token, events = await lego_workflows.run_and_collect_events(
+                cmd=handlers.whatsapp.get_tokens.Command(
+                    org_code=jwt.decode_token(
+                        auth_token.credentials,
+                        current_time=time.now(),
+                    ).org_code,
+                    sql_conn=conn,
+                )
             )
-        )
+    except handlers.whatsapp.get_tokens.WhatsappTokenNotFoundError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=str(e)
+        ) from None
+    except DomainError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        ) from None
 
     await lego_workflows.publish_events(events=events)
     return ResponseGetWhatsappTokens(token=whatsapp_token.whatsapp_token)
@@ -56,18 +66,23 @@ async def create_whatsapp_tokens(
     req: CreateWhatsappTokens,
 ) -> ResponseCreateWhatsappTokens:
     """Create a whatsapp token."""
-    with resources.db_engine.begin() as conn:
-        _, events = await lego_workflows.run_and_collect_events(
-            cmd=handlers.whatsapp.register_tokens.Command(
-                org_code=jwt.decode_token(
-                    auth_token.credentials,
-                    current_time=time.now(),
-                ).org_code,
-                sql_conn=conn,
-                access_token=req.access_token,
-                user_token=req.user_token,
+    try:
+        with resources.db_engine.begin() as conn:
+            _, events = await lego_workflows.run_and_collect_events(
+                cmd=handlers.whatsapp.register_tokens.Command(
+                    org_code=jwt.decode_token(
+                        auth_token.credentials,
+                        current_time=time.now(),
+                    ).org_code,
+                    sql_conn=conn,
+                    access_token=req.access_token,
+                    user_token=req.user_token,
+                )
             )
-        )
+    except DomainError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        ) from None
     await lego_workflows.publish_events(events=events)
     return ResponseCreateWhatsappTokens(status="created")
 
@@ -80,16 +95,21 @@ class ResponseDeleteWhatsappTokens(BaseModel):  # noqa: D101
 async def delete_whatsapp_tokens(  # noqa: D103
     auth_token: BearerToken,
 ) -> ResponseDeleteWhatsappTokens:
-    with resources.db_engine.begin() as conn:
-        _, events = await lego_workflows.run_and_collect_events(
-            cmd=handlers.whatsapp.delete_tokens.Command(
-                org_code=jwt.decode_token(
-                    auth_token.credentials,
-                    current_time=time.now(),
-                ).org_code,
-                sql_conn=conn,
+    try:
+        with resources.db_engine.begin() as conn:
+            _, events = await lego_workflows.run_and_collect_events(
+                cmd=handlers.whatsapp.delete_tokens.Command(
+                    org_code=jwt.decode_token(
+                        auth_token.credentials,
+                        current_time=time.now(),
+                    ).org_code,
+                    sql_conn=conn,
+                )
             )
-        )
+    except DomainError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        ) from None
     await lego_workflows.publish_events(events=events)
     return ResponseDeleteWhatsappTokens(status="deleted")
 
@@ -109,18 +129,23 @@ async def patch_whatsapp_tokens(
     req: PatchWhatsappTokens,
 ) -> ResponsePatchWhatsappTokens:
     """Patch whatsapp token."""
-    with resources.db_engine.begin() as conn:
-        _, events = await lego_workflows.run_and_collect_events(
-            cmd=handlers.whatsapp.update_tokens.Command(
-                org_code=jwt.decode_token(
-                    auth_token.credentials,
-                    current_time=time.now(),
-                ).org_code,
-                new_access_token=req.new_access_token,
-                new_user_token=req.new_user_token,
-                sql_conn=conn,
+    try:
+        with resources.db_engine.begin() as conn:
+            _, events = await lego_workflows.run_and_collect_events(
+                cmd=handlers.whatsapp.update_tokens.Command(
+                    org_code=jwt.decode_token(
+                        auth_token.credentials,
+                        current_time=time.now(),
+                    ).org_code,
+                    new_access_token=req.new_access_token,
+                    new_user_token=req.new_user_token,
+                    sql_conn=conn,
+                )
             )
-        )
+    except DomainError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        ) from None
 
     await lego_workflows.publish_events(events=events)
     return ResponsePatchWhatsappTokens(status="updated")

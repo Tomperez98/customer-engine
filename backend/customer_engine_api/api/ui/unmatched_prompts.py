@@ -5,7 +5,8 @@ from __future__ import annotations
 from uuid import UUID
 
 import lego_workflows
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
+from lego_workflows.components import DomainError
 from pydantic import BaseModel
 
 from customer_engine_api import handlers
@@ -26,16 +27,24 @@ async def list_unmatched_prompts(
     auth_token: BearerToken,
 ) -> ResponseListUnmatchedPrompts:
     """List unmatched prompts."""
-    with resources.db_engine.begin() as conn:
-        listed_unmatched_prompts, events = await lego_workflows.run_and_collect_events(
-            cmd=handlers.unmatched_prompts.list_all.Command(
-                org_code=jwt.decode_token(
-                    auth_token.credentials,
-                    current_time=time.now(),
-                ).org_code,
-                sql_conn=conn,
+    try:
+        with resources.db_engine.begin() as conn:
+            (
+                listed_unmatched_prompts,
+                events,
+            ) = await lego_workflows.run_and_collect_events(
+                cmd=handlers.unmatched_prompts.list_all.Command(
+                    org_code=jwt.decode_token(
+                        auth_token.credentials,
+                        current_time=time.now(),
+                    ).org_code,
+                    sql_conn=conn,
+                )
             )
-        )
+    except DomainError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        ) from None
 
     await lego_workflows.publish_events(events=events)
 
@@ -54,17 +63,22 @@ async def delete_unmatched_prompt(
     prompt_id: UUID,
 ) -> ResponseDeleteUnmatchedPrompt:
     """Delete unmatched prompt."""
-    with resources.db_engine.begin() as conn:
-        deleted, events = await lego_workflows.run_and_collect_events(
-            cmd=handlers.unmatched_prompts.delete.Command(
-                org_code=jwt.decode_token(
-                    auth_token.credentials,
-                    current_time=time.now(),
-                ).org_code,
-                prompt_id=prompt_id,
-                sql_conn=conn,
+    try:
+        with resources.db_engine.begin() as conn:
+            deleted, events = await lego_workflows.run_and_collect_events(
+                cmd=handlers.unmatched_prompts.delete.Command(
+                    org_code=jwt.decode_token(
+                        auth_token.credentials,
+                        current_time=time.now(),
+                    ).org_code,
+                    prompt_id=prompt_id,
+                    sql_conn=conn,
+                )
             )
-        )
+    except DomainError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        ) from None
 
     await lego_workflows.publish_events(events=events)
     return ResponseDeleteUnmatchedPrompt(deleted_unmatched_prompt=deleted.prompt_id)
@@ -80,23 +94,28 @@ async def add_as_example_to_automatic_response(  # noqa: D103
     prompt_id: UUID,
     automatic_response_id: UUID,
 ) -> ResponseAddAsExampleToAutomaticResponse:
-    with resources.db_engine.begin() as conn:
-        (
-            added_to_automatic_response,
-            events,
-        ) = await lego_workflows.run_and_collect_events(
-            cmd=handlers.unmatched_prompts.add_as_example_to_automatic_response.Command(
-                org_code=jwt.decode_token(
-                    auth_token.credentials,
-                    current_time=time.now(),
-                ).org_code,
-                prompt_id=prompt_id,
-                autoamtic_response_id=automatic_response_id,
-                sql_conn=conn,
-                cohere_client=resources.clients.cohere,
-                qdrant_client=resources.clients.qdrant,
+    try:
+        with resources.db_engine.begin() as conn:
+            (
+                added_to_automatic_response,
+                events,
+            ) = await lego_workflows.run_and_collect_events(
+                cmd=handlers.unmatched_prompts.add_as_example_to_automatic_response.Command(
+                    org_code=jwt.decode_token(
+                        auth_token.credentials,
+                        current_time=time.now(),
+                    ).org_code,
+                    prompt_id=prompt_id,
+                    autoamtic_response_id=automatic_response_id,
+                    sql_conn=conn,
+                    cohere_client=resources.clients.cohere,
+                    qdrant_client=resources.clients.qdrant,
+                )
             )
-        )
+    except DomainError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        ) from None
 
     await lego_workflows.publish_events(events=events)
     return ResponseAddAsExampleToAutomaticResponse(

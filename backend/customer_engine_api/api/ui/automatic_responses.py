@@ -6,7 +6,8 @@ from typing import assert_never
 from uuid import UUID
 
 import lego_workflows
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
+from lego_workflows.components import DomainError
 from pydantic import BaseModel
 
 from customer_engine_api import handlers
@@ -34,21 +35,26 @@ async def create_automatic_response(
     req: CreateAutomaticResponse,
 ) -> ResponseCreateAutomaticResponse:
     """Create a new automatic response."""
-    with resources.db_engine.begin() as conn:
-        created_response, events = await lego_workflows.run_and_collect_events(
-            cmd=handlers.automatic_responses.create.Command(
-                org_code=jwt.decode_token(
-                    auth_token.credentials,
-                    current_time=time.now(),
-                ).org_code,
-                name=req.name,
-                examples=req.examples,
-                response=req.response,
-                sql_conn=conn,
-                qdrant_client=resources.clients.qdrant,
-                cohere_client=resources.clients.cohere,
+    try:
+        with resources.db_engine.begin() as conn:
+            created_response, events = await lego_workflows.run_and_collect_events(
+                cmd=handlers.automatic_responses.create.Command(
+                    org_code=jwt.decode_token(
+                        auth_token.credentials,
+                        current_time=time.now(),
+                    ).org_code,
+                    name=req.name,
+                    examples=req.examples,
+                    response=req.response,
+                    sql_conn=conn,
+                    qdrant_client=resources.clients.qdrant,
+                    cohere_client=resources.clients.cohere,
+                )
             )
-        )
+    except DomainError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        ) from None
 
     await lego_workflows.publish_events(events=events)
     return ResponseCreateAutomaticResponse(
@@ -66,20 +72,25 @@ async def get_automatic_response(
     auth_token: BearerToken,
 ) -> ResponseGetAutomaticResponse:
     """Get automatic response."""
-    with resources.db_engine.begin() as conn:
-        (
-            existing_automatic_response,
-            events,
-        ) = await lego_workflows.run_and_collect_events(
-            cmd=handlers.automatic_responses.get.Command(
-                org_code=jwt.decode_token(
-                    auth_token.credentials,
-                    current_time=time.now(),
-                ).org_code,
-                automatic_response_id=automatic_response_id,
-                sql_conn=conn,
+    try:
+        with resources.db_engine.begin() as conn:
+            (
+                existing_automatic_response,
+                events,
+            ) = await lego_workflows.run_and_collect_events(
+                cmd=handlers.automatic_responses.get.Command(
+                    org_code=jwt.decode_token(
+                        auth_token.credentials,
+                        current_time=time.now(),
+                    ).org_code,
+                    automatic_response_id=automatic_response_id,
+                    sql_conn=conn,
+                )
             )
-        )
+    except DomainError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        ) from None
 
     await lego_workflows.publish_events(events=events)
 
@@ -104,22 +115,27 @@ async def patch_automatic_response(  # noqa: D103
     automatic_response_id: UUID,
     req: PatchAutomaticResponse,
 ) -> ResponsePatchAutomaticResponse:
-    with resources.db_engine.begin() as conn:
-        updated_response, events = await lego_workflows.run_and_collect_events(
-            cmd=handlers.automatic_responses.update.Command(
-                org_code=jwt.decode_token(
-                    auth_token.credentials,
-                    current_time=time.now(),
-                ).org_code,
-                automatic_response_id=automatic_response_id,
-                new_name=req.name,
-                new_examples=req.examples,
-                new_response=req.response,
-                sql_conn=conn,
-                cohere_client=resources.clients.cohere,
-                qdrant_client=resources.clients.qdrant,
+    try:
+        with resources.db_engine.begin() as conn:
+            updated_response, events = await lego_workflows.run_and_collect_events(
+                cmd=handlers.automatic_responses.update.Command(
+                    org_code=jwt.decode_token(
+                        auth_token.credentials,
+                        current_time=time.now(),
+                    ).org_code,
+                    automatic_response_id=automatic_response_id,
+                    new_name=req.name,
+                    new_examples=req.examples,
+                    new_response=req.response,
+                    sql_conn=conn,
+                    cohere_client=resources.clients.cohere,
+                    qdrant_client=resources.clients.qdrant,
+                )
             )
-        )
+    except DomainError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        ) from None
 
     await lego_workflows.publish_events(events=events)
     return ResponsePatchAutomaticResponse(
@@ -135,20 +151,24 @@ class ResponseListAutomaticResponse(BaseModel):  # noqa: D101
 async def list_automatic_responses(  # noqa: D103
     auth_token: BearerToken,
 ) -> ResponseListAutomaticResponse:
-    with resources.db_engine.begin() as conn:
-        (
-            listed_automatic_responses,
-            events,
-        ) = await lego_workflows.run_and_collect_events(
-            cmd=handlers.automatic_responses.list_all.Command(
-                org_code=jwt.decode_token(
-                    auth_token.credentials,
-                    current_time=time.now(),
-                ).org_code,
-                sql_conn=conn,
+    try:
+        with resources.db_engine.begin() as conn:
+            (
+                listed_automatic_responses,
+                events,
+            ) = await lego_workflows.run_and_collect_events(
+                cmd=handlers.automatic_responses.list_all.Command(
+                    org_code=jwt.decode_token(
+                        auth_token.credentials,
+                        current_time=time.now(),
+                    ).org_code,
+                    sql_conn=conn,
+                )
             )
-        )
-
+    except DomainError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        ) from None
     await lego_workflows.publish_events(events=events)
     return ResponseListAutomaticResponse(
         automatic_response=listed_automatic_responses.automatic_responses
@@ -164,18 +184,23 @@ async def delete_automatic_response(  # noqa: D103
     auth_token: BearerToken,
     automatic_response_id: UUID,
 ) -> ResponseDeleteAutomaticResponse:
-    with resources.db_engine.begin() as conn:
-        deleted_response, events = await lego_workflows.run_and_collect_events(
-            cmd=handlers.automatic_responses.delete.Command(
-                org_code=jwt.decode_token(
-                    auth_token.credentials,
-                    current_time=time.now(),
-                ).org_code,
-                automatic_response_id=automatic_response_id,
-                sql_conn=conn,
-                qdrant_client=resources.clients.qdrant,
+    try:
+        with resources.db_engine.begin() as conn:
+            deleted_response, events = await lego_workflows.run_and_collect_events(
+                cmd=handlers.automatic_responses.delete.Command(
+                    org_code=jwt.decode_token(
+                        auth_token.credentials,
+                        current_time=time.now(),
+                    ).org_code,
+                    automatic_response_id=automatic_response_id,
+                    sql_conn=conn,
+                    qdrant_client=resources.clients.qdrant,
+                )
             )
-        )
+    except DomainError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        ) from None
 
     await lego_workflows.publish_events(events=events)
     return ResponseDeleteAutomaticResponse(
@@ -193,22 +218,27 @@ async def search_by_prompt(
     prompt: str,
 ) -> ResponseSearchByPromptAutomaticResponse:
     """Search automatic response by prompt."""
-    with resources.db_engine.begin() as conn:
-        (
-            result_automatic_response,
-            events,
-        ) = await lego_workflows.run_and_collect_events(
-            handlers.automatic_responses.search_by_prompt.Command(
-                org_code=jwt.decode_token(
-                    auth_token.credentials,
-                    current_time=time.now(),
-                ).org_code,
-                prompt=prompt,
-                sql_conn=conn,
-                cohere_client=resources.clients.cohere,
-                qdrant_client=resources.clients.qdrant,
+    try:
+        with resources.db_engine.begin() as conn:
+            (
+                result_automatic_response,
+                events,
+            ) = await lego_workflows.run_and_collect_events(
+                handlers.automatic_responses.search_by_prompt.Command(
+                    org_code=jwt.decode_token(
+                        auth_token.credentials,
+                        current_time=time.now(),
+                    ).org_code,
+                    prompt=prompt,
+                    sql_conn=conn,
+                    cohere_client=resources.clients.cohere,
+                    qdrant_client=resources.clients.qdrant,
+                )
             )
-        )
+    except DomainError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        ) from None
 
     await lego_workflows.publish_events(events=events)
 
