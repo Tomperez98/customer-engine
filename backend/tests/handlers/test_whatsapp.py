@@ -45,10 +45,7 @@ async def test_get_existing() -> None:
             hashed=whatsapp_token.user_token, string="HELLO", algo="sha256"
         )
 
-        assert (
-            whatsapp_token.decrypt_access_token(fernet=resources.fernet)
-            == test_access_token
-        )
+        assert whatsapp_token.access_token == test_access_token
 
         await lego_workflows.run_and_collect_events(
             cmd=handlers.whatsapp.delete_tokens.Command(
@@ -91,7 +88,8 @@ async def test_update() -> None:
         assert whatsapp.hashing.check_same_hashed(
             hashed=whatsapp_token.user_token, string="BYE", algo="sha256"
         )
-        assert whatsapp_token.decrypt_access_token(fernet=resources.fernet) == "567"
+
+        assert whatsapp_token.access_token == "567"  # noqa: S105
 
         await lego_workflows.run_and_collect_events(
             cmd=handlers.whatsapp.delete_tokens.Command(

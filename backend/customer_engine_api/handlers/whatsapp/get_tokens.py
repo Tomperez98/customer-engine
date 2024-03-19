@@ -13,6 +13,7 @@ from lego_workflows.components import (
 )
 from sqlalchemy import Connection, bindparam, text
 
+from customer_engine_api.core.config import resources
 from customer_engine_api.core.whatsapp import WhatsappTokens
 
 
@@ -50,4 +51,6 @@ class Command(CommandComponent[Response]):  # noqa: D101
         if whatsapp_token_row is None:
             raise WhatsappTokenNotFoundError(org_code=self.org_code)
 
-        return Response(whatsapp_token=WhatsappTokens.from_row(whatsapp_token_row))
+        whatsapp_tokens = WhatsappTokens.from_row(whatsapp_token_row)
+        whatsapp_tokens.with_decrypted_access_token(fernet=resources.fernet)
+        return Response(whatsapp_token=whatsapp_tokens)

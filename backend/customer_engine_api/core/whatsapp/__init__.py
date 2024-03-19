@@ -30,6 +30,6 @@ class WhatsappTokens(DataClassORJSONMixin, SqlQueriable):
         """Instantiate class from sql row."""
         return cls.from_dict(row._asdict())
 
-    def decrypt_access_token(self, fernet: Fernet) -> str:
+    def with_decrypted_access_token(self, fernet: Fernet) -> None:
         """Decrypt access token."""
-        return fernet.decrypt(token=self.access_token).decode()
+        self.access_token = fernet.decrypt(token=self.access_token).decode()

@@ -15,7 +15,6 @@ from lego_workflows.components import CommandComponent, DomainEvent, ResponseCom
 
 from customer_engine_api.core.api_clients.whatsapp import AsyncWhatsappClient
 from customer_engine_api.core.automatic_responses import AutomaticResponse
-from customer_engine_api.core.config import resources
 from customer_engine_api.handlers.automatic_responses import search_by_prompt
 from customer_engine_api.handlers.whatsapp import get_tokens
 
@@ -75,9 +74,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
         )[0]
 
         whatsapp_client = AsyncWhatsappClient(
-            bearer_token=wa_token_response.whatsapp_token.decrypt_access_token(
-                fernet=resources.fernet
-            ),
+            bearer_token=wa_token_response.whatsapp_token.access_token,
             phone_number_id=specific_webhook_payload["metadata"]["phone_number_id"],
         )
 
