@@ -115,8 +115,8 @@ async def delete_whatsapp_tokens(  # noqa: D103
 
 
 class PatchWhatsappTokens(BaseModel):  # noqa: D101
-    new_access_token: str | None
-    new_user_token: str | None
+    access_token: str | None
+    user_token: str | None
 
 
 class ResponsePatchWhatsappTokens(BaseModel):  # noqa: D101
@@ -137,8 +137,8 @@ async def patch_whatsapp_tokens(
                         auth_token.credentials,
                         current_time=time.now(),
                     ).org_code,
-                    new_access_token=req.new_access_token,
-                    new_user_token=req.new_user_token,
+                    new_access_token=req.access_token,
+                    new_user_token=req.user_token,
                     sql_conn=conn,
                 )
             )
