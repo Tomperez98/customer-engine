@@ -51,6 +51,10 @@ class Command(CommandComponent[Response]):  # noqa: D101
         if whatsapp_token_row is None:
             raise WhatsappTokenNotFoundError(org_code=self.org_code)
 
-        whatsapp_tokens = WhatsappTokens.from_row(whatsapp_token_row)
-        whatsapp_tokens.with_decrypted_access_token(fernet=resources.fernet)
+        whatsapp_tokens = WhatsappTokens.from_row(
+            whatsapp_token_row
+        ).with_decrypted_access_token(
+            fernet=resources.fernet,
+        )
+
         return Response(whatsapp_token=whatsapp_tokens)
