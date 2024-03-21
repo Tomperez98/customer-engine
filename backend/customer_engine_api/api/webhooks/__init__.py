@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import lego_workflows
 from fastapi import APIRouter, Request, Response, status
 from fastapi.exceptions import HTTPException
@@ -10,6 +12,9 @@ from customer_engine_api import handlers
 from customer_engine_api.core import whatsapp
 from customer_engine_api.core.config import resources
 from customer_engine_api.core.logging import logger
+
+if TYPE_CHECKING:
+    from customer_engine_api.core.typing import JsonResponse
 
 router = APIRouter(prefix="/webhooks", tags=["webhooks"])
 
@@ -33,7 +38,7 @@ async def suscribe_whatsapp_webhooks(org_code: str, req: Request) -> Response:  
 
 @router.post("/whatsapp/{org_code}")
 async def whatsapp_webhooks(org_code: str, req: Request) -> None:  # noqa: D103
-    payload = await req.json()
+    payload: JsonResponse = await req.json()
 
     with resources.db_engine.begin() as conn:
         most_similar_response, events = await lego_workflows.run_and_collect_events(

@@ -8,13 +8,13 @@ from typing import TYPE_CHECKING, Any, Self
 from mashumaro.mixins.orjson import DataClassORJSONMixin
 
 from customer_engine_api.core.interfaces import SqlQueriable
-from customer_engine_api.core.whatsapp import _hashing as hashing
+from customer_engine_api.core.whatsapp import _hashing as hashing, _payloads as payloads
 
 if TYPE_CHECKING:
     from cryptography.fernet import Fernet
     from sqlalchemy import Row
 
-__all__ = ["hashing"]
+__all__ = ["hashing", "payloads"]
 
 
 @dataclass(frozen=False)
