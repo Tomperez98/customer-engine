@@ -1,4 +1,5 @@
 export enum TokenKeys {
+    webhook_url = 'Url webhook',
     access_token = 'Token de acceso (Access token)',
     user_token = 'Token de usuario (User token)',
 }

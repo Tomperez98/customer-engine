@@ -1,9 +1,10 @@
 import Button from '@/components/Button'
 import EditableInputField from '@/components/EditableInputField'
 import {TOKEN_FIELDS, TOKEN_TEMPLATE} from '@/constants/tokenFields'
+import {BASE_URL} from '@/constants/url'
 import useDeleteToken from '@/hooks/tokens/useDeleteToken'
 import useEditToken from '@/hooks/tokens/useEditToken'
-import {Token, TokenKey, TokenTemplate} from '@/types/Tokens'
+import {Token, TokenKey, TokenKeys, TokenTemplate} from '@/types/Tokens'
 import {
     validateFormHasChanges,
     validateNoEmptyFields,
@@ -67,6 +68,16 @@ const EditToken = ({setShouldRefetch, token}: EditTokenProps) => {
 
     return (
         <div className='flex w-full flex-col flex-wrap gap-4 text-wrap'>
+            <div>
+                <label
+                    htmlFor='automatic_response_id'
+                    className='text-lg font-semibold capitalize text-neutral-800'>
+                    {TokenKeys['webhook_url']}
+                </label>
+                <p>
+                    {BASE_URL}/webhooks/whatsapp/{token.org_code}
+                </p>
+            </div>
             {TOKEN_FIELDS.map((field, idx: number) => {
                 return (
                     <EditableInputField
