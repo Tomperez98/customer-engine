@@ -1,6 +1,5 @@
 import {FormKey} from '@/types/Forms'
 import {ChangeEvent, useEffect, useRef, useState} from 'react'
-import ReactHtmlParser from 'react-html-parser'
 
 interface RichTextEditorProps {
     value: string | string[]
@@ -40,7 +39,6 @@ const RichTextEditor = ({
     onChange,
     value,
     setFormTemplate,
-    formTemplate,
 }: RichTextEditorProps) => {
     const textareaRef = useRef<HTMLTextAreaElement>(null)
     const [selectedText, setSelectedText] = useState<any>({

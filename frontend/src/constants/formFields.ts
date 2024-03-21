@@ -1,6 +1,7 @@
-import {FormKeys, InputField} from '@/types/Forms'
+import {FormKeys} from '@/types/Forms'
+import {InputField} from '@/types/Inputs'
 
-export const INPUT_FIELDS: InputField[] = [
+export const FORM_FIELDS: InputField[] = [
     {
         name: 'name',
         label: FormKeys['name'],

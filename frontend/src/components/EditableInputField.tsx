@@ -1,39 +1,40 @@
 'use client'
 
 import {ChangeEvent, useCallback, useEffect, useState} from 'react'
-import {MdEdit} from 'react-icons/md'
-import {FormKey, FormTemplate} from '@/types/Forms'
+import {MdEditSquare, MdCancel} from 'react-icons/md'
+import {InputName, Template} from '@/types/Inputs'
 import Input from './Input'
 import RichTextEditor from './RichTextEditor'
+import IconButton from './IconButton'
 
 interface EditableInputFieldProps {
-    fieldName: FormKey
+    fieldName: InputName
     originalValue: string | string[]
-    isEditingForm: boolean
+    isEditingTemplate: boolean
     label: string
-    setIsEditingForm: (isEditingForm: boolean) => void
-    setFormTemplate: (formTemplate: FormTemplate) => void
-    formTemplate: FormTemplate
+    setIsEditingTemplate: (isEditingTemplate: boolean) => void
+    setTemplate: any
+    template: Template
     type: 'input' | 'textarea'
     souldForceReset?: boolean
 }
 
 const EditableInputField = ({
     fieldName,
-    formTemplate,
-    isEditingForm,
+    template,
+    isEditingTemplate,
     label,
     originalValue,
-    setIsEditingForm,
-    setFormTemplate,
+    setIsEditingTemplate,
+    setTemplate,
     type,
     souldForceReset,
 }: EditableInputFieldProps) => {
     const [isEditing, setIsEditing] = useState<boolean>(false)
 
     const handleEditField = () => {
-        if (!isEditingForm) {
-            setIsEditingForm(true)
+        if (!isEditingTemplate) {
+            setIsEditingTemplate(true)
         }
         setIsEditing(true)
     }
@@ -41,16 +42,16 @@ const EditableInputField = ({
     const handleInputFieldChange = useCallback(
         (
             event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-            name: FormKey
+            name: InputName
         ) => {
-            setFormTemplate({...formTemplate, [name]: event.target.value})
+            setTemplate({...template, [name]: event.target.value})
         },
-        [formTemplate, setFormTemplate]
+        [template, setTemplate]
     )
 
     const handleReset = () => {
         setIsEditing(false)
-        setFormTemplate({...formTemplate, [fieldName]: originalValue})
+        setTemplate({...template, [fieldName]: originalValue})
     }
 
     useEffect(() => {
@@ -65,21 +66,21 @@ const EditableInputField = ({
                 <Input
                     name={fieldName}
                     onChange={handleInputFieldChange}
-                    value={formTemplate[fieldName] || ''}
+                    value={(template as any)[fieldName] || ''}
                 />
             )
         }
         if (type === 'textarea') {
             return (
                 <RichTextEditor
-                    name={fieldName}
+                    name={fieldName as any}
                     onChange={handleInputFieldChange}
-                    value={formTemplate[fieldName] || ''}
+                    value={(template as any)[fieldName] || ''}
                 />
             )
         }
         return null
-    }, [fieldName, formTemplate, handleInputFieldChange, type])
+    }, [fieldName, template, handleInputFieldChange, type])
 
     return (
         <div className='mb-1 w-full'>
@@ -90,15 +91,24 @@ const EditableInputField = ({
                     {label}
                 </label>
                 {isEditing ? (
-                    <button onClick={handleReset}>reset</button>
+                    <IconButton
+                        Icon={MdCancel}
+                        onClick={handleReset}
+                        size='text-lg'
+                    />
                 ) : (
-                    <MdEdit
-                        className='cursor-pointer'
+                    <IconButton
+                        Icon={MdEditSquare}
                         onClick={handleEditField}
+                        size='text-lg'
                     />
                 )}
             </div>
-            {isEditing ? getInputElement() : <p>{formTemplate[fieldName]}</p>}
+            {isEditing ? (
+                getInputElement()
+            ) : (
+                <p className='break-words'>{(template as any)[fieldName]}</p>
+            )}
         </div>
     )
 }

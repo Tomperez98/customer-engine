@@ -1,13 +1,13 @@
-import {FormKey} from '@/types/Forms'
+import {InputName} from '@/types/Inputs'
 import {ChangeEvent} from 'react'
 
 interface InputProps {
     value: string | string[]
     onChange: (
         e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-        name: FormKey
+        name: InputName
     ) => void
-    name: FormKey
+    name: InputName
 }
 
 const Input = ({name, onChange, value}: InputProps) => {

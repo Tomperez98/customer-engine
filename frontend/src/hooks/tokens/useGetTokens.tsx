@@ -1,24 +1,17 @@
 import {useEffect, useState} from 'react'
-import {Form} from '@/types/Forms'
 import {BASE_URL} from '@/constants/url'
 import {useKindeBrowserClient} from '@kinde-oss/kinde-auth-nextjs'
+import {Token} from '@/types/Tokens'
 
-type FormListResponse = {
-    automatic_response: Form[]
+type TokenResponse = {
+    token: Token
 }
 
-export type FormResponse = {
-    automatic_response: Form
-}
-
-const useGetForms = (id?: string) => {
-    const [data, setData] = useState<FormListResponse | FormResponse>()
+const useGetToken = () => {
+    const [data, setData] = useState<TokenResponse>()
     const [isLoading, setIsLoading] = useState<boolean>(false)
+    const [errorCode, setErrorCode] = useState<number | null>(null)
     const {accessTokenEncoded} = useKindeBrowserClient()
-
-    const url = id
-        ? `${BASE_URL}/automatic-responses/${id}`
-        : `${BASE_URL}/automatic-responses`
 
     const fetchForms = async () => {
         if (!accessTokenEncoded) return
@@ -26,18 +19,19 @@ const useGetForms = (id?: string) => {
             Authorization: `Bearer ${accessTokenEncoded}`,
         }
         setIsLoading(true)
+        setErrorCode(null)
 
         try {
-            const res = await fetch(url, {
+            const res = await fetch(`${BASE_URL}/whatsapp-tokens`, {
                 headers: headers,
             })
+            if (!res.ok) {
+                setErrorCode(res.status)
+                throw new Error(`HTTP error: ${res.status}`)
+            }
             const resJson = await res.json()
 
-            if (id) {
-                setData(resJson as FormResponse)
-            } else {
-                setData(resJson as FormListResponse)
-            }
+            setData(resJson)
         } catch (error) {
             console.log(error)
         } finally {
@@ -55,7 +49,7 @@ const useGetForms = (id?: string) => {
         fetchForms()
     }
 
-    return {data, isLoading, refetch}
+    return {data, isLoading, refetch, errorCode}
 }
 
-export default useGetForms
+export default useGetToken

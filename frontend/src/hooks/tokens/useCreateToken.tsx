@@ -1,10 +1,10 @@
 'use client'
 import {useState} from 'react'
-import {Form} from '@/types/Forms'
 import {BASE_URL} from '@/constants/url'
 import {useKindeBrowserClient} from '@kinde-oss/kinde-auth-nextjs'
+import {TokenTemplate} from '@/types/Tokens'
 
-const useEditForm = (id: string, data: Form) => {
+const useCreateToken = (data: TokenTemplate) => {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState(null)
     const {accessTokenEncoded} = useKindeBrowserClient()
@@ -17,15 +17,11 @@ const useEditForm = (id: string, data: Form) => {
         setIsLoading(true)
         setError(null)
         try {
-            Reflect.deleteProperty(data, 'automatic_response_id')
-            const response = await fetch(
-                `${BASE_URL}/automatic-responses/${id}`,
-                {
-                    method: 'PATCH',
-                    headers: headers,
-                    body: JSON.stringify(data),
-                }
-            )
+            const response = await fetch(`${BASE_URL}/whatsapp-tokens`, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(data),
+            })
             setIsLoading(false)
             return await response.json()
         } catch (error: any) {
@@ -38,4 +34,4 @@ const useEditForm = (id: string, data: Form) => {
     return {submit, isLoading, error}
 }
 
-export default useEditForm
+export default useCreateToken

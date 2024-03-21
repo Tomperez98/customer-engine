@@ -6,7 +6,7 @@ import {Form, FormKey, FormKeys, FormTemplate} from '@/types/Forms'
 import useEditForm from '@/hooks/forms/useEditForm'
 import EditableInputField from '@/components/EditableInputField'
 import EditableListField from '@/components/EditableListField'
-import {FORM_TEMPLATE, INPUT_FIELDS} from '@/constants/formFields'
+import {FORM_TEMPLATE, FORM_FIELDS} from '@/constants/formFields'
 import {
     validateFormHasChanges,
     validateNoEmptyFields,
@@ -87,25 +87,25 @@ const FormDetail = ({params}: {params: {'automatic-response-id': string}}) => {
                                 </label>
                                 <p>{formData?.automatic_response_id}</p>
                             </>
-                            {INPUT_FIELDS.map((field, idx: number) => {
+                            {FORM_FIELDS.map((field, idx: number) => {
                                 if (
                                     field.component === 'input' ||
                                     field.component === 'textarea'
                                 ) {
                                     return (
                                         <EditableInputField
-                                            fieldName={field.name}
-                                            formTemplate={editFormTemplate}
-                                            isEditingForm={isEditingForm}
+                                            fieldName={field.name as FormKey}
+                                            template={editFormTemplate}
+                                            isEditingTemplate={isEditingForm}
                                             key={idx}
                                             label={field.label}
                                             originalValue={
-                                                formData[field?.name]
+                                                formData[field?.name as FormKey]
                                             }
-                                            setFormTemplate={
-                                                setEditFormTemplate
+                                            setTemplate={setEditFormTemplate}
+                                            setIsEditingTemplate={
+                                                setIsEditingForm
                                             }
-                                            setIsEditingForm={setIsEditingForm}
                                             souldForceReset={resetAllFormFields}
                                             type={field.component}
                                         />
@@ -119,9 +119,11 @@ const FormDetail = ({params}: {params: {'automatic-response-id': string}}) => {
                                         editable={field.editable}
                                         isEditingForm={isEditingForm}
                                         key={idx}
-                                        fieldName={field?.name}
+                                        fieldName={field?.name as FormKey}
                                         label={field.label}
-                                        originalValue={formData[field?.name]}
+                                        originalValue={
+                                            formData[field?.name as FormKey]
+                                        }
                                         setIsEditingForm={setIsEditingForm}
                                         souldForceReset={resetAllFormFields}
                                     />

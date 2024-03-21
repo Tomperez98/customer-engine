@@ -15,17 +15,12 @@ export enum FormKeys {
 
 export type FormKey = keyof Form
 
+// type needed as response id and org code arent actual form fields
+
 export type FormTemplate = {
     name: string
     examples: string[]
     response: string
     automatic_response_id?: string
     org_code?: string
-}
-
-export type InputField = {
-    name: FormKey
-    label: string
-    editable?: boolean
-    component: string
 }

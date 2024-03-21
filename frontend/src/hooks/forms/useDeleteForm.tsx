@@ -5,15 +5,22 @@ import {useKindeBrowserClient} from '@kinde-oss/kinde-auth-nextjs'
 const useDeleteForm = () => {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState(null)
-    const {organization} = useKindeBrowserClient()
+    const {accessTokenEncoded} = useKindeBrowserClient()
 
     const deleteForm = async (id: string) => {
+        const headers = {
+            Authorization: `Bearer ${accessTokenEncoded}`,
+        }
         setIsLoading(true)
         setError(null)
         try {
-            const response = await fetch(`${BASE_URL}/${id}`, {
-                method: 'DELETE',
-            })
+            const response = await fetch(
+                `${BASE_URL}/automatic-responses/${id}`,
+                {
+                    method: 'DELETE',
+                    headers: headers,
+                }
+            )
             setIsLoading(false)
             if (!response.ok) {
                 throw new Error('Failed to delete form')

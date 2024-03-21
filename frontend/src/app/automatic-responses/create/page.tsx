@@ -2,10 +2,11 @@
 
 import EditableListField from '@/components/EditableListField'
 import Layout from '@/components/layout'
-import {FORM_TEMPLATE, INPUT_FIELDS} from '@/constants/formFields'
+import {FORM_TEMPLATE, FORM_FIELDS} from '@/constants/formFields'
 import useCreateForm from '@/hooks/forms/useCreateForm'
 import {ChangeEvent, useCallback, useEffect, useState} from 'react'
-import {FormTemplate, FormKey, InputField} from '@/types/Forms'
+import {FormTemplate, FormKey} from '@/types/Forms'
+import {InputField, InputName} from '@/types/Inputs'
 import {redirect} from 'next/navigation'
 import {
     validateAllEmptyFields,
@@ -21,10 +22,10 @@ const CreateForm = () => {
         useState<FormTemplate>(FORM_TEMPLATE)
     const [shouldRedirect, setShouldRedirect] = useState<boolean>(false)
     const {submit} = useCreateForm(formTemplate)
-    const handleInputFieldChange = useCallback(
+    const handleFormFieldChange = useCallback(
         (
             event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-            name: FormKey
+            name: InputName
         ) => {
             setFormTemplate((prevState) => ({
                 ...prevState,
@@ -58,9 +59,9 @@ const CreateForm = () => {
                             {label}
                         </label>
                         <Input
-                            name={name}
-                            onChange={handleInputFieldChange}
-                            value={formTemplate[name] || ''}
+                            name={name as FormKey}
+                            onChange={handleFormFieldChange}
+                            value={formTemplate[name as FormKey] || ''}
                         />
                     </div>
                 )
@@ -74,9 +75,9 @@ const CreateForm = () => {
                             {label}
                         </label>
                         <RichTextEditor
-                            name={name}
-                            onChange={handleInputFieldChange}
-                            value={formTemplate[name] || ''}
+                            name={name as FormKey}
+                            onChange={handleFormFieldChange}
+                            value={formTemplate[name as FormKey] || ''}
                             formTemplate={formTemplate}
                             setFormTemplate={setFormTemplate}
                         />
@@ -89,16 +90,16 @@ const CreateForm = () => {
                         templateForm={formTemplate}
                         setTemplateForm={setFormTemplate}
                         key={idx}
-                        fieldName={name}
+                        fieldName={name as FormKey}
                         label={label}
-                        originalValue={formTemplate[name] || []}
+                        originalValue={formTemplate[name as FormKey] || []}
                         editableOnly
                     />
                 )
             }
             return null
         },
-        [formTemplate, handleInputFieldChange]
+        [formTemplate, handleFormFieldChange]
     )
 
     return (
@@ -108,7 +109,7 @@ const CreateForm = () => {
                     Crear formulario
                 </h1>
                 <div className='flex w-full flex-col gap-4 rounded-md bg-white p-8 shadow-md'>
-                    {INPUT_FIELDS.map((field, idx) => {
+                    {FORM_FIELDS.map((field, idx) => {
                         return getInputElement(field, idx)
                     })}
                     <div className='mt-4 flex w-full flex-row items-center justify-end gap-4'>

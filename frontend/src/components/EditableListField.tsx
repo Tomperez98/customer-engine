@@ -1,9 +1,9 @@
 'use client'
 
 import {ChangeEvent, useEffect, useState} from 'react'
-import {MdEdit} from 'react-icons/md'
+import {MdEditSquare} from 'react-icons/md'
 import {FormKey, FormTemplate} from '@/types/Forms'
-import {MdAddCircle} from 'react-icons/md'
+import {MdAddCircle, MdCancel} from 'react-icons/md'
 import {MdDelete} from 'react-icons/md'
 import IconButton from './IconButton'
 
@@ -99,11 +99,19 @@ const EditableListField = ({
                             size='text-lg'
                         />
                         {!editableOnly && (
-                            <button onClick={handleReset}>reset</button>
+                            <IconButton
+                                Icon={MdCancel}
+                                onClick={handleReset}
+                                size='text-lg'
+                            />
                         )}
                     </div>
                 ) : (
-                    <IconButton onClick={handleEditField} Icon={MdEdit} />
+                    <IconButton
+                        onClick={handleEditField}
+                        Icon={MdEditSquare}
+                        size='text-lg'
+                    />
                 )}
             </div>
             <div className='flex w-full flex-col gap-2'>

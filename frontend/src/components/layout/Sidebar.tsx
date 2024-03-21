@@ -4,7 +4,7 @@ import React, {useState} from 'react'
 import Link from 'next/link'
 import classNames from 'classnames'
 import {motion} from 'framer-motion'
-import {MdOutlineHome, MdOutlineAddBox} from 'react-icons/md'
+import {MdOutlineHome, MdOutlineAddBox, MdOutlineArticle} from 'react-icons/md'
 
 const Sidebar = () => {
     const [isExpanded, setIsExpanded] = useState<boolean>(false)
@@ -33,6 +33,11 @@ const Sidebar = () => {
                 <Link href='/automatic-responses/create'>
                     <div className='text-md flex  w-full flex-row items-center gap-1 py-1 font-medium'>
                         <MdOutlineAddBox /> {isExpanded && 'Crear Formulario'}
+                    </div>
+                </Link>
+                <Link href='/tokens'>
+                    <div className='text-md flex  w-full flex-row items-center gap-1 py-1 font-medium'>
+                        <MdOutlineArticle /> {isExpanded && 'Tokens'}
                     </div>
                 </Link>
             </div>
