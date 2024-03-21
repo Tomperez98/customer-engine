@@ -11,7 +11,7 @@ from lego_workflows.components import DomainError
 from pydantic import BaseModel
 
 from customer_engine_api import handlers
-from customer_engine_api.api.ui._deps import BearerToken  # noqa: TCH001
+from customer_engine_api.api.ui.deps import BearerToken  # noqa: TCH001
 from customer_engine_api.core import jwt, time
 from customer_engine_api.core.automatic_responses import AutomaticResponse
 from customer_engine_api.core.config import resources
