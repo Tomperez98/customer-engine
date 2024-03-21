@@ -26,7 +26,6 @@ class KindeToken(DataClassORJSONMixin):
     scopes: list[str] = field(metadata=field_options(alias="scp"))
     subject: str = field(metadata=field_options(alias="sub"))
     org_code: str
-    permissions: list[str]
     expiration_time: int = field(metadata=field_options(alias="exp"))
 
     def is_expired(self, current_time: datetime.datetime) -> bool:
