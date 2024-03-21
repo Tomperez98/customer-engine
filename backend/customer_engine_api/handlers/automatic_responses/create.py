@@ -14,7 +14,7 @@ from qdrant_client.http.exceptions import UnexpectedResponse
 from qdrant_client.http.models import Batch, Distance, VectorParams
 from sqlalchemy import bindparam, text
 
-from customer_engine_api.core.automatic_responses.embeddings import (
+from customer_engine_api.core.automatic_responses._embeddings import (
     DEFAULT_EMBEDDING_MODEL,
     EmbeddingModels,
     embed_examples_and_prompt,

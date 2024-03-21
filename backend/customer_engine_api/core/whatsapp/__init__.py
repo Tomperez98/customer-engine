@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, Self
 from mashumaro.mixins.orjson import DataClassORJSONMixin
 
 from customer_engine_api.core.interfaces import SqlQueriable
-from customer_engine_api.core.whatsapp import hashing
+from customer_engine_api.core.whatsapp import _hashing as hashing
 
 if TYPE_CHECKING:
     from cryptography.fernet import Fernet

@@ -9,7 +9,7 @@ from uuid import UUID
 import orjson
 from mashumaro.mixins.orjson import DataClassORJSONMixin
 
-from customer_engine_api.core.automatic_responses import embeddings
+from customer_engine_api.core.automatic_responses import _embeddings as embeddings
 from customer_engine_api.core.interfaces import SqlQueriable
 
 if TYPE_CHECKING:
