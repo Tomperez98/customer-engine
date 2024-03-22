@@ -80,7 +80,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
                 collection_name=self.org_code,
                 query_vector=prompt_embeddings[0],
                 limit=5,
-                score_threshold=0.65,
+                score_threshold=0.55,
             )
 
             if len(relevant_points) == 0:
