@@ -3,33 +3,22 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, assert_never
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
 import lego_workflows
 import sqlalchemy
 from lego_workflows.components import CommandComponent, DomainEvent, ResponseComponent
-from qdrant_client.http.models import Distance, VectorParams
 from sqlalchemy import bindparam, text
 
 from customer_engine_api.core.logging import logger
-from customer_engine_api.handlers.automatic_responses import get
+from customer_engine_api.handlers.automatic_responses import get_auto_res
 
 if TYPE_CHECKING:
     import datetime
     from uuid import UUID
 
     from sqlalchemy import Connection
-
-    from customer_engine_api.core.automatic_responses._embeddings import (
-        EmbeddingModels,
-    )
-
-
-def _qdrant_vectored_params_per_model(model: EmbeddingModels) -> VectorParams:
-    if model == "cohere:embed-multilingual-light-v3.0":
-        return VectorParams(size=384, distance=Distance.COSINE)
-    assert_never(model)
 
 
 @dataclass(frozen=True)
@@ -71,13 +60,13 @@ class Command(CommandComponent[Response]):
             random_id = uuid4()
             try:
                 await lego_workflows.run_and_collect_events(
-                    get.Command(
+                    get_auto_res.Command(
                         org_code=self.org_code,
                         automatic_response_id=random_id,
                         sql_conn=self.sql_conn,
                     )
                 )
-            except get.AutomaticResponseNotFoundError:
+            except get_auto_res.AutomaticResponseNotFoundError:
                 break
         stmt = text(
             """

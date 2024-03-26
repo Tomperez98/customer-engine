@@ -2,15 +2,14 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal, TypeAlias, assert_never
+from typing import TYPE_CHECKING, assert_never
 
 from cohere.responses.embeddings import EmbeddingsByType
 
 if TYPE_CHECKING:
     import cohere
 
-
-EmbeddingModels: TypeAlias = Literal["cohere:embed-multilingual-light-v3.0"]
+    from customer_engine_api.core.typing import EmbeddingModels
 
 
 async def embed_examples_and_prompt(

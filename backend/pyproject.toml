@@ -94,7 +94,7 @@ ignore = [
     "UP040",
 ]
 select = ["ALL"]
-logger-objects = ["customer_engine_api.logger"]
+logger-objects = ["customer_engine_api.core.logging.logger"]
 
 [tool.ruff.lint.flake8-type-checking]
 runtime-evaluated-base-classes = [

@@ -10,7 +10,7 @@ import sqlalchemy
 from lego_workflows.components import CommandComponent, DomainEvent, ResponseComponent
 from sqlalchemy import bindparam, text
 
-from customer_engine_api.handlers.automatic_responses import get
+from customer_engine_api.handlers.automatic_responses import get_auto_res
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -36,7 +36,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
     async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002, D102
         existing_automatic_response = (
             await lego_workflows.run_and_collect_events(
-                cmd=get.Command(
+                cmd=get_auto_res.Command(
                     org_code=self.org_code,
                     automatic_response_id=self.automatic_response_id,
                     sql_conn=self.sql_conn,
@@ -44,10 +44,9 @@ class Command(CommandComponent[Response]):  # noqa: D101
             )
         )[0].automatic_response
 
-        if self.new_name is not None:
-            existing_automatic_response.name = self.new_name
-        if self.new_response is not None:
-            existing_automatic_response.response = self.new_response
+        existing_automatic_response = existing_automatic_response.update(
+            name=self.new_name, response=self.new_response
+        )
 
         stmt = text(
             """

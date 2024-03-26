@@ -36,7 +36,7 @@ async def create_automatic_response(
     try:
         with resources.db_engine.begin() as conn:
             created_response, events = await lego_workflows.run_and_collect_events(
-                cmd=handlers.automatic_responses.create.Command(
+                cmd=handlers.automatic_responses.create_auto_resp.Command(
                     org_code=jwt.decode_token(
                         auth_token.credentials,
                         current_time=time.now(),
@@ -73,7 +73,7 @@ async def get_automatic_response(
                 existing_automatic_response,
                 events,
             ) = await lego_workflows.run_and_collect_events(
-                cmd=handlers.automatic_responses.get.Command(
+                cmd=handlers.automatic_responses.get_auto_res.Command(
                     org_code=jwt.decode_token(
                         auth_token.credentials,
                         current_time=time.now(),
@@ -112,7 +112,7 @@ async def patch_automatic_response(  # noqa: D103
     try:
         with resources.db_engine.begin() as conn:
             updated_response, events = await lego_workflows.run_and_collect_events(
-                cmd=handlers.automatic_responses.update.Command(
+                cmd=handlers.automatic_responses.update_auto_res.Command(
                     org_code=jwt.decode_token(
                         auth_token.credentials,
                         current_time=time.now(),
@@ -148,7 +148,7 @@ async def list_automatic_responses(  # noqa: D103
                 listed_automatic_responses,
                 events,
             ) = await lego_workflows.run_and_collect_events(
-                cmd=handlers.automatic_responses.list_all.Command(
+                cmd=handlers.automatic_responses.list_auto_res.Command(
                     org_code=jwt.decode_token(
                         auth_token.credentials,
                         current_time=time.now(),
@@ -178,7 +178,7 @@ async def delete_automatic_response(  # noqa: D103
     try:
         with resources.db_engine.begin() as conn:
             deleted_response, events = await lego_workflows.run_and_collect_events(
-                cmd=handlers.automatic_responses.delete.Command(
+                cmd=handlers.automatic_responses.delete_auto_res.Command(
                     org_code=jwt.decode_token(
                         auth_token.credentials,
                         current_time=time.now(),

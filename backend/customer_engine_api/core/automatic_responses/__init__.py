@@ -17,7 +17,19 @@ if TYPE_CHECKING:
 __all__ = ["embeddings"]
 
 
-@dataclass(frozen=False)
+@dataclass(frozen=True)
+class Example(DataClassORJSONMixin, SqlQueriable):
+    org_code: str
+    automatic_response_id: UUID
+    example_id: UUID
+    example: str
+
+    @classmethod
+    def from_row(cls: type[Self], row: Row[Any]) -> Self:
+        return cls.from_dict(row._asdict())
+
+
+@dataclass(frozen=True)
 class AutomaticResponse(DataClassORJSONMixin, SqlQueriable):
     """Automatic response."""
 
@@ -30,3 +42,12 @@ class AutomaticResponse(DataClassORJSONMixin, SqlQueriable):
     def from_row(cls: type[Self], row: Row[Any]) -> Self:
         """Instantiate from row."""
         return cls.from_dict(row._asdict())
+
+    def update(self, name: str | None, response: str | None) -> AutomaticResponse:
+        """Update automatic response."""
+        return AutomaticResponse(
+            org_code=self.org_code,
+            automatic_response_id=self.automatic_response_id,
+            name=name if name is not None else self.name,
+            response=response if response is not None else self.response,
+        )
