@@ -185,6 +185,7 @@ async def delete_automatic_response(  # noqa: D103
                     ).org_code,
                     automatic_response_id=automatic_response_id,
                     sql_conn=conn,
+                    qdrant_client=resources.clients.qdrant,
                 )
             )
     except DomainError as e:

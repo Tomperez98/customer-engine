@@ -20,6 +20,8 @@ from customer_engine_api.handlers.automatic_responses import (
 if TYPE_CHECKING:
     from uuid import UUID
 
+    import qdrant_client
+
 
 @dataclass(frozen=True)
 class AutomaticResponseDeleted(DomainEvent):
@@ -48,6 +50,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
     org_code: str
     automatic_response_id: UUID
     sql_conn: Connection
+    qdrant_client: qdrant_client.AsyncQdrantClient
 
     async def run(self, events: list[DomainEvent]) -> Response:  # noqa: D102
         stmt = text(
@@ -78,12 +81,12 @@ class Command(CommandComponent[Response]):  # noqa: D101
         _, delete_bulk_events = await lego_workflows.run_and_collect_events(
             delete_bulk_examples.Command(
                 org_code=self.org_code,
-                automatic_response_id=self.automatic_response_id,
                 example_ids=[
                     example.example_id
                     for example in automatic_response_examples.examples
                 ],
                 sql_conn=self.sql_conn,
+                qdrant_client=self.qdrant_client,
             )
         )
 

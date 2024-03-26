@@ -19,7 +19,6 @@ async def test_get_not_existing_example() -> None:
         await lego_workflows.run_and_collect_events(
             cmd=handlers.automatic_responses.get_example.Command(
                 org_code="test",
-                automatic_response_id=uuid4(),
                 example_id=uuid4(),
                 sql_conn=conn,
             )
@@ -49,6 +48,8 @@ async def test_list_examples() -> None:
                     automatic_response_id=response_create_automatic.automatic_response_id,
                     example=example_text,
                     sql_conn=conn,
+                    qdrant_client=resources.clients.qdrant,
+                    cohere_client=resources.clients.cohere,
                 )
             )
             created_examples.append(
@@ -76,6 +77,7 @@ async def test_list_examples() -> None:
                 org_code=test_org,
                 automatic_response_id=response_create_automatic.automatic_response_id,
                 sql_conn=conn,
+                qdrant_client=resources.clients.qdrant,
             )
         )
 
@@ -86,7 +88,6 @@ async def test_list_examples() -> None:
                 await lego_workflows.run_and_collect_events(
                     handlers.automatic_responses.get_example.Command(
                         org_code=test_org,
-                        automatic_response_id=response_create_automatic.automatic_response_id,
                         example_id=example.example_id,
                         sql_conn=conn,
                     )
@@ -111,14 +112,15 @@ async def test_get_existing_example() -> None:
             cmd=handlers.automatic_responses.create_example.Command(
                 org_code=test_org,
                 automatic_response_id=response_create_automatic.automatic_response_id,
-                example="I'm an example",
+                example="I'd like to order a pizza",
                 sql_conn=conn,
+                qdrant_client=resources.clients.qdrant,
+                cohere_client=resources.clients.cohere,
             )
         )
         get_example_response, _ = await lego_workflows.run_and_collect_events(
             cmd=handlers.automatic_responses.get_example.Command(
                 org_code=test_org,
-                automatic_response_id=response_create_automatic.automatic_response_id,
                 example_id=response_create_example.example_id,
                 sql_conn=conn,
             )
@@ -131,12 +133,46 @@ async def test_get_existing_example() -> None:
             get_example_response.example.example_id
             == response_create_example.example_id
         )
+
+        similar_to_prompt_response, _ = await lego_workflows.run_and_collect_events(
+            cmd=handlers.automatic_responses.similar_example_by_prompt.Command(
+                org_code=test_org,
+                prompt="I want to order a pizza",
+                qdrant_client=resources.clients.qdrant,
+                cohere_client=resources.clients.cohere,
+                sql_conn=conn,
+            )
+        )
+
+        assert (
+            similar_to_prompt_response.example.automatic_response_id
+            == get_example_response.example.automatic_response_id
+        )
+        assert (
+            similar_to_prompt_response.example.example_id
+            == get_example_response.example.example_id
+        )
+
+        response_owner_auto_res, _ = await lego_workflows.run_and_collect_events(
+            handlers.automatic_responses.get_auto_res_owns_example.Command(
+                org_code=test_org,
+                example_id_or_prompt=similar_to_prompt_response.example.example_id,
+                qdrant_client=resources.clients.qdrant,
+                cohere_client=resources.clients.cohere,
+                sql_conn=conn,
+            )
+        )
+
+        assert (
+            response_owner_auto_res.automatic_response.automatic_response_id
+            == response_create_automatic.automatic_response_id
+        )
         await lego_workflows.run_and_collect_events(
             cmd=handlers.automatic_responses.delete_example.Command(
                 org_code=test_org,
-                automatic_response_id=response_create_automatic.automatic_response_id,
                 example_id=response_create_example.example_id,
                 sql_conn=conn,
+                qdrant_client=resources.clients.qdrant,
             )
         )
         with pytest.raises(
@@ -145,11 +181,19 @@ async def test_get_existing_example() -> None:
             await lego_workflows.run_and_collect_events(
                 cmd=handlers.automatic_responses.get_example.Command(
                     org_code=test_org,
-                    automatic_response_id=response_create_automatic.automatic_response_id,
                     example_id=response_create_example.example_id,
                     sql_conn=conn,
                 )
             )
+
+        await lego_workflows.run_and_collect_events(
+            handlers.automatic_responses.delete_auto_res.Command(
+                org_code=test_org,
+                automatic_response_id=response_create_automatic.automatic_response_id,
+                sql_conn=conn,
+                qdrant_client=resources.clients.qdrant,
+            )
+        )
 
 
 @pytest.mark.e2e()
@@ -202,6 +246,7 @@ async def test_list_org_automated_responses() -> None:
                     org_code="test",
                     automatic_response_id=created_auto_response,
                     sql_conn=conn,
+                    qdrant_client=resources.clients.qdrant,
                 )
             )
 
@@ -258,6 +303,7 @@ async def test_update_automatic_response() -> None:
                 org_code=test_org_code,
                 automatic_response_id=create_response.automatic_response_id,
                 sql_conn=conn,
+                qdrant_client=resources.clients.qdrant,
             )
         )
 
@@ -291,6 +337,7 @@ async def test_get_existing_automatic_response() -> None:
                 org_code=test_org_code,
                 automatic_response_id=create_response.automatic_response_id,
                 sql_conn=conn,
+                qdrant_client=resources.clients.qdrant,
             )
         )
 

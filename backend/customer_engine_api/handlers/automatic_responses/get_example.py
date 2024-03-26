@@ -26,12 +26,9 @@ class ExampleNotFoundError(DomainError):
     def __init__(  # noqa: D107
         self,
         org_code: str,
-        automatic_response_id: UUID,
         example_id: UUID,
     ) -> None:
-        super().__init__(
-            f"Example {example_id} for automatic response {automatic_response_id} of org {org_code} not found."
-        )
+        super().__init__(f"Example {example_id} from org {org_code} not found.")
 
 
 @dataclass(frozen=True)
@@ -44,7 +41,6 @@ class Response(ResponseComponent):
 @dataclass(frozen=True)
 class Command(CommandComponent[Response]):  # noqa: D101
     org_code: str
-    automatic_response_id: UUID
     example_id: UUID
     sql_conn: Connection
 
@@ -58,16 +54,10 @@ class Command(CommandComponent[Response]):  # noqa: D101
                 example
             FROM automatic_response_examples
             WHERE org_code = :org_code
-                AND automatic_response_id = :automatic_response_id
                 AND example_id = :example_id
             """
         ).bindparams(
             bindparam(key="org_code", value=self.org_code, type_=sqlalchemy.String()),
-            bindparam(
-                key="automatic_response_id",
-                value=self.automatic_response_id,
-                type_=sqlalchemy.UUID(),
-            ),
             bindparam(key="example_id", value=self.example_id, type_=sqlalchemy.UUID()),
         )
 
@@ -75,7 +65,6 @@ class Command(CommandComponent[Response]):  # noqa: D101
         if row is None:
             raise ExampleNotFoundError(
                 org_code=self.org_code,
-                automatic_response_id=self.automatic_response_id,
                 example_id=self.example_id,
             )
 

@@ -29,32 +29,19 @@ TABLE_NAME = "automatic_response_examples"
 
 
 def upgrade() -> None:
-    op.drop_column(table_name=AUTOMATIC_RESPONSE_TABLE, column_name="examples")
-    op.drop_column(table_name=AUTOMATIC_RESPONSE_TABLE, column_name="embedding_model")
     op.create_table(
         TABLE_NAME,
         sa.Column("org_code", sa.String(), primary_key=True),
-        sa.Column("automatic_response_id", sa.UUID(), primary_key=True),
         sa.Column("example_id", sa.UUID(), primary_key=True),
+        sa.Column("automatic_response_id", sa.UUID()),
         sa.Column("example", sa.String(), nullable=False),
+    )
+    op.create_index(
+        index_name=None,
+        table_name=TABLE_NAME,
+        columns=["org_code", "automatic_response_id"],
     )
 
 
 def downgrade() -> None:
-    op.add_column(
-        table_name=AUTOMATIC_RESPONSE_TABLE,
-        column=sa.Column(
-            "examples",
-            sa.JSON(),
-            nullable=False,
-        ),
-    )
-    op.add_column(
-        table_name=AUTOMATIC_RESPONSE_TABLE,
-        column=sa.Column(
-            "embedding_model",
-            sa.String(),
-            nullable=False,
-        ),
-    )
-    op.drop_table(TABLE_NAME)
+    raise NotImplementedError

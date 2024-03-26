@@ -20,8 +20,8 @@ __all__ = ["embeddings"]
 @dataclass(frozen=True)
 class Example(DataClassORJSONMixin, SqlQueriable):
     org_code: str
-    automatic_response_id: UUID
     example_id: UUID
+    automatic_response_id: UUID
     example: str
 
     @classmethod
