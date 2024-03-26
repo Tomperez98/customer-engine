@@ -18,6 +18,7 @@ from customer_engine_api.core import whatsapp
 from customer_engine_api.core.api_clients.whatsapp import AsyncWhatsappClient
 from customer_engine_api.core.automatic_responses import AutomaticResponse
 from customer_engine_api.handlers.automatic_responses import search_by_prompt
+from customer_engine_api.handlers.org_settings import get_or_default
 from customer_engine_api.handlers.whatsapp import get_tokens
 
 if TYPE_CHECKING:
@@ -84,8 +85,13 @@ class Command(CommandComponent[Response]):  # noqa: D101
         elif isinstance(
             search_by_prompt_response.response_or_unmatched_prompt_id, UUID
         ):
+            get_response, _ = await lego_workflows.run_and_collect_events(
+                cmd=get_or_default.Command(
+                    org_code=self.org_code, sql_conn=self.sql_conn
+                )
+            )
             await whatsapp_client.send_text_msg(
-                text="No response found for this prompt",
+                text=get_response.settings.default_response,
                 to_wa_id=identified_payload.wa_id,
             )
         else:

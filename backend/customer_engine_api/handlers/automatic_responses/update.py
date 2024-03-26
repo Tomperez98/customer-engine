@@ -12,6 +12,7 @@ from qdrant_client.http.models import Batch
 from sqlalchemy import bindparam, text
 
 from customer_engine_api.core import automatic_responses
+from customer_engine_api.handlers import org_settings
 from customer_engine_api.handlers.automatic_responses import get
 
 if TYPE_CHECKING:
@@ -105,7 +106,13 @@ class Command(CommandComponent[Response]):  # noqa: D101
                 new_embeddings_calculated=requires_new_embeddings,
             )
 
-        embedding_model_to_use = automatic_responses.embeddings.DEFAULT_EMBEDDING_MODEL
+        embedding_model_to_use = (
+            await lego_workflows.run_and_collect_events(
+                cmd=org_settings.get_or_default.Command(
+                    org_code=self.org_code, sql_conn=self.sql_conn
+                )
+            )
+        )[0].settings.embeddings_model
 
         new_examples_embeddings = (
             await automatic_responses.embeddings.embed_examples_and_prompt(

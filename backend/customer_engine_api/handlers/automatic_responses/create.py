@@ -15,12 +15,12 @@ from qdrant_client.http.models import Batch, Distance, VectorParams
 from sqlalchemy import bindparam, text
 
 from customer_engine_api.core.automatic_responses._embeddings import (
-    DEFAULT_EMBEDDING_MODEL,
     EmbeddingModels,
     embed_examples_and_prompt,
 )
 from customer_engine_api.core.logging import logger
 from customer_engine_api.handlers.automatic_responses import get
+from customer_engine_api.handlers.org_settings import get_or_default
 
 if TYPE_CHECKING:
     import datetime
@@ -75,7 +75,13 @@ class Command(CommandComponent[Response]):
 
     async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002
         """Command execution."""
-        embedding_model_to_use = DEFAULT_EMBEDDING_MODEL
+        embedding_model_to_use = (
+            await lego_workflows.run_and_collect_events(
+                cmd=get_or_default.Command(
+                    org_code=self.org_code, sql_conn=self.sql_conn
+                )
+            )
+        )[0].settings.embeddings_model
         while True:
             random_id = uuid4()
             try:
