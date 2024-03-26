@@ -11,6 +11,7 @@ from lego_workflows.components import CommandComponent, DomainEvent, ResponseCom
 from qdrant_client.models import PointIdsList, ScoredPoint
 
 from customer_engine_api.core import automatic_responses
+from customer_engine_api.handlers import org_settings
 from customer_engine_api.handlers.automatic_responses import get
 from customer_engine_api.handlers.unmatched_prompts import register
 
@@ -67,7 +68,13 @@ class Command(CommandComponent[Response]):  # noqa: D101
         )[0].automatic_response
 
     async def run(self, events: list[DomainEvent]) -> Response:  # noqa: D102
-        embedding_model_to_use = automatic_responses.embeddings.DEFAULT_EMBEDDING_MODEL
+        embedding_model_to_use = (
+            await lego_workflows.run_and_collect_events(
+                cmd=org_settings.get_or_default.Command(
+                    org_code=self.org_code, sql_conn=self.sql_conn
+                )
+            )
+        )[0].settings.embeddings_model
         prompt_embeddings = (
             await automatic_responses.embeddings.embed_examples_and_prompt(
                 client=self.cohere_client,
@@ -80,7 +87,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
                 collection_name=self.org_code,
                 query_vector=prompt_embeddings[0],
                 limit=5,
-                score_threshold=0.55,
+                score_threshold=0.65,
             )
 
             if len(relevant_points) == 0:

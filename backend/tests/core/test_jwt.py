@@ -17,6 +17,5 @@ def test_decode_token() -> None:
         scopes=["openid", "profile", "email", "offline"],
         subject="kp_ca2e9248718d473db561881d94e4f498",
         org_code="org_ca3fa6106b9",
-        permissions=[],
         expiration_time=1710450062,
     )

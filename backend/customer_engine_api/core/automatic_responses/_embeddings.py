@@ -12,8 +12,6 @@ if TYPE_CHECKING:
 
 EmbeddingModels: TypeAlias = Literal["cohere:embed-multilingual-light-v3.0"]
 
-DEFAULT_EMBEDDING_MODEL: EmbeddingModels = "cohere:embed-multilingual-light-v3.0"
-
 
 async def embed_examples_and_prompt(
     client: cohere.AsyncClient,
