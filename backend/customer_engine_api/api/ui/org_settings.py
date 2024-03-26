@@ -17,7 +17,7 @@ from customer_engine_api.core.org_settings import OrgSettings
 router = APIRouter(prefix="/org-settings", tags=["org-settings"])
 
 
-class ResponseGetOrgSettings(BaseModel):
+class ResponseGetOrgSettings(BaseModel):  # noqa: D101
     settings: OrgSettings
 
 
@@ -37,12 +37,12 @@ async def get_org_settings(auth_token: BearerToken) -> ResponseGetOrgSettings:
     return ResponseGetOrgSettings(settings=get_response.settings)
 
 
-class ResponseDeleteOrgSettings(BaseModel):
+class ResponseDeleteOrgSettings(BaseModel):  # noqa: D101
     status: Literal["deleted"]
 
 
 @router.delete("")
-async def delete_org_settings(auth_token: BearerToken) -> ResponseDeleteOrgSettings:
+async def delete_org_settings(auth_token: BearerToken) -> ResponseDeleteOrgSettings:  # noqa: D103
     with resources.db_engine.begin() as conn:
         _, delete_events = await lego_workflows.run_and_collect_events(
             handlers.org_settings.delete.Command(
@@ -56,16 +56,16 @@ async def delete_org_settings(auth_token: BearerToken) -> ResponseDeleteOrgSetti
     return ResponseDeleteOrgSettings(status="deleted")
 
 
-class UpsertOrgSettings(BaseModel):
+class UpsertOrgSettings(BaseModel):  # noqa: D101
     default_response: str | None
 
 
-class ResponseUpsertOrgSettings(BaseModel):
+class ResponseUpsertOrgSettings(BaseModel):  # noqa: D101
     settings: OrgSettings
 
 
 @router.put("")
-async def upsert_org_settings(
+async def upsert_org_settings(  # noqa: D103
     auth_token: BearerToken,
     req: UpsertOrgSettings,
 ) -> ResponseUpsertOrgSettings:

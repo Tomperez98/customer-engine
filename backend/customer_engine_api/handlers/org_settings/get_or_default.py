@@ -45,7 +45,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
         )
 
         row = self.sql_conn.execute(stmt).fetchone()
-        logger.info(row)
+        logger.debug(row)
         if row is None:
             return Response(
                 settings=OrgSettings(org_code=self.org_code),
