@@ -69,10 +69,12 @@ class Command(CommandComponent[Response]):  # noqa: D101
                 """
                 INSERT INTO org_settings (
                     org_code,
-                    default_response
+                    default_response,
+                    embeddings_model
                 ) VALUES (
                     :org_code,
-                    :default_response
+                    :default_response,
+                    :embeddings_model
                 )
                 """
             ).bindparams(
@@ -84,6 +86,11 @@ class Command(CommandComponent[Response]):  # noqa: D101
                 bindparam(
                     key="default_response",
                     value=org_settings.default_response,
+                    type_=sqlalchemy.String(),
+                ),
+                bindparam(
+                    key="embeddings_model",
+                    value=org_settings.embeddings_model,
                     type_=sqlalchemy.String(),
                 ),
             )

@@ -40,21 +40,6 @@ async def suscribe_whatsapp_webhooks(org_code: str, req: Request) -> Response:  
 async def whatsapp_webhooks(org_code: str, req: Request) -> Response:  # noqa: D103
     payload: JsonResponse = await req.json()
 
-    with resources.db_engine.begin() as conn:
-        try:
-            most_similar_response, events = await lego_workflows.run_and_collect_events(
-                cmd=handlers.whatsapp.reply_message.Command(
-                    org_code=org_code,
-                    received_msg=payload,
-                    sql_conn=conn,
-                    cohere_client=resources.clients.cohere,
-                    qdrant_client=resources.clients.qdrant,
-                )
-            )
-        except whatsapp.payloads.NotIdentifiedWhatsappPayloadError as e:
-            logger.info(str(e))
-            return Response()
-
-    await lego_workflows.publish_events(events=events)
-    logger.debug(most_similar_response)
-    return Response()
+    logger.debug(payload)
+    logger.debug(org_code)
+    raise NotImplementedError

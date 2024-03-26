@@ -8,15 +8,12 @@ from typing import TYPE_CHECKING
 
 import sqlalchemy
 from lego_workflows.components import CommandComponent, DomainEvent, ResponseComponent
-from qdrant_client.http.models import PointIdsList
 from sqlalchemy import Connection, bindparam, text
 
 from customer_engine_api.core.logging import logger
 
 if TYPE_CHECKING:
     from uuid import UUID
-
-    from qdrant_client import AsyncQdrantClient
 
 
 @dataclass(frozen=True)
@@ -46,7 +43,6 @@ class Command(CommandComponent[Response]):  # noqa: D101
     org_code: str
     automatic_response_id: UUID
     sql_conn: Connection
-    qdrant_client: AsyncQdrantClient
 
     async def run(self, events: list[DomainEvent]) -> Response:  # noqa: D102
         stmt = text(
@@ -65,11 +61,6 @@ class Command(CommandComponent[Response]):  # noqa: D101
         )
 
         self.sql_conn.execute(stmt)
-
-        await self.qdrant_client.delete(
-            collection_name=self.org_code,
-            points_selector=PointIdsList(points=[self.automatic_response_id.hex]),
-        )
 
         events.append(
             AutomaticResponseDeleted(

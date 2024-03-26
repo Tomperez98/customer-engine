@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from typing import assert_never
 from uuid import UUID
 
 import lego_workflows
@@ -21,7 +20,6 @@ router = APIRouter(prefix="/automatic-responses", tags=["automatic-responses"])
 
 class CreateAutomaticResponse(BaseModel):  # noqa: D101
     name: str
-    examples: list[str]
     response: str
 
 
@@ -44,11 +42,8 @@ async def create_automatic_response(
                         current_time=time.now(),
                     ).org_code,
                     name=req.name,
-                    examples=req.examples,
                     response=req.response,
                     sql_conn=conn,
-                    qdrant_client=resources.clients.qdrant,
-                    cohere_client=resources.clients.cohere,
                 )
             )
     except DomainError as e:
@@ -101,7 +96,6 @@ async def get_automatic_response(
 
 class PatchAutomaticResponse(BaseModel):  # noqa: D101
     name: str | None
-    examples: list[str] | None
     response: str | None
 
 
@@ -125,11 +119,8 @@ async def patch_automatic_response(  # noqa: D103
                     ).org_code,
                     automatic_response_id=automatic_response_id,
                     new_name=req.name,
-                    new_examples=req.examples,
                     new_response=req.response,
                     sql_conn=conn,
-                    cohere_client=resources.clients.cohere,
-                    qdrant_client=resources.clients.qdrant,
                 )
             )
     except DomainError as e:
@@ -194,7 +185,6 @@ async def delete_automatic_response(  # noqa: D103
                     ).org_code,
                     automatic_response_id=automatic_response_id,
                     sql_conn=conn,
-                    qdrant_client=resources.clients.qdrant,
                 )
             )
     except DomainError as e:
@@ -205,52 +195,4 @@ async def delete_automatic_response(  # noqa: D103
     await lego_workflows.publish_events(events=events)
     return ResponseDeleteAutomaticResponse(
         automatic_response_id=deleted_response.automatic_response_id
-    )
-
-
-class ResponseSearchByPromptAutomaticResponse(BaseModel):  # noqa: D101
-    automatic_response: AutomaticResponse | None
-
-
-@router.get("/search/by-prompt")
-async def search_by_prompt(
-    auth_token: BearerToken,
-    prompt: str,
-) -> ResponseSearchByPromptAutomaticResponse:
-    """Search automatic response by prompt."""
-    try:
-        with resources.db_engine.begin() as conn:
-            (
-                result_automatic_response,
-                events,
-            ) = await lego_workflows.run_and_collect_events(
-                handlers.automatic_responses.search_by_prompt.Command(
-                    org_code=jwt.decode_token(
-                        auth_token.credentials,
-                        current_time=time.now(),
-                    ).org_code,
-                    prompt=prompt,
-                    sql_conn=conn,
-                    cohere_client=resources.clients.cohere,
-                    qdrant_client=resources.clients.qdrant,
-                )
-            )
-    except DomainError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
-        ) from None
-
-    await lego_workflows.publish_events(events=events)
-
-    if isinstance(
-        result_automatic_response.response_or_unmatched_prompt_id, AutomaticResponse
-    ):
-        automatic_response = result_automatic_response.response_or_unmatched_prompt_id
-    elif isinstance(result_automatic_response.response_or_unmatched_prompt_id, UUID):
-        automatic_response = None
-    else:
-        assert_never(result_automatic_response.response_or_unmatched_prompt_id)
-
-    return ResponseSearchByPromptAutomaticResponse(
-        automatic_response=automatic_response
     )

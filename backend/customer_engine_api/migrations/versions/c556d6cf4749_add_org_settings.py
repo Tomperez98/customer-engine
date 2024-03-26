@@ -30,8 +30,8 @@ def upgrade() -> None:
     op.create_table(
         TABLE_NAME,
         sa.Column("org_code", sa.String(), primary_key=True),
-        sa.Column("default_response", sa.String(), nullable=True),
-        sa.Column("embeddings_model", sa.String(), nullable=True),
+        sa.Column("default_response", sa.String(), nullable=False),
+        sa.Column("embeddings_model", sa.String(), nullable=False),
     )
 
 
