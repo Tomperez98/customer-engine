@@ -28,6 +28,15 @@ class Example(DataClassORJSONMixin, SqlQueriable):
     def from_row(cls: type[Self], row: Row[Any]) -> Self:
         return cls.from_dict(row._asdict())
 
+    def update(self, example: str | None) -> Example:
+        """Update example."""
+        return Example(
+            org_code=self.org_code,
+            example_id=self.example_id,
+            automatic_response_id=self.automatic_response_id,
+            example=example if example is not None else self.example,
+        )
+
 
 @dataclass(frozen=True)
 class AutomaticResponse(DataClassORJSONMixin, SqlQueriable):

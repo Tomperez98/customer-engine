@@ -19,6 +19,47 @@ from customer_engine_api.core.config import resources
 router = APIRouter(prefix="/automatic-responses", tags=["automatic-responses"])
 
 
+class UpdateExample(BaseModel):  # noqa: D101
+    example: str | None
+
+
+class ResponseUpdateExample(BaseModel):  # noqa: D101
+    example: Example
+
+
+@router.patch(path="/{automatic_response_id}/example/{example_id}")
+async def update_example(
+    auth_token: BearerToken,
+    automatic_response_id: UUID,
+    example_id: UUID,
+    req: UpdateExample,
+) -> ResponseUpdateExample:
+    """Update example."""
+    try:
+        with resources.db_engine.begin() as conn:
+            response, events = await lego_workflows.run_and_collect_events(
+                cmd=handlers.automatic_responses.update_example.Command(
+                    org_code=jwt.decode_token(
+                        auth_token.credentials,
+                        current_time=time.now(),
+                    ).org_code,
+                    automatic_response_id=automatic_response_id,
+                    example_id=example_id,
+                    sql_conn=conn,
+                    cohere_client=resources.clients.cohere,
+                    qdrant_client=resources.clients.qdrant,
+                    example=req.example,
+                )
+            )
+    except DomainError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        ) from None
+
+    await lego_workflows.publish_events(events=events)
+    return ResponseUpdateExample(example=response.example)
+
+
 class ResponseGetExample(BaseModel):  # noqa: D101
     example: Example
 
@@ -298,7 +339,7 @@ async def list_automatic_responses(  # noqa: D103
 
 
 class ResponseDeleteAutomaticResponse(BaseModel):  # noqa: D101
-    automatic_response_id: UUID
+    status: Literal["deleted"]
 
 
 @router.delete("/{automatic_response_id}")
@@ -308,7 +349,7 @@ async def delete_automatic_response(  # noqa: D103
 ) -> ResponseDeleteAutomaticResponse:
     try:
         with resources.db_engine.begin() as conn:
-            deleted_response, events = await lego_workflows.run_and_collect_events(
+            _, events = await lego_workflows.run_and_collect_events(
                 cmd=handlers.automatic_responses.delete_auto_res.Command(
                     org_code=jwt.decode_token(
                         auth_token.credentials,
@@ -325,6 +366,4 @@ async def delete_automatic_response(  # noqa: D103
         ) from None
 
     await lego_workflows.publish_events(events=events)
-    return ResponseDeleteAutomaticResponse(
-        automatic_response_id=deleted_response.automatic_response_id
-    )
+    return ResponseDeleteAutomaticResponse(status="deleted")

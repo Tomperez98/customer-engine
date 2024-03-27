@@ -15,6 +15,7 @@ from customer_engine_api.handlers.automatic_responses import (
     list_examples,
     similar_example_by_prompt,
     update_auto_res,
+    update_example,
 )
 
 __all__ = [
@@ -30,4 +31,5 @@ __all__ = [
     "delete_bulk_examples",
     "similar_example_by_prompt",
     "get_auto_res_owns_example",
+    "update_example",
 ]

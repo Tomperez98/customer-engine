@@ -38,7 +38,8 @@ class WhatsappTokenAlreadyExistsError(DomainError):  # noqa: D101
 
 
 @dataclass(frozen=True)
-class Response(ResponseComponent): ...  # noqa: D101
+class Response(ResponseComponent):  # noqa: D101
+    token: whatsapp.WhatsappTokens
 
 
 @dataclass(frozen=True)
@@ -49,6 +50,15 @@ class Command(CommandComponent[Response]):  # noqa: D101
     sql_conn: Connection
 
     def _register_new(self, events: list[DomainEvent]) -> Response:
+        whatsapp_token = whatsapp.WhatsappTokens(
+            org_code=self.org_code,
+            access_token=resources.fernet.encrypt(
+                data=self.access_token.encode()
+            ).decode(),
+            user_token=whatsapp.hashing.hash_string(
+                string=self.user_token, algo="sha256"
+            ),
+        )
         stmt = text(
             """
             INSERT INTO whatsapp_tokens (
@@ -64,21 +74,17 @@ class Command(CommandComponent[Response]):  # noqa: D101
         ).bindparams(
             bindparam(
                 key="org_code",
-                value=self.org_code,
+                value=whatsapp_token.org_code,
                 type_=sqlalchemy.String(),
             ),
             bindparam(
                 key="access_token",
-                value=resources.fernet.encrypt(
-                    data=self.access_token.encode()
-                ).decode(),
+                value=whatsapp_token.access_token,
                 type_=sqlalchemy.String(),
             ),
             bindparam(
                 key="user_token",
-                value=whatsapp.hashing.hash_string(
-                    string=self.user_token, algo="sha256"
-                ),
+                value=whatsapp_token.user_token,
                 type_=sqlalchemy.String(),
             ),
         )
@@ -88,7 +94,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
                 org_code=self.org_code,
             )
         )
-        return Response()
+        return Response(token=whatsapp_token)
 
     async def run(self, events: list[DomainEvent]) -> Response:  # noqa: D102
         try:

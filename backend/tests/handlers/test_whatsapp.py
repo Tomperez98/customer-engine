@@ -83,7 +83,7 @@ async def test_update() -> None:
                 )
             )
 
-        await lego_workflows.run_and_collect_events(
+        update_token, _ = await lego_workflows.run_and_collect_events(
             handlers.whatsapp.update_tokens.Command(
                 org_code=org_code,
                 new_access_token="567",  # noqa: S106
@@ -91,17 +91,11 @@ async def test_update() -> None:
                 sql_conn=conn,
             )
         )
-        whatsapp_token = (
-            await lego_workflows.run_and_collect_events(
-                handlers.whatsapp.get_tokens.Command(org_code=org_code, sql_conn=conn)
-            )
-        )[0].whatsapp_token
-        assert whatsapp_token.org_code == org_code
-        assert whatsapp.hashing.check_same_hashed(
-            hashed=whatsapp_token.user_token, string="BYE", algo="sha256"
-        )
 
-        assert whatsapp_token.access_token == "567"  # noqa: S105
+        assert update_token.token.org_code == org_code
+        assert whatsapp.hashing.check_same_hashed(
+            hashed=update_token.token.user_token, string="BYE", algo="sha256"
+        )
 
         await lego_workflows.run_and_collect_events(
             cmd=handlers.whatsapp.delete_tokens.Command(

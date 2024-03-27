@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import lego_workflows
 import sqlalchemy
@@ -17,6 +18,9 @@ from customer_engine_api.core.config import resources
 from customer_engine_api.core.logging import logger
 from customer_engine_api.handlers.whatsapp import get_tokens
 
+if TYPE_CHECKING:
+    from customer_engine_api.core.whatsapp import WhatsappTokens
+
 
 @dataclass(frozen=True)
 class WhatsappTokenUpdated(DomainEvent):  # noqa: D101
@@ -30,7 +34,8 @@ class WhatsappTokenUpdated(DomainEvent):  # noqa: D101
 
 
 @dataclass(frozen=True)
-class Response(ResponseComponent): ...  # noqa: D101
+class Response(ResponseComponent):  # noqa: D101
+    token: WhatsappTokens
 
 
 @dataclass(frozen=True)
@@ -81,4 +86,4 @@ class Command(CommandComponent[Response]):  # noqa: D101
         )
         self.sql_conn.execute(stmt)
         events.append(WhatsappTokenUpdated(org_code=self.org_code))
-        return Response()
+        return Response(token=existing_whatsapp_token)

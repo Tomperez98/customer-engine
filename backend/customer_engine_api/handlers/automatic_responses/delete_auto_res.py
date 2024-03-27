@@ -41,8 +41,7 @@ class AutomaticResponseDeleted(DomainEvent):
 
 
 @dataclass(frozen=True)
-class Response(ResponseComponent):  # noqa: D101
-    automatic_response_id: UUID
+class Response(ResponseComponent): ...  # noqa: D101
 
 
 @dataclass(frozen=True)
@@ -99,4 +98,4 @@ class Command(CommandComponent[Response]):  # noqa: D101
                 deleted_at=datetime.datetime.now(tz=datetime.UTC),
             )
         )
-        return Response(automatic_response_id=self.automatic_response_id)
+        return Response()

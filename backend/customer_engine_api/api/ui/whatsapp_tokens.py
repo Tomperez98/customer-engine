@@ -57,7 +57,7 @@ class CreateWhatsappTokens(BaseModel):  # noqa: D101
 
 
 class ResponseCreateWhatsappTokens(BaseModel):  # noqa: D101
-    status: Literal["created"]
+    whatsapp_tokens: WhatsappTokens
 
 
 @router.post("")
@@ -68,7 +68,10 @@ async def create_whatsapp_tokens(
     """Create a whatsapp token."""
     try:
         with resources.db_engine.begin() as conn:
-            _, events = await lego_workflows.run_and_collect_events(
+            (
+                response_register_token,
+                events,
+            ) = await lego_workflows.run_and_collect_events(
                 cmd=handlers.whatsapp.register_tokens.Command(
                     org_code=jwt.decode_token(
                         auth_token.credentials,
@@ -84,7 +87,7 @@ async def create_whatsapp_tokens(
             status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
         ) from None
     await lego_workflows.publish_events(events=events)
-    return ResponseCreateWhatsappTokens(status="created")
+    return ResponseCreateWhatsappTokens(whatsapp_tokens=response_register_token.token)
 
 
 class ResponseDeleteWhatsappTokens(BaseModel):  # noqa: D101
@@ -120,7 +123,7 @@ class PatchWhatsappTokens(BaseModel):  # noqa: D101
 
 
 class ResponsePatchWhatsappTokens(BaseModel):  # noqa: D101
-    status: Literal["updated"]
+    token: WhatsappTokens
 
 
 @router.patch("")
@@ -131,7 +134,7 @@ async def patch_whatsapp_tokens(
     """Patch whatsapp token."""
     try:
         with resources.db_engine.begin() as conn:
-            _, events = await lego_workflows.run_and_collect_events(
+            response_update_token, events = await lego_workflows.run_and_collect_events(
                 cmd=handlers.whatsapp.update_tokens.Command(
                     org_code=jwt.decode_token(
                         auth_token.credentials,
@@ -148,4 +151,4 @@ async def patch_whatsapp_tokens(
         ) from None
 
     await lego_workflows.publish_events(events=events)
-    return ResponsePatchWhatsappTokens(status="updated")
+    return ResponsePatchWhatsappTokens(token=response_update_token.token)
