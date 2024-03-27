@@ -44,6 +44,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
                             org_code=self.org_code,
                             example_id=self.example_id_or_prompt,
                             sql_conn=self.sql_conn,
+                            automatic_response_id=None,
                         )
                     )
                 )[0].example

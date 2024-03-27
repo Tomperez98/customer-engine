@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from typing import Literal
 from uuid import UUID
 
 import lego_workflows
@@ -12,10 +13,140 @@ from pydantic import BaseModel
 from customer_engine_api import handlers
 from customer_engine_api.api.ui.deps import BearerToken  # noqa: TCH001
 from customer_engine_api.core import jwt, time
-from customer_engine_api.core.automatic_responses import AutomaticResponse
+from customer_engine_api.core.automatic_responses import AutomaticResponse, Example
 from customer_engine_api.core.config import resources
 
 router = APIRouter(prefix="/automatic-responses", tags=["automatic-responses"])
+
+
+class ResponseGetExample(BaseModel):  # noqa: D101
+    example: Example
+
+
+@router.get(path="/{automatic_response_id}/example/{example_id}")
+async def get_example(
+    auth_token: BearerToken, automatic_response_id: UUID, example_id: UUID
+) -> ResponseGetExample:
+    """Get example."""
+    try:
+        with resources.db_engine.begin() as conn:
+            response, events = await lego_workflows.run_and_collect_events(
+                cmd=handlers.automatic_responses.get_example.Command(
+                    org_code=jwt.decode_token(
+                        auth_token.credentials,
+                        current_time=time.now(),
+                    ).org_code,
+                    automatic_response_id=automatic_response_id,
+                    example_id=example_id,
+                    sql_conn=conn,
+                )
+            )
+    except DomainError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        ) from None
+
+    await lego_workflows.publish_events(events=events)
+    return ResponseGetExample(example=response.example)
+
+
+class ResponseDeleteExample(BaseModel):  # noqa: D101
+    status: Literal["deleted"]
+
+
+@router.delete(path="/{automatic_response_id}/example/{example_id}")
+async def delete_example(
+    auth_token: BearerToken, automatic_response_id: UUID, example_id: UUID
+) -> ResponseDeleteExample:
+    """Delete example."""
+    try:
+        with resources.db_engine.begin() as conn:
+            _, events = await lego_workflows.run_and_collect_events(
+                cmd=handlers.automatic_responses.delete_example.Command(
+                    org_code=jwt.decode_token(
+                        auth_token.credentials,
+                        current_time=time.now(),
+                    ).org_code,
+                    automatic_response_id=automatic_response_id,
+                    example_id=example_id,
+                    sql_conn=conn,
+                    qdrant_client=resources.clients.qdrant,
+                )
+            )
+    except DomainError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        ) from None
+
+    await lego_workflows.publish_events(events=events)
+    return ResponseDeleteExample(status="deleted")
+
+
+class ResponseListExample(BaseModel):  # noqa: D101
+    examples: list[Example]
+
+
+@router.get(path="/{automatic_response_id}/example")
+async def list_examples(
+    auth_token: BearerToken, automatic_response_id: UUID
+) -> ResponseListExample:
+    """List examples."""
+    try:
+        with resources.db_engine.begin() as conn:
+            response, events = await lego_workflows.run_and_collect_events(
+                cmd=handlers.automatic_responses.list_examples.Command(
+                    org_code=jwt.decode_token(
+                        auth_token.credentials,
+                        current_time=time.now(),
+                    ).org_code,
+                    automatic_response_id=automatic_response_id,
+                    sql_conn=conn,
+                )
+            )
+    except DomainError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        ) from None
+
+    await lego_workflows.publish_events(events=events)
+    return ResponseListExample(examples=response.examples)
+
+
+class CreateExample(BaseModel):  # noqa: D101
+    example: str
+
+
+class ResponseCreateExample(BaseModel):  # noqa: D101
+    example_id: UUID
+
+
+@router.post(path="/{automatic_response_id}/example")
+async def create_example(
+    auth_token: BearerToken, automatic_response_id: UUID, req: CreateExample
+) -> ResponseCreateExample:
+    """Create example."""
+    try:
+        with resources.db_engine.begin() as conn:
+            response, events = await lego_workflows.run_and_collect_events(
+                cmd=handlers.automatic_responses.create_example.Command(
+                    org_code=jwt.decode_token(
+                        auth_token.credentials,
+                        current_time=time.now(),
+                    ).org_code,
+                    automatic_response_id=automatic_response_id,
+                    example=req.example,
+                    qdrant_client=resources.clients.qdrant,
+                    cohere_client=resources.clients.cohere,
+                    sql_conn=conn,
+                )
+            )
+    except DomainError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        ) from None
+
+    await lego_workflows.publish_events(events=events)
+    return ResponseCreateExample(example_id=response.example_id)
 
 
 class CreateAutomaticResponse(BaseModel):  # noqa: D101

@@ -21,6 +21,7 @@ async def test_get_not_existing_example() -> None:
                 org_code="test",
                 example_id=uuid4(),
                 sql_conn=conn,
+                automatic_response_id=None,
             )
         )
 
@@ -90,6 +91,7 @@ async def test_list_examples() -> None:
                         org_code=test_org,
                         example_id=example.example_id,
                         sql_conn=conn,
+                        automatic_response_id=None,
                     )
                 )
 
@@ -123,6 +125,7 @@ async def test_get_existing_example() -> None:
                 org_code=test_org,
                 example_id=response_create_example.example_id,
                 sql_conn=conn,
+                automatic_response_id=response_create_automatic.automatic_response_id,
             )
         )
         assert (
@@ -173,6 +176,7 @@ async def test_get_existing_example() -> None:
                 example_id=response_create_example.example_id,
                 sql_conn=conn,
                 qdrant_client=resources.clients.qdrant,
+                automatic_response_id=response_create_automatic.automatic_response_id,
             )
         )
         with pytest.raises(
@@ -183,6 +187,7 @@ async def test_get_existing_example() -> None:
                     org_code=test_org,
                     example_id=response_create_example.example_id,
                     sql_conn=conn,
+                    automatic_response_id=response_create_automatic.automatic_response_id,
                 )
             )
 

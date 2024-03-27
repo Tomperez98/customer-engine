@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+import lego_workflows
 import sqlalchemy
 from lego_workflows.components import (
     CommandComponent,
@@ -15,6 +16,7 @@ from lego_workflows.components import (
 from sqlalchemy import Connection, bindparam, text
 
 from customer_engine_api.core.automatic_responses import Example
+from customer_engine_api.handlers.automatic_responses import get_auto_res
 
 if TYPE_CHECKING:
     from uuid import UUID
@@ -41,10 +43,19 @@ class Response(ResponseComponent):
 @dataclass(frozen=True)
 class Command(CommandComponent[Response]):  # noqa: D101
     org_code: str
+    automatic_response_id: UUID | None
     example_id: UUID
     sql_conn: Connection
 
     async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002, D102
+        if self.automatic_response_id is not None:
+            await lego_workflows.run_and_collect_events(
+                cmd=get_auto_res.Command(
+                    org_code=self.org_code,
+                    automatic_response_id=self.automatic_response_id,
+                    sql_conn=self.sql_conn,
+                )
+            )
         stmt = text(
             """
             SELECT

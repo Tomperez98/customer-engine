@@ -84,6 +84,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
                                 org_code=self.org_code,
                                 example_id=UUID(similar_point.id),
                                 sql_conn=self.sql_conn,
+                                automatic_response_id=None,
                             )
                         )
                     )[0].example

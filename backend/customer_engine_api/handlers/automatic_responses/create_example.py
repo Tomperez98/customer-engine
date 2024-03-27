@@ -79,6 +79,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
                         org_code=self.org_code,
                         example_id=example_id,
                         sql_conn=self.sql_conn,
+                        automatic_response_id=self.automatic_response_id,
                     )
                 )
             except get_example.ExampleNotFoundError:
