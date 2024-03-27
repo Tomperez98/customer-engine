@@ -38,26 +38,19 @@ class ExampleCreated(DomainEvent):  # noqa: D101
 
 @dataclass(frozen=True)
 class Response(ResponseComponent):  # noqa: D101
-    example_id: UUID
+    example_ids: list[UUID]
 
 
 @dataclass(frozen=True)
 class Command(CommandComponent[Response]):  # noqa: D101
     org_code: str
-    example: str
+    examples: list[str]
     automatic_response_id: UUID
     qdrant_client: AsyncQdrantClient
     cohere_client: cohere.AsyncClient
     sql_conn: Connection
 
-    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: D102
-        await lego_workflows.run_and_collect_events(
-            cmd=get_auto_res.Command(
-                org_code=self.org_code,
-                automatic_response_id=self.automatic_response_id,
-                sql_conn=self.sql_conn,
-            )
-        )
+    async def _create_example(self, events: list[DomainEvent], example: str) -> UUID:
         while True:
             example_id = uuid4()
             try:
@@ -74,18 +67,18 @@ class Command(CommandComponent[Response]):  # noqa: D101
 
         stmt = text(
             """
-            INSERT INTO automatic_response_examples (
-                org_code,
-                automatic_response_id,
-                example_id,
-                example
-            ) VALUES (
-                :org_code,
-                :automatic_response_id,
-                :example_id,
-                :example
-            )
-            """
+                INSERT INTO automatic_response_examples (
+                    org_code,
+                    automatic_response_id,
+                    example_id,
+                    example
+                ) VALUES (
+                    :org_code,
+                    :automatic_response_id,
+                    :example_id,
+                    :example
+                )
+                """
         ).bindparams(
             bindparam(key="org_code", value=self.org_code, type_=sqlalchemy.String()),
             bindparam(
@@ -94,12 +87,10 @@ class Command(CommandComponent[Response]):  # noqa: D101
                 type_=sqlalchemy.UUID(),
             ),
             bindparam(key="example_id", value=example_id, type_=sqlalchemy.UUID()),
-            bindparam(key="example", value=self.example, type_=sqlalchemy.String()),
+            bindparam(key="example", value=example, type_=sqlalchemy.String()),
         )
 
         self.sql_conn.execute(stmt)
-
-        await self._upsert_example(example_id=example_id)
 
         events.append(
             ExampleCreated(
@@ -107,9 +98,26 @@ class Command(CommandComponent[Response]):  # noqa: D101
                 example_id=example_id,
             )
         )
-        return Response(example_id=example_id)
 
-    async def _upsert_example(self, example_id: UUID) -> None:
+        return example_id
+
+    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: D102
+        await lego_workflows.run_and_collect_events(
+            cmd=get_auto_res.Command(
+                org_code=self.org_code,
+                automatic_response_id=self.automatic_response_id,
+                sql_conn=self.sql_conn,
+            )
+        )
+        example_ids: list[UUID] = []
+        for example in self.examples:
+            example_id = await self._create_example(events=events, example=example)
+            example_ids.append(example_id)
+
+        await self._upsert_example(example_ids=example_ids)
+        return Response(example_ids=example_ids)
+
+    async def _upsert_example(self, example_ids: list[UUID]) -> None:
         embedding_model_to_use = (
             await lego_workflows.run_and_collect_events(
                 cmd=get_or_default.Command(
@@ -117,11 +125,11 @@ class Command(CommandComponent[Response]):  # noqa: D101
                 )
             )
         )[0].settings.embeddings_model
-        return await automatic_responses.embeddings.upsert_example(
+        return await automatic_responses.embeddings.upsert_examples(
             embedding_model=embedding_model_to_use,
             qdrant_client=self.qdrant_client,
             cohere_client=self.cohere_client,
-            example_id=example_id,
-            example=self.example,
+            example_ids=example_ids,
+            examples=self.examples,
             org_code=self.org_code,
         )

@@ -153,19 +153,19 @@ async def list_examples(
     return ResponseListExample(examples=response.examples)
 
 
-class CreateExample(BaseModel):  # noqa: D101
-    example: str
+class CreateExamples(BaseModel):  # noqa: D101
+    examples: list[str]
 
 
-class ResponseCreateExample(BaseModel):  # noqa: D101
-    example_id: UUID
+class ResponseCreateExamples(BaseModel):  # noqa: D101
+    example_ids: list[UUID]
 
 
 @router.post(path="/{automatic_response_id}/example")
 async def create_example(
-    auth_token: BearerToken, automatic_response_id: UUID, req: CreateExample
-) -> ResponseCreateExample:
-    """Create example."""
+    auth_token: BearerToken, automatic_response_id: UUID, req: CreateExamples
+) -> ResponseCreateExamples:
+    """Create examples."""
     try:
         with resources.db_engine.begin() as conn:
             response, events = await lego_workflows.run_and_collect_events(
@@ -175,7 +175,7 @@ async def create_example(
                         current_time=time.now(),
                     ).org_code,
                     automatic_response_id=automatic_response_id,
-                    example=req.example,
+                    examples=req.examples,
                     qdrant_client=resources.clients.qdrant,
                     cohere_client=resources.clients.cohere,
                     sql_conn=conn,
@@ -187,7 +187,7 @@ async def create_example(
         ) from None
 
     await lego_workflows.publish_events(events=events)
-    return ResponseCreateExample(example_id=response.example_id)
+    return ResponseCreateExamples(example_ids=response.example_ids)
 
 
 class CreateAutomaticResponse(BaseModel):  # noqa: D101

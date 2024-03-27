@@ -23,10 +23,10 @@ if TYPE_CHECKING:
     from customer_engine_api.core.typing import EmbeddingModels
 
 
-async def embed_prompt(
+async def embed_prompt_or_examples(
     client: cohere.AsyncClient,
     model: EmbeddingModels,
-    prompt: str,
+    prompt_or_examples: str | list[str],
 ) -> list[list[float]]:
     """Embed examples and prompt using cohere."""
     provider, model_name = model.split(sep=":", maxsplit=1)
@@ -34,9 +34,14 @@ async def embed_prompt(
         msg = "Model provided is not from cohere."
         raise RuntimeError(msg)
 
+    if isinstance(prompt_or_examples, str):
+        prompt_or_examples = [prompt_or_examples]
+
     embeddings = (
         await client.embed(
-            model=model_name, input_type="search_document", texts=[prompt]
+            model=model_name,
+            input_type="search_document",
+            texts=prompt_or_examples,
         )
     ).embeddings
 
@@ -53,28 +58,34 @@ def _qdrant_vectored_params_per_model(model: EmbeddingModels) -> VectorParams:
     assert_never(model)
 
 
-async def upsert_example(  # noqa: PLR0913
+async def upsert_examples(  # noqa: PLR0913
     *,
     embedding_model: EmbeddingModels,
     qdrant_client: AsyncQdrantClient,
     cohere_client: cohere.AsyncClient,
-    example_id: UUID,
-    example: str,
+    example_ids: list[UUID],
+    examples: list[str],
     org_code: str,
 ) -> None:
     """Upsert example embeddings into qdrant database."""
+    if len(example_ids) != len(examples):
+        msg = "Len of example ids and len of example must be equal"
+        raise ValueError(msg)
     with contextlib.suppress(UnexpectedResponse):
         await qdrant_client.create_collection(
             collection_name=org_code,
             vectors_config=_qdrant_vectored_params_per_model(model=embedding_model),
         )
 
-    example_embeddings = await embed_prompt(
-        client=cohere_client, model=embedding_model, prompt=example
+    example_embeddings = await embed_prompt_or_examples(
+        client=cohere_client, model=embedding_model, prompt_or_examples=examples
     )
     upsert_result = await qdrant_client.upsert(
         collection_name=org_code,
-        points=Batch(ids=[example_id.hex], vectors=example_embeddings),
+        points=Batch(
+            ids=[example_id.hex for example_id in example_ids],
+            vectors=example_embeddings,
+        ),
     )
 
     if upsert_result.status == UpdateStatus.ACKNOWLEDGED:

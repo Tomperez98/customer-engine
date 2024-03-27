@@ -40,25 +40,28 @@ async def test_list_examples() -> None:
                 sql_conn=conn,
             )
         )
-        example_texts = [f"Example {i}" for i in range(1, 3)]
-        created_examples: list[Example] = []
-        for example_text in example_texts:
-            response_create_example, _ = await lego_workflows.run_and_collect_events(
-                cmd=handlers.automatic_responses.create_example.Command(
-                    org_code=test_org,
-                    automatic_response_id=response_create_automatic.automatic_response_id,
-                    example=example_text,
-                    sql_conn=conn,
-                    qdrant_client=resources.clients.qdrant,
-                    cohere_client=resources.clients.cohere,
-                )
+
+        examples_to_create = [f"Example {i}" for i in range(1, 3)]
+        response_create_example, _ = await lego_workflows.run_and_collect_events(
+            cmd=handlers.automatic_responses.create_example.Command(
+                org_code=test_org,
+                automatic_response_id=response_create_automatic.automatic_response_id,
+                examples=examples_to_create,
+                sql_conn=conn,
+                qdrant_client=resources.clients.qdrant,
+                cohere_client=resources.clients.cohere,
             )
+        )
+        created_examples: list[Example] = []
+        for example_id, example_text in zip(
+            response_create_example.example_ids, examples_to_create, strict=False
+        ):
             created_examples.append(
                 Example(
                     org_code=test_org,
                     automatic_response_id=response_create_automatic.automatic_response_id,
                     example=example_text,
-                    example_id=response_create_example.example_id,
+                    example_id=example_id,
                 )
             )
 
@@ -114,7 +117,7 @@ async def test_update_example() -> None:
             cmd=handlers.automatic_responses.create_example.Command(
                 org_code=test_org,
                 automatic_response_id=response_create_automatic.automatic_response_id,
-                example="I'd like to order a pizza",
+                examples=["I'd like to order a pizza"],
                 sql_conn=conn,
                 qdrant_client=resources.clients.qdrant,
                 cohere_client=resources.clients.cohere,
@@ -125,7 +128,7 @@ async def test_update_example() -> None:
             handlers.automatic_responses.update_example.Command(
                 org_code=test_org,
                 automatic_response_id=response_create_automatic.automatic_response_id,
-                example_id=response_create_example.example_id,
+                example_id=response_create_example.example_ids[0],
                 sql_conn=conn,
                 qdrant_client=resources.clients.qdrant,
                 cohere_client=resources.clients.cohere,
@@ -135,7 +138,7 @@ async def test_update_example() -> None:
 
         assert (
             response_update_example.example.example_id
-            == response_create_example.example_id
+            == response_create_example.example_ids[0]
         )
         assert response_update_example.example.example == "I'd like to order food"
         similar_to_prompt_response, _ = await lego_workflows.run_and_collect_events(
@@ -150,7 +153,7 @@ async def test_update_example() -> None:
 
         assert (
             similar_to_prompt_response.example.example_id
-            == response_create_example.example_id
+            == response_create_example.example_ids[0]
         )
 
         await lego_workflows.run_and_collect_events(
@@ -167,7 +170,7 @@ async def test_update_example() -> None:
             await lego_workflows.run_and_collect_events(
                 cmd=handlers.automatic_responses.get_example.Command(
                     org_code=test_org,
-                    example_id=response_create_example.example_id,
+                    example_id=response_create_example.example_ids[0],
                     sql_conn=conn,
                     automatic_response_id=None,
                 )
@@ -192,13 +195,13 @@ async def test_get_existing_example() -> None:
         create_example_command = handlers.automatic_responses.create_example.Command(
             org_code=test_org,
             automatic_response_id=response_create_automatic.automatic_response_id,
-            example="I'd like to order a pizza",
+            examples=["I'd like to order a pizza"],
             sql_conn=conn,
             qdrant_client=resources.clients.qdrant,
             cohere_client=resources.clients.cohere,
         )
 
-        await create_example_command._upsert_example(example_id=uuid4())  # noqa: SLF001
+        await create_example_command._upsert_example(example_ids=[uuid4()])  # noqa: SLF001
 
         response_create_example, _ = await lego_workflows.run_and_collect_events(
             cmd=create_example_command
@@ -206,7 +209,7 @@ async def test_get_existing_example() -> None:
         get_example_response, _ = await lego_workflows.run_and_collect_events(
             cmd=handlers.automatic_responses.get_example.Command(
                 org_code=test_org,
-                example_id=response_create_example.example_id,
+                example_id=response_create_example.example_ids[0],
                 sql_conn=conn,
                 automatic_response_id=response_create_automatic.automatic_response_id,
             )
@@ -217,7 +220,7 @@ async def test_get_existing_example() -> None:
         )
         assert (
             get_example_response.example.example_id
-            == response_create_example.example_id
+            == response_create_example.example_ids[0]
         )
 
         similar_to_prompt_response, _ = await lego_workflows.run_and_collect_events(
@@ -256,7 +259,7 @@ async def test_get_existing_example() -> None:
         await lego_workflows.run_and_collect_events(
             cmd=handlers.automatic_responses.delete_example.Command(
                 org_code=test_org,
-                example_id=response_create_example.example_id,
+                example_id=response_create_example.example_ids[0],
                 sql_conn=conn,
                 qdrant_client=resources.clients.qdrant,
                 automatic_response_id=response_create_automatic.automatic_response_id,
@@ -268,7 +271,7 @@ async def test_get_existing_example() -> None:
             await lego_workflows.run_and_collect_events(
                 cmd=handlers.automatic_responses.get_example.Command(
                     org_code=test_org,
-                    example_id=response_create_example.example_id,
+                    example_id=response_create_example.example_ids[0],
                     sql_conn=conn,
                     automatic_response_id=response_create_automatic.automatic_response_id,
                 )

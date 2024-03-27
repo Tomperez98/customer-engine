@@ -100,12 +100,12 @@ class Command(CommandComponent[Response]):  # noqa: D101
             )
         )[0].settings.embeddings_model
 
-        await automatic_responses.embeddings.upsert_example(
+        await automatic_responses.embeddings.upsert_examples(
             embedding_model=embedding_model_to_use,
             cohere_client=self.cohere_client,
             qdrant_client=self.qdrant_client,
-            example_id=example.example_id,
-            example=example.example,
+            example_ids=[example.example_id],
+            examples=[example.example],
             org_code=example.org_code,
         )
         events.append(
