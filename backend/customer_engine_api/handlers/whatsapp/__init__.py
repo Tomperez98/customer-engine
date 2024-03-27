@@ -6,7 +6,6 @@ from customer_engine_api.handlers.whatsapp import (
     delete_tokens,
     get_tokens,
     register_tokens,
-    reply_message,
     update_tokens,
 )
 
@@ -15,5 +14,4 @@ __all__ = [
     "get_tokens",
     "register_tokens",
     "update_tokens",
-    "reply_message",
 ]

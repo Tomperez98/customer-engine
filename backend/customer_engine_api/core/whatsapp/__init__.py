@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 __all__ = ["hashing", "payloads"]
 
 
-@dataclass(frozen=False)
+@dataclass(frozen=True)
 class WhatsappTokens(DataClassORJSONMixin, SqlQueriable):
     """Whatsapp token."""
 
@@ -30,7 +30,24 @@ class WhatsappTokens(DataClassORJSONMixin, SqlQueriable):
         """Instantiate class from sql row."""
         return cls.from_dict(row._asdict())
 
-    def with_decrypted_access_token(self, fernet: Fernet) -> Self:
+    def with_decrypted_access_token(self, fernet: Fernet) -> WhatsappTokens:
         """Decrypt access token."""
-        self.access_token = fernet.decrypt(token=self.access_token).decode()
-        return self
+        return WhatsappTokens(
+            org_code=self.org_code,
+            access_token=fernet.decrypt(token=self.access_token).decode(),
+            user_token=self.user_token,
+        )
+
+    def update(
+        self, access_token: str | None, user_token: str | None, fernet: Fernet
+    ) -> WhatsappTokens:
+        """Update entity."""
+        return WhatsappTokens(
+            org_code=self.org_code,
+            access_token=fernet.encrypt(access_token.encode()).decode()
+            if access_token is not None
+            else self.access_token,
+            user_token=hashing.hash_string(string=user_token, algo="sha256")
+            if user_token is not None
+            else self.user_token,
+        )

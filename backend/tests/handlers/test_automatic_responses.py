@@ -6,18 +6,211 @@ import lego_workflows
 import pytest
 
 from customer_engine_api import handlers
-from customer_engine_api.core.automatic_responses import AutomaticResponse
+from customer_engine_api.core.automatic_responses import Example
 from customer_engine_api.core.config import resources
+
+
+@pytest.mark.e2e()
+async def test_get_not_existing_example() -> None:
+    with (
+        resources.db_engine.begin() as conn,
+        pytest.raises(handlers.automatic_responses.get_example.ExampleNotFoundError),
+    ):
+        await lego_workflows.run_and_collect_events(
+            cmd=handlers.automatic_responses.get_example.Command(
+                org_code="test",
+                example_id=uuid4(),
+                sql_conn=conn,
+                automatic_response_id=None,
+            )
+        )
+
+
+@pytest.mark.e2e()
+async def test_list_examples() -> None:
+    with (
+        resources.db_engine.begin() as conn,
+    ):
+        test_org = "test"
+        response_create_automatic, _ = await lego_workflows.run_and_collect_events(
+            handlers.automatic_responses.create_auto_resp.Command(
+                org_code=test_org,
+                name="Example",
+                response="Response",
+                sql_conn=conn,
+            )
+        )
+        example_texts = [f"Example {i}" for i in range(1, 3)]
+        created_examples: list[Example] = []
+        for example_text in example_texts:
+            response_create_example, _ = await lego_workflows.run_and_collect_events(
+                cmd=handlers.automatic_responses.create_example.Command(
+                    org_code=test_org,
+                    automatic_response_id=response_create_automatic.automatic_response_id,
+                    example=example_text,
+                    sql_conn=conn,
+                    qdrant_client=resources.clients.qdrant,
+                    cohere_client=resources.clients.cohere,
+                )
+            )
+            created_examples.append(
+                Example(
+                    org_code=test_org,
+                    automatic_response_id=response_create_automatic.automatic_response_id,
+                    example=example_text,
+                    example_id=response_create_example.example_id,
+                )
+            )
+
+        list_examples_response, _ = await lego_workflows.run_and_collect_events(
+            cmd=handlers.automatic_responses.list_examples.Command(
+                org_code=test_org,
+                automatic_response_id=response_create_automatic.automatic_response_id,
+                sql_conn=conn,
+            )
+        )
+
+        for example in list_examples_response.examples:
+            assert example in created_examples
+
+        await lego_workflows.run_and_collect_events(
+            cmd=handlers.automatic_responses.delete_auto_res.Command(
+                org_code=test_org,
+                automatic_response_id=response_create_automatic.automatic_response_id,
+                sql_conn=conn,
+                qdrant_client=resources.clients.qdrant,
+            )
+        )
+
+        for example in list_examples_response.examples:
+            with pytest.raises(
+                handlers.automatic_responses.get_example.ExampleNotFoundError
+            ):
+                await lego_workflows.run_and_collect_events(
+                    handlers.automatic_responses.get_example.Command(
+                        org_code=test_org,
+                        example_id=example.example_id,
+                        sql_conn=conn,
+                        automatic_response_id=None,
+                    )
+                )
+
+
+@pytest.mark.e2e()
+async def test_get_existing_example() -> None:
+    with (
+        resources.db_engine.begin() as conn,
+    ):
+        test_org = "test"
+        response_create_automatic, _ = await lego_workflows.run_and_collect_events(
+            handlers.automatic_responses.create_auto_resp.Command(
+                org_code=test_org,
+                name="Example",
+                response="Response",
+                sql_conn=conn,
+            )
+        )
+        response_create_example, _ = await lego_workflows.run_and_collect_events(
+            cmd=handlers.automatic_responses.create_example.Command(
+                org_code=test_org,
+                automatic_response_id=response_create_automatic.automatic_response_id,
+                example="I'd like to order a pizza",
+                sql_conn=conn,
+                qdrant_client=resources.clients.qdrant,
+                cohere_client=resources.clients.cohere,
+            )
+        )
+        get_example_response, _ = await lego_workflows.run_and_collect_events(
+            cmd=handlers.automatic_responses.get_example.Command(
+                org_code=test_org,
+                example_id=response_create_example.example_id,
+                sql_conn=conn,
+                automatic_response_id=response_create_automatic.automatic_response_id,
+            )
+        )
+        assert (
+            get_example_response.example.automatic_response_id
+            == response_create_automatic.automatic_response_id
+        )
+        assert (
+            get_example_response.example.example_id
+            == response_create_example.example_id
+        )
+
+        similar_to_prompt_response, _ = await lego_workflows.run_and_collect_events(
+            cmd=handlers.automatic_responses.similar_example_by_prompt.Command(
+                org_code=test_org,
+                prompt="I want to order a pizza",
+                qdrant_client=resources.clients.qdrant,
+                cohere_client=resources.clients.cohere,
+                sql_conn=conn,
+            )
+        )
+
+        assert (
+            similar_to_prompt_response.example.automatic_response_id
+            == get_example_response.example.automatic_response_id
+        )
+        assert (
+            similar_to_prompt_response.example.example_id
+            == get_example_response.example.example_id
+        )
+
+        response_owner_auto_res, _ = await lego_workflows.run_and_collect_events(
+            handlers.automatic_responses.get_auto_res_owns_example.Command(
+                org_code=test_org,
+                example_id_or_prompt=similar_to_prompt_response.example.example_id,
+                qdrant_client=resources.clients.qdrant,
+                cohere_client=resources.clients.cohere,
+                sql_conn=conn,
+            )
+        )
+
+        assert (
+            response_owner_auto_res.automatic_response.automatic_response_id
+            == response_create_automatic.automatic_response_id
+        )
+        await lego_workflows.run_and_collect_events(
+            cmd=handlers.automatic_responses.delete_example.Command(
+                org_code=test_org,
+                example_id=response_create_example.example_id,
+                sql_conn=conn,
+                qdrant_client=resources.clients.qdrant,
+                automatic_response_id=response_create_automatic.automatic_response_id,
+            )
+        )
+        with pytest.raises(
+            handlers.automatic_responses.get_example.ExampleNotFoundError
+        ):
+            await lego_workflows.run_and_collect_events(
+                cmd=handlers.automatic_responses.get_example.Command(
+                    org_code=test_org,
+                    example_id=response_create_example.example_id,
+                    sql_conn=conn,
+                    automatic_response_id=response_create_automatic.automatic_response_id,
+                )
+            )
+
+        await lego_workflows.run_and_collect_events(
+            handlers.automatic_responses.delete_auto_res.Command(
+                org_code=test_org,
+                automatic_response_id=response_create_automatic.automatic_response_id,
+                sql_conn=conn,
+                qdrant_client=resources.clients.qdrant,
+            )
+        )
 
 
 @pytest.mark.e2e()
 async def test_get_not_existing_automatic_response() -> None:
     with (
         resources.db_engine.connect() as conn,
-        pytest.raises(handlers.automatic_responses.get.AutomaticResponseNotFoundError),
+        pytest.raises(
+            handlers.automatic_responses.get_auto_res.AutomaticResponseNotFoundError
+        ),
     ):
         await lego_workflows.run_and_collect_events(
-            cmd=handlers.automatic_responses.get.Command(
+            cmd=handlers.automatic_responses.get_auto_res.Command(
                 org_code="test", automatic_response_id=uuid4(), sql_conn=conn
             )
         )
@@ -31,20 +224,17 @@ async def test_list_org_automated_responses() -> None:
             name_to_use = f"Automatic response {i}"
 
             created_response, _ = await lego_workflows.run_and_collect_events(
-                cmd=handlers.automatic_responses.create.Command(
+                cmd=handlers.automatic_responses.create_auto_resp.Command(
                     org_code="test",
                     name=name_to_use,
-                    examples=["This is an example"],
                     response="Text automated response",
                     sql_conn=conn,
-                    qdrant_client=resources.clients.qdrant,
-                    cohere_client=resources.clients.cohere,
                 )
             )
             created_automated_responses.add(created_response.automatic_response_id)
 
         list_response, _ = await lego_workflows.run_and_collect_events(
-            handlers.automatic_responses.list_all.Command(
+            handlers.automatic_responses.list_auto_res.Command(
                 org_code="test", sql_conn=conn
             )
         )
@@ -57,7 +247,7 @@ async def test_list_org_automated_responses() -> None:
 
         for created_auto_response in created_automated_responses:
             await lego_workflows.run_and_collect_events(
-                handlers.automatic_responses.delete.Command(
+                handlers.automatic_responses.delete_auto_res.Command(
                     org_code="test",
                     automatic_response_id=created_auto_response,
                     sql_conn=conn,
@@ -67,116 +257,20 @@ async def test_list_org_automated_responses() -> None:
 
 
 @pytest.mark.e2e()
-async def test_search_by_prompt() -> None:
-    with resources.db_engine.connect() as conn:
-        test_org = "test"
-        create_response, _ = await lego_workflows.run_and_collect_events(
-            cmd=handlers.automatic_responses.create.Command(
-                org_code=test_org,
-                name="test automatic response",
-                examples=["I'm a test case"],
-                response="I know you are a test case",
-                sql_conn=conn,
-                qdrant_client=resources.clients.qdrant,
-                cohere_client=resources.clients.cohere,
-            )
-        )
-
-        search_by_prompt_response, _ = await lego_workflows.run_and_collect_events(
-            cmd=handlers.automatic_responses.search_by_prompt.Command(
-                org_code=test_org,
-                prompt="I'm a test case",
-                sql_conn=conn,
-                qdrant_client=resources.clients.qdrant,
-                cohere_client=resources.clients.cohere,
-            )
-        )
-
-        assert isinstance(
-            search_by_prompt_response.response_or_unmatched_prompt_id, AutomaticResponse
-        )
-        assert (
-            search_by_prompt_response.response_or_unmatched_prompt_id.automatic_response_id
-            == create_response.automatic_response_id
-        )
-
-        await lego_workflows.run_and_collect_events(
-            cmd=handlers.automatic_responses.update.Command(
-                org_code=test_org,
-                automatic_response_id=create_response.automatic_response_id,
-                new_name=None,
-                new_examples=["I'm looking for a job"],
-                new_response=None,
-                sql_conn=conn,
-                cohere_client=resources.clients.cohere,
-                qdrant_client=resources.clients.qdrant,
-            )
-        )
-
-        search_by_prompt_response, _ = await lego_workflows.run_and_collect_events(
-            cmd=handlers.automatic_responses.search_by_prompt.Command(
-                org_code=test_org,
-                prompt="I'm a test case",
-                sql_conn=conn,
-                qdrant_client=resources.clients.qdrant,
-                cohere_client=resources.clients.cohere,
-            )
-        )
-
-        assert isinstance(
-            search_by_prompt_response.response_or_unmatched_prompt_id, UUID
-        )
-
-        search_by_prompt_response, _ = await lego_workflows.run_and_collect_events(
-            cmd=handlers.automatic_responses.search_by_prompt.Command(
-                org_code=test_org,
-                prompt="I'm looking for a job",
-                sql_conn=conn,
-                qdrant_client=resources.clients.qdrant,
-                cohere_client=resources.clients.cohere,
-            )
-        )
-
-        assert isinstance(
-            search_by_prompt_response.response_or_unmatched_prompt_id, AutomaticResponse
-        )
-        assert (
-            search_by_prompt_response.response_or_unmatched_prompt_id.name
-            == "test automatic response"
-        )
-        assert (
-            search_by_prompt_response.response_or_unmatched_prompt_id.response
-            == "I know you are a test case"
-        )
-
-        await lego_workflows.run_and_collect_events(
-            cmd=handlers.automatic_responses.delete.Command(
-                org_code=test_org,
-                automatic_response_id=create_response.automatic_response_id,
-                sql_conn=conn,
-                qdrant_client=resources.clients.qdrant,
-            )
-        )
-
-
-@pytest.mark.e2e()
 async def test_update_automatic_response() -> None:
     with resources.db_engine.connect() as conn:
         test_org_code = "test"
         create_response, _ = await lego_workflows.run_and_collect_events(
-            cmd=handlers.automatic_responses.create.Command(
+            cmd=handlers.automatic_responses.create_auto_resp.Command(
                 org_code=test_org_code,
                 name="test automatic response",
-                examples=["I'm a test case"],
                 response="I know you are a test case",
                 sql_conn=conn,
-                qdrant_client=resources.clients.qdrant,
-                cohere_client=resources.clients.cohere,
             )
         )
 
         get_response, _ = await lego_workflows.run_and_collect_events(
-            cmd=handlers.automatic_responses.get.Command(
+            cmd=handlers.automatic_responses.get_auto_res.Command(
                 org_code=test_org_code,
                 automatic_response_id=create_response.automatic_response_id,
                 sql_conn=conn,
@@ -186,24 +280,19 @@ async def test_update_automatic_response() -> None:
         assert get_response.automatic_response.name == "test automatic response"
         assert get_response.automatic_response.response == "I know you are a test case"
 
-        update_response, _ = await lego_workflows.run_and_collect_events(
-            cmd=handlers.automatic_responses.update.Command(
+        await lego_workflows.run_and_collect_events(
+            cmd=handlers.automatic_responses.update_auto_res.Command(
                 org_code=test_org_code,
                 automatic_response_id=create_response.automatic_response_id,
                 sql_conn=conn,
                 new_name="New name",
                 new_response="New response",
-                new_examples=None,
-                cohere_client=resources.clients.cohere,
-                qdrant_client=resources.clients.qdrant,
             )
         )
 
-        assert not update_response.new_embeddings_calculated
-
         updated_automatic_response = (
             await lego_workflows.run_and_collect_events(
-                cmd=handlers.automatic_responses.get.Command(
+                cmd=handlers.automatic_responses.get_auto_res.Command(
                     org_code=test_org_code,
                     automatic_response_id=create_response.automatic_response_id,
                     sql_conn=conn,
@@ -214,35 +303,8 @@ async def test_update_automatic_response() -> None:
         assert updated_automatic_response.name == "New name"
         assert updated_automatic_response.response == "New response"
 
-        update_response, _ = await lego_workflows.run_and_collect_events(
-            cmd=handlers.automatic_responses.update.Command(
-                org_code=test_org_code,
-                automatic_response_id=create_response.automatic_response_id,
-                sql_conn=conn,
-                new_name=None,
-                new_response=None,
-                new_examples=["New example"],
-                cohere_client=resources.clients.cohere,
-                qdrant_client=resources.clients.qdrant,
-            )
-        )
-
-        assert update_response.new_embeddings_calculated
-
-        updated_automatic_response = (
-            await lego_workflows.run_and_collect_events(
-                cmd=handlers.automatic_responses.get.Command(
-                    org_code=test_org_code,
-                    automatic_response_id=create_response.automatic_response_id,
-                    sql_conn=conn,
-                )
-            )
-        )[0].automatic_response
-
-        assert updated_automatic_response.examples == ["New example"]
-
         await lego_workflows.run_and_collect_events(
-            cmd=handlers.automatic_responses.delete.Command(
+            cmd=handlers.automatic_responses.delete_auto_res.Command(
                 org_code=test_org_code,
                 automatic_response_id=create_response.automatic_response_id,
                 sql_conn=conn,
@@ -256,30 +318,27 @@ async def test_get_existing_automatic_response() -> None:
     with resources.db_engine.connect() as conn:
         test_org_code = "test"
         create_response, _ = await lego_workflows.run_and_collect_events(
-            cmd=handlers.automatic_responses.create.Command(
+            cmd=handlers.automatic_responses.create_auto_resp.Command(
                 org_code=test_org_code,
                 name="test automatic response",
-                examples=["I'm a test case"],
                 response="I know you are a test case",
                 sql_conn=conn,
-                qdrant_client=resources.clients.qdrant,
-                cohere_client=resources.clients.cohere,
             )
         )
 
         get_response, _ = await lego_workflows.run_and_collect_events(
-            cmd=handlers.automatic_responses.get.Command(
+            cmd=handlers.automatic_responses.get_auto_res.Command(
                 org_code=test_org_code,
                 automatic_response_id=create_response.automatic_response_id,
                 sql_conn=conn,
             )
         )
         assert get_response.automatic_response.name == "test automatic response"
-        assert get_response.automatic_response.examples == ["I'm a test case"]
+
         assert get_response.automatic_response.response == "I know you are a test case"
 
         await lego_workflows.run_and_collect_events(
-            cmd=handlers.automatic_responses.delete.Command(
+            cmd=handlers.automatic_responses.delete_auto_res.Command(
                 org_code=test_org_code,
                 automatic_response_id=create_response.automatic_response_id,
                 sql_conn=conn,
@@ -288,10 +347,10 @@ async def test_get_existing_automatic_response() -> None:
         )
 
         with pytest.raises(
-            handlers.automatic_responses.get.AutomaticResponseNotFoundError
+            handlers.automatic_responses.get_auto_res.AutomaticResponseNotFoundError
         ):
             await lego_workflows.run_and_collect_events(
-                cmd=handlers.automatic_responses.get.Command(
+                cmd=handlers.automatic_responses.get_auto_res.Command(
                     org_code=test_org_code,
                     automatic_response_id=create_response.automatic_response_id,
                     sql_conn=conn,

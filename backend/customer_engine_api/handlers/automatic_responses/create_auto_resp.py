@@ -2,39 +2,23 @@
 
 from __future__ import annotations
 
-import contextlib
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, assert_never
+from typing import TYPE_CHECKING
 from uuid import uuid4
 
 import lego_workflows
 import sqlalchemy
 from lego_workflows.components import CommandComponent, DomainEvent, ResponseComponent
-from qdrant_client.http.exceptions import UnexpectedResponse
-from qdrant_client.http.models import Batch, Distance, VectorParams
 from sqlalchemy import bindparam, text
 
-from customer_engine_api.core.automatic_responses._embeddings import (
-    EmbeddingModels,
-    embed_examples_and_prompt,
-)
 from customer_engine_api.core.logging import logger
-from customer_engine_api.handlers.automatic_responses import get
-from customer_engine_api.handlers.org_settings import get_or_default
+from customer_engine_api.handlers.automatic_responses import get_auto_res
 
 if TYPE_CHECKING:
     import datetime
     from uuid import UUID
 
-    import cohere
-    from qdrant_client import AsyncQdrantClient
     from sqlalchemy import Connection
-
-
-def _qdrant_vectored_params_per_model(model: EmbeddingModels) -> VectorParams:
-    if model == "cohere:embed-multilingual-light-v3.0":
-        return VectorParams(size=384, distance=Distance.COSINE)
-    assert_never(model)
 
 
 @dataclass(frozen=True)
@@ -67,32 +51,22 @@ class Command(CommandComponent[Response]):
 
     org_code: str
     name: str
-    examples: list[str]
     response: str
     sql_conn: Connection
-    qdrant_client: AsyncQdrantClient
-    cohere_client: cohere.AsyncClient
 
     async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002
         """Command execution."""
-        embedding_model_to_use = (
-            await lego_workflows.run_and_collect_events(
-                cmd=get_or_default.Command(
-                    org_code=self.org_code, sql_conn=self.sql_conn
-                )
-            )
-        )[0].settings.embeddings_model
         while True:
             random_id = uuid4()
             try:
                 await lego_workflows.run_and_collect_events(
-                    get.Command(
+                    get_auto_res.Command(
                         org_code=self.org_code,
                         automatic_response_id=random_id,
                         sql_conn=self.sql_conn,
                     )
                 )
-            except get.AutomaticResponseNotFoundError:
+            except get_auto_res.AutomaticResponseNotFoundError:
                 break
         stmt = text(
             """
@@ -100,15 +74,11 @@ class Command(CommandComponent[Response]):
             org_code,
             automatic_response_id,
             name,
-            examples,
-            embedding_model,
             response
             ) VALUES (
             :org_code,
             :automatic_response_id,
             :name,
-            :examples,
-            :embedding_model,
             :response
             )
             """
@@ -120,38 +90,9 @@ class Command(CommandComponent[Response]):
                 type_=sqlalchemy.UUID(),
             ),
             bindparam(key="name", value=self.name, type_=sqlalchemy.String()),
-            bindparam(key="examples", value=self.examples, type_=sqlalchemy.JSON()),
-            bindparam(
-                key="embedding_model",
-                value=embedding_model_to_use,
-                type_=sqlalchemy.String(),
-            ),
             bindparam(key="response", value=self.response, type_=sqlalchemy.String()),
         )
 
         self.sql_conn.execute(stmt)
-
-        collection_created: bool = False
-        with contextlib.suppress(UnexpectedResponse):
-            collection_created = await self.qdrant_client.create_collection(
-                collection_name=self.org_code,
-                vectors_config=_qdrant_vectored_params_per_model(
-                    model=embedding_model_to_use
-                ),
-            )
-            if not collection_created:
-                msg = f"Unable to create collection {self.org_code}"
-                raise RuntimeError(msg)
-
-        examples_embeddings = await embed_examples_and_prompt(
-            client=self.cohere_client,
-            model=embedding_model_to_use,
-            examples_or_prompt=self.examples,
-        )
-
-        await self.qdrant_client.upsert(
-            collection_name=self.org_code,
-            points=Batch(ids=[random_id.hex], vectors=examples_embeddings),
-        )
 
         return Response(automatic_response_id=random_id)

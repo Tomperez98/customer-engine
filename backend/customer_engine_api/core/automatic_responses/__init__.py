@@ -6,7 +6,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Self
 from uuid import UUID
 
-import orjson
 from mashumaro.mixins.orjson import DataClassORJSONMixin
 
 from customer_engine_api.core.automatic_responses import _embeddings as embeddings
@@ -18,20 +17,37 @@ if TYPE_CHECKING:
 __all__ = ["embeddings"]
 
 
-@dataclass(frozen=False)
+@dataclass(frozen=True)
+class Example(DataClassORJSONMixin, SqlQueriable):
+    org_code: str
+    example_id: UUID
+    automatic_response_id: UUID
+    example: str
+
+    @classmethod
+    def from_row(cls: type[Self], row: Row[Any]) -> Self:
+        return cls.from_dict(row._asdict())
+
+
+@dataclass(frozen=True)
 class AutomaticResponse(DataClassORJSONMixin, SqlQueriable):
     """Automatic response."""
 
     org_code: str
     automatic_response_id: UUID
     name: str
-    examples: list[str]
-    embedding_model: embeddings.EmbeddingModels
     response: str
 
     @classmethod
     def from_row(cls: type[Self], row: Row[Any]) -> Self:
         """Instantiate from row."""
-        row_data = row._asdict()
-        row_data["examples"] = orjson.loads(row_data["examples"])
-        return cls.from_dict(row_data)
+        return cls.from_dict(row._asdict())
+
+    def update(self, name: str | None, response: str | None) -> AutomaticResponse:
+        """Update automatic response."""
+        return AutomaticResponse(
+            org_code=self.org_code,
+            automatic_response_id=self.automatic_response_id,
+            name=name if name is not None else self.name,
+            response=response if response is not None else self.response,
+        )

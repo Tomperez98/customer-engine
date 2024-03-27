@@ -49,8 +49,6 @@ class Command(CommandComponent[Response]):  # noqa: D101
                 org_code,
                 automatic_response_id,
                 name,
-                examples,
-                embedding_model,
                 response
             FROM automatic_responses
             WHERE org_code = :org_code

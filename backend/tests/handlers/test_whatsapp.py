@@ -71,6 +71,18 @@ async def test_update() -> None:
                 user_token="HELLO",  # noqa: S106
             )
         )
+        with pytest.raises(
+            handlers.whatsapp.register_tokens.WhatsappTokenAlreadyExistsError
+        ):
+            await lego_workflows.run_and_collect_events(
+                handlers.whatsapp.register_tokens.Command(
+                    org_code=org_code,
+                    access_token="123",  # noqa: S106
+                    sql_conn=conn,
+                    user_token="HELLO",  # noqa: S106
+                )
+            )
+
         await lego_workflows.run_and_collect_events(
             handlers.whatsapp.update_tokens.Command(
                 org_code=org_code,

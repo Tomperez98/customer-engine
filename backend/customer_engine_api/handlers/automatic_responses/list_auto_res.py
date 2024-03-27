@@ -1,4 +1,4 @@
-"""List unmatched prompts."""
+"""List automatic responses."""
 
 from __future__ import annotations
 
@@ -8,12 +8,12 @@ import sqlalchemy
 from lego_workflows.components import CommandComponent, DomainEvent, ResponseComponent
 from sqlalchemy import Connection, bindparam, text
 
-from customer_engine_api.core.unmatched_prompts import UnmatchedPrompt
+from customer_engine_api.core.automatic_responses import AutomaticResponse
 
 
 @dataclass(frozen=True)
 class Response(ResponseComponent):  # noqa: D101
-    unmatched_prompts: list[UnmatchedPrompt]
+    automatic_responses: list[AutomaticResponse]
 
 
 @dataclass(frozen=True)
@@ -23,11 +23,13 @@ class Command(CommandComponent[Response]):  # noqa: D101
 
     async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002, D102
         stmt = text(
-            """SELECT
+            """
+            SELECT
                 org_code,
-                prompt_id,
-                prompt
-            FROM unmatched_prompts
+                automatic_response_id,
+                name,
+                response
+            FROM automatic_responses
             WHERE org_code = :org_code
             """
         ).bindparams(
@@ -35,8 +37,8 @@ class Command(CommandComponent[Response]):  # noqa: D101
         )
 
         return Response(
-            unmatched_prompts=[
-                UnmatchedPrompt.from_row(row=row)
-                for row in self.sql_conn.execute(stmt).fetchall()
+            automatic_responses=[
+                AutomaticResponse.from_row(row)
+                for row in self.sql_conn.execute(statement=stmt).fetchall()
             ]
         )

@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING, Any, Self
 
 from mashumaro.mixins.orjson import DataClassORJSONMixin
 
-from customer_engine_api.core import automatic_responses
 from customer_engine_api.core.interfaces import SqlQueriable
+from customer_engine_api.core.typing import EmbeddingModels
 
 if TYPE_CHECKING:
     from sqlalchemy import Row
@@ -20,7 +20,7 @@ class OrgSettings(DataClassORJSONMixin, SqlQueriable):
 
     org_code: str
     default_response: str = field(default="No response found for this prompt")
-    embeddings_model: automatic_responses.embeddings.EmbeddingModels = field(
+    embeddings_model: EmbeddingModels = field(
         default="cohere:embed-multilingual-light-v3.0"
     )
 

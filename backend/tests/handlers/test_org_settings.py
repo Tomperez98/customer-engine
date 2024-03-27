@@ -23,7 +23,7 @@ async def test_get_not_existing() -> None:
         assert org_settings.is_default
 
 
-async def test_update_not_existing() -> None:
+async def test_update_existing() -> None:
     with resources.db_engine.begin() as conn:
         created_settings = (
             await lego_workflows.run_and_collect_events(
@@ -50,6 +50,21 @@ async def test_update_not_existing() -> None:
         assert get_response.settings == OrgSettings(
             org_code="test",
             default_response="Another response",
+        )
+
+        updated_settings = (
+            await lego_workflows.run_and_collect_events(
+                cmd=handlers.org_settings.upsert.Command(
+                    org_code="test",
+                    default_response="Another response v1",
+                    sql_conn=conn,
+                )
+            )
+        )[0].settings
+
+        assert updated_settings == OrgSettings(
+            org_code="test",
+            default_response="Another response v1",
         )
 
         await lego_workflows.run_and_collect_events(
