@@ -8,4 +8,4 @@ from customer_engine_api.handlers import (
     whatsapp,
 )
 
-__all__ = ["automatic_responses", "whatsapp", "org_settings"]
+__all__ = ["automatic_responses", "org_settings", "whatsapp"]

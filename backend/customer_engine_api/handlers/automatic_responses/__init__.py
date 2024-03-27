@@ -19,17 +19,17 @@ from customer_engine_api.handlers.automatic_responses import (
 )
 
 __all__ = [
-    "get_auto_res",
-    "delete_auto_res",
     "create_auto_resp",
-    "list_auto_res",
-    "update_auto_res",
-    "get_example",
     "create_example",
-    "delete_example",
-    "list_examples",
+    "delete_auto_res",
     "delete_bulk_examples",
-    "similar_example_by_prompt",
+    "delete_example",
+    "get_auto_res",
     "get_auto_res_owns_example",
+    "get_example",
+    "list_auto_res",
+    "list_examples",
+    "similar_example_by_prompt",
+    "update_auto_res",
     "update_example",
 ]

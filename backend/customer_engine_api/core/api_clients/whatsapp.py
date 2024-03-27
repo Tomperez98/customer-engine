@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING
 
 import httpx
 
+from customer_engine_api.core import http
+
 if TYPE_CHECKING:
     from customer_engine_api.core.typing import JsonResponse
 
@@ -21,13 +23,9 @@ class AsyncWhatsappClient:
             transport=httpx.AsyncHTTPTransport(retries=3),
         )
 
-    def _safe_return(self, response: httpx.Response) -> JsonResponse:
-        response.raise_for_status()
-        return response.json()
-
     async def send_text_msg(self, text: str, to_wa_id: str) -> JsonResponse:
         """Send text msg."""
-        return self._safe_return(
+        return http.safe_return(
             await self._client.post(
                 url="/messages",
                 json={

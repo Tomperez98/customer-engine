@@ -54,6 +54,7 @@ def _qdrant_vectored_params_per_model(model: EmbeddingModels) -> VectorParams:
 
 
 async def upsert_example(  # noqa: PLR0913
+    *,
     embedding_model: EmbeddingModels,
     qdrant_client: AsyncQdrantClient,
     cohere_client: cohere.AsyncClient,

@@ -24,7 +24,7 @@ dependencies = [
     "loguru < 1",
     "qdrant-client < 2",
     "cohere < 5",
-    "pydantic >= 2",
+    "pydantic >= 2, < 3",
     "orjson",
     "cryptography",
     "pyjwt < 3",
@@ -77,6 +77,7 @@ exclude = [
 ]
 
 [tool.ruff.lint]
+preview = true
 ignore = [
     "ANN101",
     "D203",
@@ -92,6 +93,7 @@ ignore = [
     "Q003",
     "W191",
     "UP040",
+    "CPY001",
 ]
 select = ["ALL"]
 logger-objects = ["customer_engine_api.core.logging.logger"]
@@ -109,6 +111,7 @@ enum = { msg = "`enum` is banned: Python enums are not allowed. Use typing.Liter
 "tests/*.py" = ["INP001", "S101", "D"]
 "scripts/*.py" = ["INP001", "D103"]
 "customer_engine_api/migrations/**/*.py" = ["D103"]
+"customer_engine_api/cli/*.py" = ["S404"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["customer_engine_api"]

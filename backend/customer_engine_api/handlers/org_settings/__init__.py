@@ -8,4 +8,4 @@ from customer_engine_api.handlers.org_settings import (
     upsert,
 )
 
-__all__ = ["get_or_default", "delete", "upsert"]
+__all__ = ["delete", "get_or_default", "upsert"]
