@@ -367,3 +367,40 @@ async def delete_automatic_response(  # noqa: D103
 
     await lego_workflows.publish_events(events=events)
     return ResponseDeleteAutomaticResponse(status="deleted")
+
+
+class SearchByPrompt(BaseModel):  # noqa: D101
+    prompt: str
+
+
+class ResponseSearchByPrompt(BaseModel):  # noqa: D101
+    automatic_response: AutomaticResponse
+
+
+@router.post("/search/by-prompt")
+async def search_automatic_response_by_prompt(
+    auth_token: BearerToken, req: SearchByPrompt
+) -> ResponseSearchByPrompt:
+    """Search automatic response by prompt."""
+    try:
+        with resources.db_engine.begin() as conn:
+            response, events = await lego_workflows.run_and_collect_events(
+                cmd=handlers.automatic_responses.get_auto_res_owns_example.Command(
+                    org_code=jwt.decode_token(
+                        auth_token.credentials,
+                        current_time=time.now(),
+                    ).org_code,
+                    example_id_or_prompt=req.prompt,
+                    sql_conn=conn,
+                    qdrant_client=resources.clients.qdrant,
+                    cohere_client=resources.clients.cohere,
+                )
+            )
+
+    except DomainError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        ) from None
+
+    await lego_workflows.publish_events(events=events)
+    return ResponseSearchByPrompt(automatic_response=response.automatic_response)
