@@ -1,4 +1,4 @@
-import Table from '@/components/Table'
+import Table from '@/components/table/Table'
 import useGetForms from '@/hooks/forms/useGetForms'
 import {createColumnHelper, Row} from '@tanstack/react-table'
 import {Form, FormKeys} from '@/types/Forms'
