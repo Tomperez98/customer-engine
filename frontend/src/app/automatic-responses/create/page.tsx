@@ -1,6 +1,5 @@
 'use client'
 
-import EditableListField from '@/components/EditableListField'
 import Layout from '@/components/layout'
 import {FORM_TEMPLATE, FORM_FIELDS} from '@/constants/formFields'
 import useCreateForm from '@/hooks/forms/useCreateForm'
@@ -82,19 +81,6 @@ const CreateForm = () => {
                             setFormTemplate={setFormTemplate}
                         />
                     </div>
-                )
-            }
-            if (component === 'list') {
-                return (
-                    <EditableListField
-                        templateForm={formTemplate}
-                        setTemplateForm={setFormTemplate}
-                        key={idx}
-                        fieldName={name as FormKey}
-                        label={label}
-                        originalValue={formTemplate[name as FormKey] || []}
-                        editableOnly
-                    />
                 )
             }
             return null

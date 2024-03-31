@@ -1,7 +1,7 @@
 'use client'
 
 import Layout from '@/components/layout'
-import FormsTableSection from '@/components/pages/home/FormsTableSection'
+import FormsTableSection from '@/app/dashboard/FormsTableSection'
 
 const Dashboard = () => {
     return (

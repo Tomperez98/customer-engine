@@ -6,6 +6,7 @@ import useGetToken from '@/hooks/tokens/useGetTokens'
 import {useEffect, useState} from 'react'
 import CreateToken from './CreateToken'
 import EditToken from './EditToken'
+import CallToAction from '@/components/CallToAction'
 
 const TokensPage = () => {
     const [isCreating, setIsCreating] = useState<boolean>(false)
@@ -28,13 +29,11 @@ const TokensPage = () => {
                 </h1>
                 <div className='box-border flex w-full flex-col gap-4 rounded-md bg-white p-8 shadow-md'>
                     {errorCode === 404 && !isCreating && (
-                        <div className='flex h-full w-full flex-col items-center justify-center gap-2 py-4'>
-                            <p>La organización no tiene un token asignado.</p>
-                            <Button
-                                onClick={() => setIsCreating(true)}
-                                label='Crear token'
-                            />
-                        </div>
+                        <CallToAction
+                            actionLabel='Crear token'
+                            onClick={() => setIsCreating(true)}
+                            text='La organización no tiene un token asignado.'
+                        />
                     )}
                     {isCreating && (
                         <CreateToken setShouldRefetch={setShouldRefetch} />

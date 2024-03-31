@@ -4,22 +4,21 @@ import {
     ColumnDef,
     getCoreRowModel,
 } from '@tanstack/react-table'
-import {Form} from '@/types/Forms'
 
-interface TableProps {
-    columns: ColumnDef<Form, string>[]
-    data: Form[]
+interface TableProps<T> {
+    columns: ColumnDef<T, string>[]
+    data: T[]
 }
 
-const Table: React.FC<TableProps> = ({columns, data}) => {
-    const table = useReactTable({
+const Table = <T extends {}>({columns, data}: TableProps<T>) => {
+    const table = useReactTable<T>({
         data,
         columns,
         getCoreRowModel: getCoreRowModel(),
     })
 
     return (
-        <table className='w-full rounded-lg bg-white  px-2 text-left text-gray-600 shadow-sm'>
+        <table className='w-full rounded-lg bg-white px-2 text-left text-gray-600 shadow-sm'>
             <thead className='border-b border-slate-200 text-sm shadow-sm'>
                 {table.getHeaderGroups().map((headerGroup) => (
                     <tr key={headerGroup.id}>

@@ -1,6 +1,5 @@
 import {ReactNode} from 'react'
 import Header from './Header'
-import Link from 'next/link'
 import {useKindeBrowserClient} from '@kinde-oss/kinde-auth-nextjs'
 import Sidebar from './Sidebar'
 

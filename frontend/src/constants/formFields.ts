@@ -9,12 +9,6 @@ export const FORM_FIELDS: InputField[] = [
         component: 'input',
     },
     {
-        name: 'examples',
-        label: FormKeys['examples'],
-        editable: true,
-        component: 'list',
-    },
-    {
         name: 'response',
         label: FormKeys['response'],
         editable: true,
@@ -24,6 +18,5 @@ export const FORM_FIELDS: InputField[] = [
 
 export const FORM_TEMPLATE = {
     name: '',
-    examples: [''],
     response: '',
 }
