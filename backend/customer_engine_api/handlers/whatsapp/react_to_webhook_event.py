@@ -15,7 +15,6 @@ from result import Err
 
 from customer_engine_api.core import whatsapp
 from customer_engine_api.core.api_clients.whatsapp import AsyncWhatsappClient
-from customer_engine_api.core.logging import logger
 from customer_engine_api.handlers.automatic_responses import (
     get_auto_res_owns_example,
 )
@@ -63,8 +62,6 @@ class Command(CommandComponent[Response]):  # noqa: D101
         )
 
         events.extend(auto_res_events)
-
-        logger.info(auto_res_response)
 
         (
             get_tokens_response,

@@ -123,6 +123,40 @@ async def delete_example(
     return ResponseDeleteExample(status="deleted")
 
 
+class DeleteExamples(BaseModel):  # noqa: D101
+    example_ids: list[UUID]
+
+
+class ResponseDeleteExamples(BaseModel):  # noqa: D101
+    status: Literal["deleted"]
+
+
+@router.delete(path="/{automatic_response_id}/example")
+async def delete_examples(
+    auth_token: BearerToken, req: DeleteExamples
+) -> ResponseDeleteExamples:
+    """Bulk delele examples."""
+    try:
+        with resources.db_engine.begin() as conn:
+            _, events = await lego_workflows.run_and_collect_events(
+                handlers.automatic_responses.delete_bulk_examples.Command(
+                    org_code=jwt.decode_token(
+                        auth_token.credentials,
+                        current_time=time.now(),
+                    ).org_code,
+                    example_ids=req.example_ids,
+                    sql_conn=conn,
+                    qdrant_client=resources.clients.qdrant,
+                )
+            )
+    except DomainError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)
+        ) from None
+    await lego_workflows.publish_events(events=events)
+    return ResponseDeleteExamples(status="deleted")
+
+
 class ResponseListExample(BaseModel):  # noqa: D101
     examples: list[Example]
 

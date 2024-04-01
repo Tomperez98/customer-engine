@@ -52,7 +52,7 @@ h2==4.1.0
     # via httpx
 hpack==4.0.0
     # via h2
-httpcore==1.0.4
+httpcore==1.0.5
     # via httpx
 httptools==0.6.1
     # via uvicorn
@@ -82,14 +82,14 @@ multidict==6.0.5
     #   yarl
 numpy==1.26.4
     # via qdrant-client
-orjson==3.9.15
+orjson==3.10.0
 packaging==24.0
     # via gunicorn
 portalocker==2.8.2
     # via qdrant-client
 protobuf==4.25.3
     # via grpcio-tools
-pycparser==2.21
+pycparser==2.22
     # via cffi
 pydantic==2.6.4
     # via
