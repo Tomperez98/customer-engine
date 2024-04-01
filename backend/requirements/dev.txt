@@ -20,7 +20,7 @@ backoff==2.2.1
     # via cohere
 boolean-py==4.0
     # via license-expression
-build==1.1.1
+build==1.2.1
     # via pyrgo
 cachecontrol==0.14.0
     # via pip-audit
@@ -71,7 +71,7 @@ hpack==4.0.0
     # via h2
 html5lib==1.1
     # via pip-audit
-httpcore==1.0.4
+httpcore==1.0.5
     # via httpx
 httptools==0.6.1
     # via uvicorn
@@ -122,7 +122,7 @@ mypy-extensions==1.0.0
     # via mypy
 numpy==1.26.4
     # via qdrant-client
-orjson==3.9.15
+orjson==3.10.0
     # via mashumaro
 packageurl-python==0.15.0
     # via cyclonedx-python-lib
@@ -151,7 +151,7 @@ protobuf==4.25.3
     # via grpcio-tools
 py-serializable==1.0.2
     # via cyclonedx-python-lib
-pycparser==2.21
+pycparser==2.22
     # via cffi
 pydantic==2.6.4
     # via
@@ -191,7 +191,7 @@ result==0.16.1
     # via pyrgo
 rich==13.7.1
     # via pip-audit
-ruff==0.3.4
+ruff==0.3.5
     # via pyrgo
 setuptools==69.2.0
     # via grpcio-tools
@@ -232,7 +232,7 @@ urllib3==2.2.1
     #   cohere
     #   qdrant-client
     #   requests
-uv==0.1.24
+uv==0.1.27
     # via pyrgo
 uvicorn==0.29.0
 uvloop==0.19.0
