@@ -3,11 +3,14 @@ import {createColumnHelper, Row} from '@tanstack/react-table'
 import {Example, ExampleKeys} from '@/types/Examples'
 import Table from '@/components/table/Table'
 import IconButton from '@/components/IconButton'
-import {MdDelete, MdEditSquare, MdCancel, MdCheckCircle} from 'react-icons/md'
+import {MdDelete, MdEditSquare} from 'react-icons/md'
 import useDeleteExample from '@/hooks/examples/useDeleteExample'
 import {ExampleResponse} from '@/hooks/examples/useGetExamples'
 import EditableCell from '@/components/table/EditableCell'
 import useEditExample from '@/hooks/examples/useEditExample'
+import DeleteConfirmationModal from '@/components/modal/DeleteConfirmationModal'
+import {cyan400} from '@/constants/colors'
+import {ClipLoader} from 'react-spinners'
 
 interface ExamplesTableProps {
     data: ExampleResponse
@@ -20,6 +23,8 @@ const ExamplesTable = ({
     formId,
     setShouldRefetch,
 }: ExamplesTableProps) => {
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false)
+    const [deleteExampleId, setDeleteExampleId] = useState<string>('')
     const examples = useMemo(() => data?.examples, [data])
     const {deleteExample} = useDeleteExample()
     const {editExample, isLoading} = useEditExample(formId)
@@ -27,6 +32,7 @@ const ExamplesTable = ({
         {id: string; example: string}[]
     >([])
     const handleDeleteExample = async (formId: string, exampleId: string) => {
+        setIsDeleteModalOpen(false)
         await deleteExample(formId, exampleId)
         setShouldRefetch(true)
     }
@@ -37,6 +43,11 @@ const ExamplesTable = ({
     const handleEditExample = async (exampleId: string, data: string) => {
         await editExample(exampleId, data)
         setShouldRefetch(true)
+    }
+
+    const handleTriggerDeleteModal = (exampleId: string) => {
+        setDeleteExampleId(exampleId)
+        setIsDeleteModalOpen(true)
     }
 
     const columnHelper = createColumnHelper<Example>()
@@ -80,7 +91,11 @@ const ExamplesTable = ({
                         />
                     ) : (
                         <span>
-                            {isLoading ? 'cargando..' : info.getValue()}
+                            {isLoading ? (
+                                <ClipLoader color={cyan400} size={18} />
+                            ) : (
+                                info.getValue()
+                            )}
                         </span>
                     )}
                 </div>
@@ -93,6 +108,7 @@ const ExamplesTable = ({
                 <div className='flex flex-row items-center gap-4'>
                     <IconButton
                         Icon={MdEditSquare}
+                        tooltip='Editar'
                         onClick={() =>
                             setEditingFields([
                                 ...editingFields,
@@ -107,11 +123,9 @@ const ExamplesTable = ({
                     <IconButton
                         fill='text-red-500'
                         Icon={MdDelete}
+                        tooltip='Borrar'
                         onClick={() =>
-                            handleDeleteExample(
-                                formId,
-                                row.getValue('example_id')
-                            )
+                            handleTriggerDeleteModal(row.getValue('example_id'))
                         }
                         size='text-lg'
                     />
@@ -120,7 +134,19 @@ const ExamplesTable = ({
         },
     ]
 
-    return <Table columns={columns} data={examples} />
+    return (
+        <>
+            <DeleteConfirmationModal
+                deleteAction={() =>
+                    handleDeleteExample(formId, deleteExampleId)
+                }
+                elementName='ejemplo'
+                isOpen={isDeleteModalOpen}
+                setIsOpen={setIsDeleteModalOpen}
+            />
+            <Table columns={columns} data={examples} />
+        </>
+    )
 }
 
 export default ExamplesTable

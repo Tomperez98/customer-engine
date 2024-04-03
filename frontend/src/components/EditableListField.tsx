@@ -42,7 +42,7 @@ const EditableListField = ({
         setListValues(newValues)
     }
 
-    const handleAddSubField = () => {
+    const handleAddField = () => {
         setListValues([...listValues, ''])
     }
 
@@ -75,12 +75,14 @@ const EditableListField = ({
                 {isEditing || editableOnly ? (
                     <div className='flex flex-row items-center gap-2'>
                         <IconButton
-                            onClick={handleAddSubField}
+                            tooltip='Agregar'
+                            onClick={handleAddField}
                             Icon={MdAddCircle}
                             size='text-lg'
                         />
                         {!editableOnly && (
                             <IconButton
+                                tooltip='Cancelar'
                                 Icon={MdCancel}
                                 onClick={handleReset}
                                 size='text-lg'
@@ -89,6 +91,7 @@ const EditableListField = ({
                     </div>
                 ) : (
                     <IconButton
+                        tooltip='Editar'
                         onClick={handleEditField}
                         Icon={MdEditSquare}
                         size='text-lg'
@@ -102,13 +105,14 @@ const EditableListField = ({
                             key={idx}
                             className='flex w-full max-w-full flex-row items-center gap-2'>
                             <input
-                                className='my-2  flex-grow rounded-md border-2 border-gray-300 px-1 text-slate-500'
+                                className='my-2 flex-grow rounded-md border-2 border-gray-300 px-1 text-slate-500'
                                 onChange={(e) => handleFieldChange(e, idx)}
                                 value={value}
                             />
                             {listValues.length > 1 && idx > 0 && (
                                 <div className='shrink-0'>
                                     <IconButton
+                                        tooltip='Borrar'
                                         onClick={() => handleRemoveField(idx)}
                                         Icon={MdDelete}
                                         size='text-lg'

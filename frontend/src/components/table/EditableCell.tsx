@@ -1,6 +1,10 @@
 import {useState} from 'react'
 import IconButton from '@/components/IconButton'
 import {MdCancel, MdCheckCircle} from 'react-icons/md'
+import {
+    validateFieldChange,
+    validateNoEmptyField,
+} from '@/utils/validateExamples'
 
 interface EditableCellProps {
     initialValue: string
@@ -14,6 +18,10 @@ const EditableCell = ({
     onSubmit,
 }: EditableCellProps) => {
     const [inputValue, setInputValue] = useState<string>(initialValue)
+    const isSaveDisabled =
+        !validateNoEmptyField(inputValue) ||
+        validateFieldChange(initialValue, inputValue)
+
     return (
         <div className='flex-start flex gap-2'>
             <input
@@ -26,8 +34,15 @@ const EditableCell = ({
                 Icon={MdCheckCircle}
                 onClick={() => onSubmit(inputValue)}
                 size='text-lg'
+                tooltip='Guardar'
+                disabled={isSaveDisabled}
             />
-            <IconButton Icon={MdCancel} onClick={onCancel} size='text-lg' />
+            <IconButton
+                tooltip='Cancelar'
+                Icon={MdCancel}
+                onClick={onCancel}
+                size='text-lg'
+            />
         </div>
     )
 }
