@@ -95,11 +95,13 @@ const EditableInputField = ({
                         Icon={MdCancel}
                         onClick={handleReset}
                         size='text-lg'
+                        tooltip='Cancelar'
                     />
                 ) : (
                     <IconButton
                         Icon={MdEditSquare}
                         onClick={handleEditField}
+                        tooltip='Editar'
                         size='text-lg'
                     />
                 )}
