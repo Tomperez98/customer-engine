@@ -8,7 +8,6 @@ import httpx
 import stamina
 
 if TYPE_CHECKING:
-
     from customer_engine_api.core.typing import JsonResponse
 
 
