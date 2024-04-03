@@ -66,6 +66,8 @@ const EditToken = ({setShouldRefetch, token}: EditTokenProps) => {
         }
     }, [token, relevantData])
 
+    const webhookUrl = `https://api-staging-54f3.up.railway.app/webhooks/whatsapp/${token.org_code}`
+
     return (
         <div className='flex w-full flex-col flex-wrap gap-4 text-wrap'>
             <div>
@@ -74,9 +76,7 @@ const EditToken = ({setShouldRefetch, token}: EditTokenProps) => {
                     className='text-lg font-semibold capitalize text-neutral-800'>
                     {TokenKeys['webhook_url']}
                 </label>
-                <p>
-                    {BASE_URL}/webhooks/whatsapp/{token.org_code}
-                </p>
+                <p>{webhookUrl}</p>
             </div>
             {TOKEN_FIELDS.map((field, idx: number) => {
                 return (
