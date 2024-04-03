@@ -37,10 +37,9 @@ class _Resources:
             assert_never(environment)
 
         self.db_engine = create_engine(
-            url=f"sqlite+{db_url}/?authToken={db_auth_token}",
+            url=f"sqlite+{db_url}/?authToken={db_auth_token}&timeout=60",
             echo=echo_db,
             pool_pre_ping=True,
-            connect_args={"timeout": 60},
         )
 
         qdrant_url = os.environ["QDRANT_URL"]
