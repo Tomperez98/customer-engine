@@ -14,6 +14,5 @@ router = APIRouter(prefix="/ui", tags=["ui"])
 
 
 router.include_router(automatic_responses.router)
-
 router.include_router(whatsapp_tokens.router)
 router.include_router(org_settings.router)

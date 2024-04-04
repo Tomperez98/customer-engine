@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 from typing import TYPE_CHECKING
 
 import lego_workflows
@@ -39,18 +40,16 @@ async def suscribe_whatsapp_webhooks(org_code: str, req: Request) -> Response:  
 @router.post("/whatsapp/{org_code}")
 async def whatsapp_webhooks(org_code: str, req: Request) -> Response:  # noqa: D103
     payload: JsonResponse = await req.json()
-    try:
-        with resources.db_engine.begin() as conn:
-            await lego_workflows.run_and_collect_events(
-                cmd=handlers.whatsapp.react_to_webhook_event.Command(
-                    payload=payload,
-                    org_code=org_code,
-                    qdrant_client=resources.clients.qdrant,
-                    cohere_client=resources.clients.cohere,
-                    sql_conn=conn,
-                )
+
+    with resources.db_engine.begin() as conn, contextlib.suppress(DomainError):
+        await lego_workflows.run_and_collect_events(
+            cmd=handlers.whatsapp.react_to_webhook_event.Command(
+                payload=payload,
+                org_code=org_code,
+                qdrant_client=resources.clients.qdrant,
+                cohere_client=resources.clients.cohere,
+                sql_conn=conn,
             )
-    except DomainError:
-        return Response()
+        )
 
     return Response()
