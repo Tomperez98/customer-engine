@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "customer-engine-api"
-version = "0.1.43"
+version = "0.1.44"
 readme = "README.md"
 requires-python = ">=3.12"
 classifiers = [
@@ -31,6 +31,7 @@ dependencies = [
     "python-multipart",
     "jinja2",
     "stamina",
+    "result",
 ]
 
 [project.urls]

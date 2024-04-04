@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, final  # noqa: F401
+from typing import TYPE_CHECKING
 
 import lego_workflows
 from lego_workflows.components import (
