@@ -40,6 +40,10 @@ jobs:
         with:
           enable-cache: true
           working-directory: backend
+      
+      - name: Sync dependencies
+        working-directory: backend
+        run: rye sync --no-lock
 
       - name: Check code
         working-directory: backend
