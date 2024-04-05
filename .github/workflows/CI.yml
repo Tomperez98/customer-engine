@@ -15,7 +15,7 @@ env:
 
 jobs:
   run:
-    name: Python ${{ matrix.python-version }} on ${{ startsWith(matrix.os, 'macos-') && 'macOS' || startsWith(matrix.os, 'windows-') && 'Windows' || 'Linux' }}
+    name: On ${{ startsWith(matrix.os, 'macos-') && 'macOS' || startsWith(matrix.os, 'windows-') && 'Windows' || 'Linux' }}
     runs-on: ${{ matrix.os }}
     env:
       DB_AUTH_TOKEN: ${{ secrets.DB_AUTH_TOKEN }}
@@ -32,36 +32,23 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest] # [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.12"]
 
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+      - uses: eifinger/setup-rye@v2
         with:
-          python-version: ${{ matrix.python-version }}
-          cache: "pip"
-          cache-dependency-path: backend/pyproject.toml
-
-      - name: Fix uv venv env variable
-        run: echo "VIRTUAL_ENV=${Python_ROOT_DIR}" >> $GITHUB_ENV
-
-      - name: Install deps
-        working-directory: backend
-        run: |
-          pip install -U uv
-          uv pip install -r requirements/dev.txt
-          uv pip install -e .
+          enable-cache: true
+          working-directory: backend
 
       - name: Check code
         working-directory: backend
-        run: pyrgo check
+        run: rye check
       
       - name: Upgrade database
         working-directory: backend
-        run: python -m alembic upgrade head
+        run: rye run alembic upgrade head
           
       - name: Test code
         working-directory: backend
-        run: pyrgo test
+        run: rye test
