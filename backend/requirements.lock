@@ -49,8 +49,6 @@ grpcio==1.62.1
     # via qdrant-client
 grpcio-tools==1.62.1
     # via qdrant-client
-gunicorn==21.2.0
-    # via customer-engine-api
 h11==0.14.0
     # via httpcore
     # via uvicorn
@@ -93,8 +91,6 @@ numpy==1.26.4
     # via qdrant-client
 orjson==3.10.0
     # via customer-engine-api
-packaging==24.0
-    # via gunicorn
 portalocker==2.8.2
     # via qdrant-client
 protobuf==4.25.3

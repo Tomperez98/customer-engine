@@ -20,6 +20,7 @@ from customer_engine_api.handlers.automatic_responses import (
 from customer_engine_api.handlers.automatic_responses.similar_examples_by_prompt import (
     NoSimilarExampleFoundError,
 )
+from customer_engine_api.handlers.org_settings import get_or_default
 from customer_engine_api.handlers.whatsapp import get_tokens
 
 if TYPE_CHECKING:
@@ -79,7 +80,16 @@ class Command(CommandComponent[Response]):  # noqa: D101
             msg_to_send = auto_res_response.automatic_response.response
 
         except NoSimilarExampleFoundError:
-            msg_to_send = "No response found."
+            (
+                org_settings,
+                get_or_default_events,
+            ) = await lego_workflows.run_and_collect_events(
+                cmd=get_or_default.Command(
+                    org_code=self.org_code, sql_conn=self.sql_conn
+                )
+            )
+            events.extend(get_or_default_events)
+            msg_to_send = org_settings.settings.default_response
 
         await whatsapp_client.send_text_msg(
             text=msg_to_send,

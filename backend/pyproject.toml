@@ -1,18 +1,17 @@
 [project]
 name = "customer-engine-api"
-version = "0.1.52"
+version = "0.1.53"
 description = "Add your description here"
 authors = [{ name = "Tomperez98", email = "tomasperezalvarez@gmail.com" }]
 dependencies = [
     "lego-workflows >= 0.0.6, < 0.1.0",
     "sqlalchemy-libsql",
     "python-dotenv < 2",
-    "fastapi < 1",
-    "uvicorn[standard] < 1",
-    "httpx < 1",
-    "gunicorn < 22",
+    "fastapi",
+    "uvicorn[standard]",
+    "httpx",
     "mashumaro < 4",
-    "loguru < 1",
+    "loguru",
     "qdrant-client < 2",
     "cohere < 5",
     "pydantic >= 2, < 3",
@@ -54,7 +53,7 @@ dev-dependencies = [
 [tool.rye.scripts]
 check-types = "dmypy run --timeout 60 -- src tests"
 stop-deamon = "dmypy stop"
-dev-server = "uvicorn customer_engine_api.api:app --port 8000 --reload"
+dev = "uvicorn customer_engine_api.api:app --port 8000 --reload"
 
 [tool.hatch.metadata]
 allow-direct-references = true
