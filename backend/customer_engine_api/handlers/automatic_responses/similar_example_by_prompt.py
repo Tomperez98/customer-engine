@@ -47,6 +47,37 @@ class Command(CommandComponent[Response]):  # noqa: D101
     cohere_client: cohere.AsyncClient
     sql_conn: Connection
 
+    async def _get_similar_points_from_qdrant(
+        self, promp_embeddings: list[float], up_to_n_points: int, score_threshold: float
+    ) -> list[UUID]:
+        similar_points: list[UUID] = []
+        offset = 0
+        points_per_query = up_to_n_points
+        while True:
+            if len(similar_points) >= up_to_n_points:
+                break
+
+            qdrant_similar_points = await self.qdrant_client.search(
+                collection_name=self.org_code,
+                query_vector=promp_embeddings,
+                offset=offset,
+                limit=points_per_query,
+                score_threshold=score_threshold,
+            )
+            if len(qdrant_similar_points) == 0:
+                break
+
+            for qdrant_point in qdrant_similar_points:
+                if isinstance(qdrant_point.id, int):
+                    msg = "Point ID type mismatch"
+                    raise TypeError(msg)
+
+                similar_points.append(UUID(qdrant_point.id))
+
+            offset += points_per_query
+
+        return similar_points[:up_to_n_points]
+
     async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002, D102
         embedding_model_to_use = (
             await lego_workflows.run_and_collect_events(
@@ -65,10 +96,9 @@ class Command(CommandComponent[Response]):  # noqa: D101
         )
 
         while True:
-            similar_points = await self.qdrant_client.search(
-                collection_name=self.org_code,
-                query_vector=prompt_embeddings[0],
-                limit=5,
+            similar_points = await self._get_similar_points_from_qdrant(
+                promp_embeddings=prompt_embeddings[0],
+                up_to_n_points=1,
                 score_threshold=0.80,
             )
             if len(similar_points) == 0:
@@ -76,15 +106,12 @@ class Command(CommandComponent[Response]):  # noqa: D101
 
             example: Example | None = None
             for similar_point in similar_points:
-                if isinstance(similar_point.id, int):
-                    msg = "Point ID type mismatch"
-                    raise TypeError(msg)
                 try:
                     example = (
                         await lego_workflows.run_and_collect_events(
                             get_example.Command(
                                 org_code=self.org_code,
-                                example_id=UUID(similar_point.id),
+                                example_id=similar_point,
                                 sql_conn=self.sql_conn,
                                 automatic_response_id=None,
                             )
@@ -94,7 +121,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
                 except get_example.ExampleNotFoundError:
                     await self.qdrant_client.delete(
                         collection_name=self.org_code,
-                        points_selector=PointIdsList(points=[similar_point.id]),
+                        points_selector=PointIdsList(points=[similar_point.hex]),
                     )
 
             if example is not None:

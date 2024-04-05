@@ -15,7 +15,6 @@ from customer_engine_api.core.logging import logger
 from customer_engine_api.handlers.automatic_responses import get_auto_res
 
 if TYPE_CHECKING:
-    import datetime
     from uuid import UUID
 
     from sqlalchemy import Connection
@@ -27,14 +26,12 @@ class AutomaticResponseCreated(DomainEvent):
 
     org_code: str
     automatic_response_id: UUID
-    created_at: datetime.datetime
 
     async def publish(self) -> None:  # noqa: D102
         logger.info(
-            "New automatic response with ID {automatic_response_id} for organization {org_code} has been created at {created_at}.",
+            "New automatic response with ID {automatic_response_id} for organization {org_code} has been created.",
             automatic_response_id=self.automatic_response_id,
             org_code=self.org_code,
-            created_at=self.created_at,
         )
 
 
@@ -54,7 +51,7 @@ class Command(CommandComponent[Response]):
     response: str
     sql_conn: Connection
 
-    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002
+    async def run(self, events: list[DomainEvent]) -> Response:
         """Command execution."""
         while True:
             random_id = uuid4()
@@ -94,5 +91,11 @@ class Command(CommandComponent[Response]):
         )
 
         self.sql_conn.execute(stmt)
+
+        events.append(
+            AutomaticResponseCreated(
+                org_code=self.org_code, automatic_response_id=random_id
+            )
+        )
 
         return Response(automatic_response_id=random_id)

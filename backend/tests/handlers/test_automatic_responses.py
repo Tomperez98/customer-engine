@@ -76,6 +76,17 @@ async def test_list_examples() -> None:
         for example in list_examples_response.examples:
             assert example in created_examples
 
+        get_all_examples, _ = await lego_workflows.run_and_collect_events(
+            cmd=handlers.automatic_responses.get_bulk_examples.Command(
+                org_code=test_org,
+                examples_ids=[example.example_id for example in created_examples],
+                sql_conn=conn,
+            )
+        )
+
+        for example in get_all_examples.examples:
+            assert example in created_examples
+
         await lego_workflows.run_and_collect_events(
             cmd=handlers.automatic_responses.delete_auto_res.Command(
                 org_code=test_org,
