@@ -67,4 +67,4 @@ def test_check_hash() -> None:
 def test_identify_payload(
     payload: JsonResponse, expected: whatsapp.payloads.TextMessage
 ) -> None:
-    assert whatsapp.payloads.identify_payload(payload=payload).unwrap() == expected
+    assert whatsapp.payloads.identify_payload(payload=payload) == expected

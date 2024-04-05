@@ -11,7 +11,6 @@ from lego_workflows.components import (
     DomainEvent,
     ResponseComponent,
 )
-from result import Err
 
 from customer_engine_api.core import whatsapp
 from customer_engine_api.core.api_clients.whatsapp import AsyncWhatsappClient
@@ -44,12 +43,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
     sql_conn: Connection
 
     async def run(self, events: list[DomainEvent]) -> Response:  # noqa: D102
-        identified_payload_or_err = whatsapp.payloads.identify_payload(
-            payload=self.payload
-        )
-        if isinstance(identified_payload_or_err, Err):
-            raise identified_payload_or_err.err()
-        identified_payload = identified_payload_or_err.unwrap()
+        identified_payload = whatsapp.payloads.identify_payload(payload=self.payload)
 
         (
             get_tokens_response,

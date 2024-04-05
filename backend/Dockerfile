@@ -9,7 +9,7 @@ COPY . .
 
 RUN pip install -U uv
 RUN uv venv
-RUN uv pip install -r requirements/core.txt
+RUN uv pip install -r requirements.lock
 RUN uv pip install -e .
 RUN uv clean
 

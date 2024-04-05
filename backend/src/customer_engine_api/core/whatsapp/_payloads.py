@@ -4,11 +4,8 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, final
 
 from lego_workflows.components import DomainError
-from result import Err, Ok
 
 if TYPE_CHECKING:
-    from result import Result
-
     from customer_engine_api.core.typing import Json, JsonResponse
 
 
@@ -42,23 +39,22 @@ def _process_common_and_get_specific_payload(
 
 def identify_payload(
     payload: JsonResponse,
-) -> Result[TextMessage, NotIdentifiedWhatsappPayloadError]:
+) -> TextMessage:
     if isinstance(payload, list):
-        return Err(NotIdentifiedWhatsappPayloadError())
+        raise NotIdentifiedWhatsappPayloadError
 
     common_info, specific_payload = _process_common_and_get_specific_payload(
         payload=payload
     )
     if isinstance(specific_payload, list):
-        return Err(NotIdentifiedWhatsappPayloadError())
+        raise NotIdentifiedWhatsappPayloadError
 
     try:
-        return Ok(
-            TextMessage(
-                text=specific_payload["messages"][0]["text"]["body"],
-                wa_id=specific_payload["contacts"][0]["wa_id"],
-                phone_number_id=common_info.phone_number_id,
-            )
+        return TextMessage(
+            text=specific_payload["messages"][0]["text"]["body"],
+            wa_id=specific_payload["contacts"][0]["wa_id"],
+            phone_number_id=common_info.phone_number_id,
         )
-    except Exception:  # noqa: BLE001
-        return Err(NotIdentifiedWhatsappPayloadError())
+
+    except Exception as e:  # noqa: BLE001
+        raise NotIdentifiedWhatsappPayloadError from e

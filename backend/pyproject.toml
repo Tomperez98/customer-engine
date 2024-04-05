@@ -1,17 +1,8 @@
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
 [project]
 name = "customer-engine-api"
-version = "0.1.49"
-readme = "README.md"
-requires-python = ">=3.12"
-classifiers = [
-    "Programming Language :: Python :: Implementation :: CPython",
-    "Programming Language :: Python :: Implementation :: PyPy",
-]
-authors = [{ name = "Tomas Perez", email = "tomasperezalvarez@gmail.com" }]
+version = "0.1.50"
+description = "Add your description here"
+authors = [{ name = "Tomperez98", email = "tomasperezalvarez@gmail.com" }]
 dependencies = [
     "lego-workflows >= 0.0.6, < 0.1.0",
     "sqlalchemy-libsql",
@@ -33,24 +24,38 @@ dependencies = [
     "stamina",
     "result",
 ]
+readme = "README.md"
+requires-python = ">= 3.12"
+
+[project.scripts]
+customer-engine = "customer_engine_api.cli.__main__:cli"
 
 [project.urls]
 Documentation = "https://github.com/Tomperez98/customer-engine/backend#readme"
 Issues = "https://github.com/Tomperez98/customer-engine/issues"
 Source = "https://github.com/Tomperez98/customer-engine"
 
-[project.scripts]
-customer-engine = "customer_engine_api.cli.__main__:cli"
 
-[project.optional-dependencies]
-dev = [
-    "pyrgo < 3",
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = [
     "pytest-asyncio",
     "types-toml",
     "alembic",
     "pytest-cov",
     "click",
+    "ruff",
 ]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/customer_engine_api"]
 
 [tool.ruff]
 line-length = 88
@@ -111,8 +116,8 @@ enum = { msg = "`enum` is banned: Python enums are not allowed. Use typing.Liter
 [tool.ruff.lint.per-file-ignores]
 "tests/*.py" = ["INP001", "S101", "D"]
 "scripts/*.py" = ["INP001", "D103"]
-"customer_engine_api/migrations/**/*.py" = ["D103"]
-"customer_engine_api/cli/*.py" = ["S404"]
+"src/customer_engine_api/migrations/**/*.py" = ["D103"]
+"src/customer_engine_api/cli/*.py" = ["S404"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["customer_engine_api"]
@@ -148,7 +153,10 @@ filterwarnings = ["ignore::DeprecationWarning"]
 branch = true
 parallel = true
 relative_files = true
-omit = ["customer_engine_api/migrations/**", "customer_engine_api/api/**"]
+omit = [
+    "src/customer_engine_api/migrations/**",
+    "src/customer_engine_api/api/**",
+]
 
 [tool.coverage.report]
 exclude_lines = [
@@ -177,12 +185,9 @@ explicit_package_bases = true
 
 
 [tool.vulture]
-exclude = ["customer_engine_api/migrations/versions/"]
+exclude = ["src/customer_engine_api/migrations/versions/"]
 min_confidence = 80
 
 [[tool.mypy.overrides]]
 module = ["cohere", "cohere.responses.embeddings"]
 ignore_missing_imports = true
-
-[tool.pyrgo]
-extra-paths = ["scripts"]
