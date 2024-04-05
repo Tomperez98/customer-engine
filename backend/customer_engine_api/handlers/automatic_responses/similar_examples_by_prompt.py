@@ -16,7 +16,9 @@ from lego_workflows.components import (
 from qdrant_client.models import PointIdsList
 
 from customer_engine_api.core import automatic_responses
-from customer_engine_api.handlers.automatic_responses import get_example
+from customer_engine_api.handlers.automatic_responses import (
+    get_bulk_examples,
+)
 from customer_engine_api.handlers.org_settings import get_or_default
 
 if TYPE_CHECKING:
@@ -36,7 +38,7 @@ class NoSimilarExampleFoundError(DomainError):
 
 @dataclass(frozen=True)
 class Response(ResponseComponent):  # noqa: D101
-    example: Example
+    examples: list[Example]
 
 
 @dataclass(frozen=True)
@@ -95,36 +97,35 @@ class Command(CommandComponent[Response]):  # noqa: D101
             prompt_or_examples=self.prompt,
         )
 
-        while True:
-            similar_points = await self._get_similar_points_from_qdrant(
-                promp_embeddings=prompt_embeddings[0],
-                up_to_n_points=1,
-                score_threshold=0.80,
+        similar_points = await self._get_similar_points_from_qdrant(
+            promp_embeddings=prompt_embeddings[0],
+            up_to_n_points=10,
+            score_threshold=0.80,
+        )
+        if len(similar_points) == 0:
+            raise NoSimilarExampleFoundError(org_code=self.org_code)
+
+        examples = (
+            await lego_workflows.run_and_collect_events(
+                get_bulk_examples.Command(
+                    org_code=self.org_code,
+                    examples_ids=similar_points,
+                    sql_conn=self.sql_conn,
+                )
             )
-            if len(similar_points) == 0:
-                raise NoSimilarExampleFoundError(org_code=self.org_code)
+        )[0].examples
 
-            example: Example | None = None
-            for similar_point in similar_points:
-                try:
-                    example = (
-                        await lego_workflows.run_and_collect_events(
-                            get_example.Command(
-                                org_code=self.org_code,
-                                example_id=similar_point,
-                                sql_conn=self.sql_conn,
-                                automatic_response_id=None,
-                            )
+        if len(examples) != len(similar_points):
+            await self.qdrant_client.delete(
+                collection_name=self.org_code,
+                points_selector=PointIdsList(
+                    points=[
+                        point_id.hex
+                        for point_id in set(similar_points).difference(
+                            {example.example_id for example in examples}
                         )
-                    )[0].example
+                    ]
+                ),
+            )
 
-                except get_example.ExampleNotFoundError:
-                    await self.qdrant_client.delete(
-                        collection_name=self.org_code,
-                        points_selector=PointIdsList(points=[similar_point.hex]),
-                    )
-
-            if example is not None:
-                break
-
-        return Response(example=example)
+        return Response(examples=examples)

@@ -153,7 +153,7 @@ async def test_update_example() -> None:
         )
         assert response_update_example.example.example == "I'd like to order food"
         similar_to_prompt_response, _ = await lego_workflows.run_and_collect_events(
-            cmd=handlers.automatic_responses.similar_example_by_prompt.Command(
+            cmd=handlers.automatic_responses.similar_examples_by_prompt.Command(
                 org_code=test_org,
                 prompt="I'd like to order food",
                 qdrant_client=resources.clients.qdrant,
@@ -162,10 +162,9 @@ async def test_update_example() -> None:
             )
         )
 
-        assert (
-            similar_to_prompt_response.example.example_id
-            == response_create_example.example_ids[0]
-        )
+        assert response_create_example.example_ids[0] in {
+            example.example_id for example in similar_to_prompt_response.examples
+        }
 
         await lego_workflows.run_and_collect_events(
             cmd=handlers.automatic_responses.delete_auto_res.Command(
@@ -235,7 +234,7 @@ async def test_get_existing_example() -> None:
         )
 
         similar_to_prompt_response, _ = await lego_workflows.run_and_collect_events(
-            cmd=handlers.automatic_responses.similar_example_by_prompt.Command(
+            cmd=handlers.automatic_responses.similar_examples_by_prompt.Command(
                 org_code=test_org,
                 prompt="I want to order a pizza",
                 qdrant_client=resources.clients.qdrant,
@@ -244,19 +243,18 @@ async def test_get_existing_example() -> None:
             )
         )
 
-        assert (
-            similar_to_prompt_response.example.automatic_response_id
-            == get_example_response.example.automatic_response_id
-        )
-        assert (
-            similar_to_prompt_response.example.example_id
-            == get_example_response.example.example_id
-        )
+        assert get_example_response.example.automatic_response_id in {
+            example.automatic_response_id
+            for example in similar_to_prompt_response.examples
+        }
+        assert get_example_response.example.example_id in {
+            example.example_id for example in similar_to_prompt_response.examples
+        }
 
         response_owner_auto_res, _ = await lego_workflows.run_and_collect_events(
             handlers.automatic_responses.get_auto_res_owns_example.Command(
                 org_code=test_org,
-                example_id_or_prompt=similar_to_prompt_response.example.example_id,
+                example_id_or_prompt=response_create_example.example_ids[0],
                 qdrant_client=resources.clients.qdrant,
                 cohere_client=resources.clients.cohere,
                 sql_conn=conn,
