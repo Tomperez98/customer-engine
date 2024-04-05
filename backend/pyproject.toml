@@ -1,6 +1,6 @@
 [project]
 name = "customer-engine-api"
-version = "0.1.51"
+version = "0.1.52"
 description = "Add your description here"
 authors = [{ name = "Tomperez98", email = "tomasperezalvarez@gmail.com" }]
 dependencies = [
@@ -27,9 +27,6 @@ dependencies = [
 readme = "README.md"
 requires-python = ">= 3.12"
 
-[project.scripts]
-customer-engine = "customer_engine_api.cli.__main__:cli"
-
 [project.urls]
 Documentation = "https://github.com/Tomperez98/customer-engine/backend#readme"
 Issues = "https://github.com/Tomperez98/customer-engine/issues"
@@ -41,6 +38,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.rye]
+virtual = false
 managed = true
 dev-dependencies = [
     "pytest-asyncio",
@@ -56,6 +54,7 @@ dev-dependencies = [
 [tool.rye.scripts]
 check-types = "dmypy run --timeout 60 -- src tests"
 stop-deamon = "dmypy stop"
+dev-server = "uvicorn customer_engine_api.api:app --port 8000 --reload"
 
 [tool.hatch.metadata]
 allow-direct-references = true
@@ -123,7 +122,6 @@ enum = { msg = "`enum` is banned: Python enums are not allowed. Use typing.Liter
 "tests/*.py" = ["INP001", "S101", "D"]
 "scripts/*.py" = ["INP001", "D103"]
 "src/customer_engine_api/migrations/**/*.py" = ["D103"]
-"src/customer_engine_api/cli/*.py" = ["S404"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["customer_engine_api"]
