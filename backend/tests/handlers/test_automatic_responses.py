@@ -143,7 +143,7 @@ async def test_update_example() -> None:
                 sql_conn=conn,
                 qdrant_client=resources.clients.qdrant,
                 cohere_client=resources.clients.cohere,
-                example="I'd like to order food",
+                example="I'd like to order some food",
             )
         )
 
@@ -151,7 +151,7 @@ async def test_update_example() -> None:
             response_update_example.example.example_id
             == response_create_example.example_ids[0]
         )
-        assert response_update_example.example.example == "I'd like to order food"
+        assert response_update_example.example.example == "I'd like to order some food"
         similar_to_prompt_response, _ = await lego_workflows.run_and_collect_events(
             cmd=handlers.automatic_responses.similar_examples_by_prompt.Command(
                 org_code=test_org,

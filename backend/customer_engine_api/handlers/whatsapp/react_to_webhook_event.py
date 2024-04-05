@@ -18,6 +18,9 @@ from customer_engine_api.core.api_clients.whatsapp import AsyncWhatsappClient
 from customer_engine_api.handlers.automatic_responses import (
     get_auto_res_owns_example,
 )
+from customer_engine_api.handlers.automatic_responses.similar_examples_by_prompt import (
+    NoSimilarExampleFoundError,
+)
 from customer_engine_api.handlers.whatsapp import get_tokens
 
 if TYPE_CHECKING:
@@ -49,21 +52,6 @@ class Command(CommandComponent[Response]):  # noqa: D101
         identified_payload = identified_payload_or_err.unwrap()
 
         (
-            auto_res_response,
-            auto_res_events,
-        ) = await lego_workflows.run_and_collect_events(
-            cmd=get_auto_res_owns_example.Command(
-                org_code=self.org_code,
-                example_id_or_prompt=identified_payload.text,
-                qdrant_client=self.qdrant_client,
-                cohere_client=self.cohere_client,
-                sql_conn=self.sql_conn,
-            )
-        )
-
-        events.extend(auto_res_events)
-
-        (
             get_tokens_response,
             get_tokens_events,
         ) = await lego_workflows.run_and_collect_events(
@@ -76,8 +64,31 @@ class Command(CommandComponent[Response]):  # noqa: D101
             bearer_token=get_tokens_response.whatsapp_token.access_token,
             phone_number_id=identified_payload.phone_number_id,
         )
+
+        msg_to_send: str
+        try:
+            (
+                auto_res_response,
+                auto_res_events,
+            ) = await lego_workflows.run_and_collect_events(
+                cmd=get_auto_res_owns_example.Command(
+                    org_code=self.org_code,
+                    example_id_or_prompt=identified_payload.text,
+                    qdrant_client=self.qdrant_client,
+                    cohere_client=self.cohere_client,
+                    sql_conn=self.sql_conn,
+                )
+            )
+
+            events.extend(auto_res_events)
+
+            msg_to_send = auto_res_response.automatic_response.response
+
+        except NoSimilarExampleFoundError:
+            msg_to_send = "No response found."
+
         await whatsapp_client.send_text_msg(
-            text=auto_res_response.automatic_response.response,
+            text=msg_to_send,
             to_wa_id=identified_payload.wa_id,
         )
 

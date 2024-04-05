@@ -128,4 +128,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
                 ),
             )
 
+        if len(examples) == 0:
+            raise NoSimilarExampleFoundError(org_code=self.org_code)
+
         return Response(examples=examples)
