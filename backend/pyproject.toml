@@ -50,7 +50,12 @@ dev-dependencies = [
     "click",
     "ruff",
     "toml>=0.10.2",
+    "mypy>=1.9.0",
 ]
+
+[tool.rye.scripts]
+check-types = "dmypy run --timeout 60 -- src tests"
+stop-deamon = "dmypy stop"
 
 [tool.hatch.metadata]
 allow-direct-references = true
@@ -169,6 +174,7 @@ exclude_lines = [
 ]
 
 [tool.mypy]
+mypy_path = "src"
 plugins = ["pydantic.mypy"]
 follow_imports = "normal"
 strict_optional = false

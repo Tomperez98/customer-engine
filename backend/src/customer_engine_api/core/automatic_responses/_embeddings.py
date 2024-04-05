@@ -37,7 +37,7 @@ async def embed_prompt_or_examples(
     if isinstance(prompt_or_examples, str):
         prompt_or_examples = [prompt_or_examples]
 
-    embeddings = (
+    embeddings: list[list[float]] | EmbeddingsByType = (
         await client.embed(
             model=model_name,
             input_type="search_document",

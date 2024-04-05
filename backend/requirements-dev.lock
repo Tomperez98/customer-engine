@@ -97,6 +97,9 @@ mashumaro==3.12
 multidict==6.0.5
     # via aiohttp
     # via yarl
+mypy==1.9.0
+mypy-extensions==1.0.0
+    # via mypy
 numpy==1.26.4
     # via qdrant-client
 orjson==3.10.0
@@ -162,6 +165,7 @@ typing-extensions==4.11.0
     # via fastapi
     # via libsql-client
     # via mashumaro
+    # via mypy
     # via pydantic
     # via pydantic-core
     # via sqlalchemy

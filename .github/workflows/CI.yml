@@ -47,7 +47,9 @@ jobs:
 
       - name: Check code
         working-directory: backend
-        run: rye check
+        run: |
+          rye lint
+          rye run check-types
       
       - name: Upgrade database
         working-directory: backend
