@@ -49,6 +49,7 @@ dev-dependencies = [
     "pytest-cov",
     "click",
     "ruff",
+    "toml>=0.10.2",
 ]
 
 [tool.hatch.metadata]
