@@ -34,7 +34,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
     sql_conn: Connection
 
     async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002, D102
-        existing_automatic_response = (
+        existing_automatic_response: get_auto_res.AutomaticResponse = (
             await lego_workflows.run_and_collect_events(
                 cmd=get_auto_res.Command(
                     org_code=self.org_code,

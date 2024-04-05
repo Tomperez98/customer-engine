@@ -19,7 +19,7 @@ from customer_engine_api.core.logging import logger
 from customer_engine_api.handlers.whatsapp import get_tokens
 
 if TYPE_CHECKING:
-    from customer_engine_api.core.whatsapp import WhatsappTokens
+    from customer_engine_api.core import whatsapp
 
 
 @dataclass(frozen=True)
@@ -35,7 +35,7 @@ class WhatsappTokenUpdated(DomainEvent):  # noqa: D101
 
 @dataclass(frozen=True)
 class Response(ResponseComponent):  # noqa: D101
-    token: WhatsappTokens
+    token: whatsapp.WhatsappTokens
 
 
 @dataclass(frozen=True)
@@ -46,7 +46,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
     sql_conn: Connection
 
     async def run(self, events: list[DomainEvent]) -> Response:  # noqa: D102
-        existing_whatsapp_token = (
+        existing_whatsapp_token: whatsapp.WhatsappTokens = (
             await lego_workflows.run_and_collect_events(
                 cmd=get_tokens.Command(org_code=self.org_code, sql_conn=self.sql_conn)
             )

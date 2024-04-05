@@ -6,16 +6,8 @@ import datetime
 from dataclasses import dataclass, field
 
 import jwt
-from lego_workflows.components import DomainError
 from mashumaro import field_options
 from mashumaro.mixins.orjson import DataClassORJSONMixin
-
-
-class TokenExpiredError(DomainError):
-    """Raised when token has expired."""
-
-    def __init__(self) -> None:  # noqa: D107
-        super().__init__("Token expired.")
 
 
 @dataclass(frozen=True)
@@ -35,16 +27,12 @@ class KindeToken(DataClassORJSONMixin):
         )
 
 
-def decode_token(encoded_token: str, current_time: datetime.datetime) -> KindeToken:
+def decode_token(encoded_token: str) -> KindeToken:
     """Decode JWT token."""
-    token = KindeToken.from_dict(
+    return KindeToken.from_dict(
         jwt.decode(
             encoded_token,
             options={"verify_signature": False},
             algorithms=[jwt.get_unverified_header(encoded_token)["alg"]],
         )
     )
-    if token.is_expired(current_time=current_time):
-        raise TokenExpiredError
-
-    return token

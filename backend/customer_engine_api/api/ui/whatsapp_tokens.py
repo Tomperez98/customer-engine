@@ -10,7 +10,8 @@ from pydantic import BaseModel
 
 from customer_engine_api import handlers
 from customer_engine_api.api.ui.deps import BearerToken  # noqa: TCH001
-from customer_engine_api.core import jwt, time
+from customer_engine_api.api.ui.utils import process_token
+from customer_engine_api.core import time
 from customer_engine_api.core.config import resources
 from customer_engine_api.core.whatsapp import WhatsappTokens
 
@@ -26,13 +27,11 @@ async def get_whatsapp_tokens(
     auth_token: BearerToken,
 ) -> ResponseGetWhatsappTokens:
     """Get whatsapp tokens."""
+    auth_response = await process_token(token=auth_token, current_time=time.now())
     with resources.db_engine.begin() as conn:
         whatsapp_token, events = await lego_workflows.run_and_collect_events(
             cmd=handlers.whatsapp.get_tokens.Command(
-                org_code=jwt.decode_token(
-                    auth_token.credentials,
-                    current_time=time.now(),
-                ).org_code,
+                org_code=auth_response.org_code,
                 sql_conn=conn,
             )
         )
@@ -56,16 +55,14 @@ async def create_whatsapp_tokens(
     req: CreateWhatsappTokens,
 ) -> ResponseCreateWhatsappTokens:
     """Create a whatsapp token."""
+    auth_response = await process_token(token=auth_token, current_time=time.now())
     with resources.db_engine.begin() as conn:
         (
             response_register_token,
             events,
         ) = await lego_workflows.run_and_collect_events(
             cmd=handlers.whatsapp.register_tokens.Command(
-                org_code=jwt.decode_token(
-                    auth_token.credentials,
-                    current_time=time.now(),
-                ).org_code,
+                org_code=auth_response.org_code,
                 sql_conn=conn,
                 access_token=req.access_token,
                 user_token=req.user_token,
@@ -84,13 +81,11 @@ class ResponseDeleteWhatsappTokens(BaseModel):  # noqa: D101
 async def delete_whatsapp_tokens(  # noqa: D103
     auth_token: BearerToken,
 ) -> ResponseDeleteWhatsappTokens:
+    auth_response = await process_token(token=auth_token, current_time=time.now())
     with resources.db_engine.begin() as conn:
         _, events = await lego_workflows.run_and_collect_events(
             cmd=handlers.whatsapp.delete_tokens.Command(
-                org_code=jwt.decode_token(
-                    auth_token.credentials,
-                    current_time=time.now(),
-                ).org_code,
+                org_code=auth_response.org_code,
                 sql_conn=conn,
             )
         )
@@ -114,13 +109,11 @@ async def patch_whatsapp_tokens(
     req: PatchWhatsappTokens,
 ) -> ResponsePatchWhatsappTokens:
     """Patch whatsapp token."""
+    auth_response = await process_token(token=auth_token, current_time=time.now())
     with resources.db_engine.begin() as conn:
         response_update_token, events = await lego_workflows.run_and_collect_events(
             cmd=handlers.whatsapp.update_tokens.Command(
-                org_code=jwt.decode_token(
-                    auth_token.credentials,
-                    current_time=time.now(),
-                ).org_code,
+                org_code=auth_response.org_code,
                 new_access_token=req.access_token,
                 new_user_token=req.user_token,
                 sql_conn=conn,

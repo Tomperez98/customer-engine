@@ -60,7 +60,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
             cmd=get_or_default.Command(org_code=self.org_code, sql_conn=self.sql_conn)
         )
         logger.debug(get_response)
-        org_settings = get_response.settings.update(
+        org_settings: get_or_default.OrgSettings = get_response.settings.update(
             default_response=self.default_response,
         )
 

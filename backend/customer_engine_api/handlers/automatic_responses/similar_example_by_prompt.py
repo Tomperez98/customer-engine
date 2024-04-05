@@ -56,12 +56,12 @@ class Command(CommandComponent[Response]):  # noqa: D101
             )
         )[0].settings.embeddings_model
 
-        prompt_embeddings = (
-            await automatic_responses.embeddings.embed_prompt_or_examples(
-                client=self.cohere_client,
-                model=embedding_model_to_use,
-                prompt_or_examples=self.prompt,
-            )
+        prompt_embeddings: list[
+            list[float]
+        ] = await automatic_responses.embeddings.embed_prompt_or_examples(
+            client=self.cohere_client,
+            model=embedding_model_to_use,
+            prompt_or_examples=self.prompt,
         )
 
         while True:
