@@ -18,7 +18,7 @@ from customer_engine_api.core.whatsapp import WhatsappTokens
 router = APIRouter(prefix="/whatsapp-tokens", tags=["whatsapp-tokens"])
 
 
-class ResponseGetWhatsappTokens(BaseModel):  # noqa: D101
+class ResponseGetWhatsappTokens(BaseModel):
     token: WhatsappTokens
 
 
@@ -40,12 +40,12 @@ async def get_whatsapp_tokens(
     return ResponseGetWhatsappTokens(token=whatsapp_token.whatsapp_token)
 
 
-class CreateWhatsappTokens(BaseModel):  # noqa: D101
+class CreateWhatsappTokens(BaseModel):
     access_token: str
     user_token: str
 
 
-class ResponseCreateWhatsappTokens(BaseModel):  # noqa: D101
+class ResponseCreateWhatsappTokens(BaseModel):
     whatsapp_tokens: WhatsappTokens
 
 
@@ -73,12 +73,12 @@ async def create_whatsapp_tokens(
     return ResponseCreateWhatsappTokens(whatsapp_tokens=response_register_token.token)
 
 
-class ResponseDeleteWhatsappTokens(BaseModel):  # noqa: D101
+class ResponseDeleteWhatsappTokens(BaseModel):
     status: Literal["deleted"]
 
 
 @router.delete("")
-async def delete_whatsapp_tokens(  # noqa: D103
+async def delete_whatsapp_tokens(
     auth_token: BearerToken,
 ) -> ResponseDeleteWhatsappTokens:
     auth_response = await process_token(token=auth_token, current_time=time.now())
@@ -94,12 +94,12 @@ async def delete_whatsapp_tokens(  # noqa: D103
     return ResponseDeleteWhatsappTokens(status="deleted")
 
 
-class PatchWhatsappTokens(BaseModel):  # noqa: D101
+class PatchWhatsappTokens(BaseModel):
     access_token: str | None
     user_token: str | None
 
 
-class ResponsePatchWhatsappTokens(BaseModel):  # noqa: D101
+class ResponsePatchWhatsappTokens(BaseModel):
     token: WhatsappTokens
 
 

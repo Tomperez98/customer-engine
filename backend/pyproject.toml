@@ -62,6 +62,7 @@ allow-direct-references = true
 packages = ["src/customer_engine_api"]
 
 [tool.ruff]
+unsafe-fixes = true
 line-length = 88
 fix = false
 exclude = [
@@ -104,6 +105,10 @@ ignore = [
     "W191",
     "UP040",
     "CPY001",
+    "D101",
+    "D102",
+    "D107",
+    "D103",
 ]
 select = ["ALL"]
 logger-objects = ["customer_engine_api.core.logging.logger"]

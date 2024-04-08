@@ -23,10 +23,10 @@ if TYPE_CHECKING:
 
 
 @dataclass(frozen=True)
-class WhatsappTokenUpdated(DomainEvent):  # noqa: D101
+class WhatsappTokenUpdated(DomainEvent):
     org_code: str
 
-    async def publish(self) -> None:  # noqa: D102
+    async def publish(self) -> None:
         logger.info(
             "Whatsapp token data updated for org {org_code}",
             org_code=self.org_code,
@@ -34,18 +34,18 @@ class WhatsappTokenUpdated(DomainEvent):  # noqa: D101
 
 
 @dataclass(frozen=True)
-class Response(ResponseComponent):  # noqa: D101
+class Response(ResponseComponent):
     token: whatsapp.WhatsappTokens
 
 
 @dataclass(frozen=True)
-class Command(CommandComponent[Response]):  # noqa: D101
+class Command(CommandComponent[Response]):
     org_code: str
     new_access_token: str | None
     new_user_token: str | None
     sql_conn: Connection
 
-    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: D102
+    async def run(self, events: list[DomainEvent]) -> Response:
         existing_whatsapp_token: whatsapp.WhatsappTokens = (
             await lego_workflows.run_and_collect_events(
                 cmd=get_tokens.Command(org_code=self.org_code, sql_conn=self.sql_conn)

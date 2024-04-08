@@ -27,7 +27,7 @@ class AutomaticResponseCreated(DomainEvent):
     org_code: str
     automatic_response_id: UUID
 
-    async def publish(self) -> None:  # noqa: D102
+    async def publish(self) -> None:
         logger.info(
             "New automatic response with ID {automatic_response_id} for organization {org_code} has been created.",
             automatic_response_id=self.automatic_response_id,

@@ -24,10 +24,10 @@ if TYPE_CHECKING:
 
 
 @dataclass(frozen=True)
-class OrgSettingUpdated(DomainEvent):  # noqa: D101
+class OrgSettingUpdated(DomainEvent):
     org_code: str
 
-    async def publish(self) -> None:  # noqa: D102
+    async def publish(self) -> None:
         logger.info(
             "Org settings updated for organization {org_code}",
             org_code=self.org_code,
@@ -35,27 +35,27 @@ class OrgSettingUpdated(DomainEvent):  # noqa: D101
 
 
 @dataclass(frozen=True)
-class OrgSettingsCreated(DomainEvent):  # noqa: D101
+class OrgSettingsCreated(DomainEvent):
     org_code: str
 
-    async def publish(self) -> None:  # noqa: D102
+    async def publish(self) -> None:
         logger.info(
             "Org settings created for organization {org_code}", org_code=self.org_code
         )
 
 
 @dataclass(frozen=True)
-class Response(ResponseComponent):  # noqa: D101
+class Response(ResponseComponent):
     settings: OrgSettings
 
 
 @dataclass(frozen=True)
-class Command(CommandComponent[Response]):  # noqa: D101
+class Command(CommandComponent[Response]):
     org_code: str
     default_response: str | None
     sql_conn: Connection
 
-    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: D102
+    async def run(self, events: list[DomainEvent]) -> Response:
         get_response, _ = await lego_workflows.run_and_collect_events(
             cmd=get_or_default.Command(org_code=self.org_code, sql_conn=self.sql_conn)
         )

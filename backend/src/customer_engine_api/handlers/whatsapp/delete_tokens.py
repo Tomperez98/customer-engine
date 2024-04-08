@@ -16,10 +16,10 @@ if TYPE_CHECKING:
 
 
 @dataclass(frozen=True)
-class WhatsappTokensDeleted(DomainEvent):  # noqa: D101
+class WhatsappTokensDeleted(DomainEvent):
     org_code: str
 
-    async def publish(self) -> None:  # noqa: D102
+    async def publish(self) -> None:
         logger.info(
             "Whatsapp token data deleted for org {org_code}",
             org_code=self.org_code,
@@ -27,15 +27,15 @@ class WhatsappTokensDeleted(DomainEvent):  # noqa: D101
 
 
 @dataclass(frozen=True)
-class Response(ResponseComponent): ...  # noqa: D101
+class Response(ResponseComponent): ...
 
 
 @dataclass(frozen=True)
-class Command(CommandComponent[Response]):  # noqa: D101
+class Command(CommandComponent[Response]):
     org_code: str
     sql_conn: Connection
 
-    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: D102
+    async def run(self, events: list[DomainEvent]) -> Response:
         stmt = text(
             """
             DELETE FROM whatsapp_tokens

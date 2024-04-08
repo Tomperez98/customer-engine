@@ -21,7 +21,7 @@ router = APIRouter(prefix="/webhooks", tags=["webhooks"])
 
 
 @router.get("/whatsapp/{org_code}")
-async def suscribe_whatsapp_webhooks(org_code: str, req: Request) -> Response:  # noqa: D103
+async def suscribe_whatsapp_webhooks(org_code: str, req: Request) -> Response:
     verify_token = req.query_params["hub.verify_token"]
     with resources.db_engine.begin() as conn:
         response, events = await lego_workflows.run_and_collect_events(
@@ -38,7 +38,7 @@ async def suscribe_whatsapp_webhooks(org_code: str, req: Request) -> Response:  
 
 
 @router.post("/whatsapp/{org_code}")
-async def whatsapp_webhooks(org_code: str, req: Request) -> Response:  # noqa: D103
+async def whatsapp_webhooks(org_code: str, req: Request) -> Response:
     payload: JsonResponse = await req.json()
 
     with resources.db_engine.begin() as conn, contextlib.suppress(DomainError):

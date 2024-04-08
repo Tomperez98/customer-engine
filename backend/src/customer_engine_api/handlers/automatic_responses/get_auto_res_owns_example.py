@@ -23,19 +23,19 @@ if TYPE_CHECKING:
 
 
 @dataclass(frozen=True)
-class Response(ResponseComponent):  # noqa: D101
+class Response(ResponseComponent):
     automatic_response: AutomaticResponse
 
 
 @dataclass(frozen=True)
-class Command(CommandComponent[Response]):  # noqa: D101
+class Command(CommandComponent[Response]):
     org_code: str
     example_id_or_prompt: UUID | str
     qdrant_client: AsyncQdrantClient
     cohere_client: cohere.AsyncClient
     sql_conn: Connection
 
-    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002, D102
+    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002
         automatic_response_id: UUID
         match self.example_id_or_prompt:
             case UUID():

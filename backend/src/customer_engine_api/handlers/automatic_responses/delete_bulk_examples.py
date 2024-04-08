@@ -23,11 +23,11 @@ if TYPE_CHECKING:
 
 
 @dataclass(frozen=True)
-class ExampleDeleted(DomainEvent):  # noqa: D101
+class ExampleDeleted(DomainEvent):
     org_code: str
     example_id: UUID
 
-    async def publish(self) -> None:  # noqa: D102
+    async def publish(self) -> None:
         logger.info(
             "Example {example_id} from org {org_code} deleted.",
             example_id=self.example_id,
@@ -36,17 +36,17 @@ class ExampleDeleted(DomainEvent):  # noqa: D101
 
 
 @dataclass(frozen=True)
-class Response(ResponseComponent): ...  # noqa: D101
+class Response(ResponseComponent): ...
 
 
 @dataclass(frozen=True)
-class Command(CommandComponent[Response]):  # noqa: D101
+class Command(CommandComponent[Response]):
     org_code: str
     example_ids: list[UUID]
     sql_conn: Connection
     qdrant_client: qdrant_client.AsyncQdrantClient
 
-    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: D102
+    async def run(self, events: list[DomainEvent]) -> Response:
         ids_to_delete: list[ExtendedPointId] = [
             example_id.hex for example_id in self.example_ids
         ]

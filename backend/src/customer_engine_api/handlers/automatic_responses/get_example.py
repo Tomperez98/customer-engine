@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 class ExampleNotFoundError(DomainError):
     """Raised whan an example does not exists."""
 
-    def __init__(  # noqa: D107
+    def __init__(
         self,
         org_code: str,
         example_id: UUID,
@@ -41,13 +41,13 @@ class Response(ResponseComponent):
 
 
 @dataclass(frozen=True)
-class Command(CommandComponent[Response]):  # noqa: D101
+class Command(CommandComponent[Response]):
     org_code: str
     automatic_response_id: UUID | None
     example_id: UUID
     sql_conn: Connection
 
-    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002, D102
+    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002
         if self.automatic_response_id is not None:
             await lego_workflows.run_and_collect_events(
                 cmd=get_auto_res.Command(
@@ -72,7 +72,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
             bindparam(key="example_id", value=self.example_id, type_=sqlalchemy.UUID()),
         )
 
-        row = self.sql_conn.execute(stmt).fetchone()
+        row = self.sql_conn.execute(stmt).one_or_none()
         if row is None:
             raise ExampleNotFoundError(
                 org_code=self.org_code,

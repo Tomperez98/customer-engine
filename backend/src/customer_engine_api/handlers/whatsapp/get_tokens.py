@@ -20,21 +20,21 @@ from customer_engine_api.core.config import resources
 class WhatsappTokenNotFoundError(DomainError):
     """Raised when whatsapp token data is not found."""
 
-    def __init__(self, org_code: str) -> None:  # noqa: D107
+    def __init__(self, org_code: str) -> None:
         super().__init__(f"Whatsapp Tokens not found for org {org_code}")
 
 
 @dataclass(frozen=True)
-class Response(ResponseComponent):  # noqa: D101
+class Response(ResponseComponent):
     whatsapp_token: whatsapp.WhatsappTokens
 
 
 @dataclass(frozen=True)
-class Command(CommandComponent[Response]):  # noqa: D101
+class Command(CommandComponent[Response]):
     org_code: str
     sql_conn: Connection
 
-    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002, D102
+    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002
         stmt = text(
             """
                 SELECT

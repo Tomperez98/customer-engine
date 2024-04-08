@@ -16,17 +16,17 @@ if TYPE_CHECKING:
 
 
 @dataclass(frozen=True)
-class Response(ResponseComponent):  # noqa: D101
+class Response(ResponseComponent):
     examples: list[automatic_responses.Example]
 
 
 @dataclass(frozen=True)
-class Command(CommandComponent[Response]):  # noqa: D101
+class Command(CommandComponent[Response]):
     org_code: str
     examples_ids: list[UUID]
     sql_conn: Connection
 
-    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002, D102
+    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002
         ids_to_get = (example_id.hex for example_id in self.examples_ids)
         stmt = text(
             """

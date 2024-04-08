@@ -19,11 +19,11 @@ from customer_engine_api.core.config import resources
 router = APIRouter(prefix="/automatic-responses", tags=["automatic-responses"])
 
 
-class UpdateExample(BaseModel):  # noqa: D101
+class UpdateExample(BaseModel):
     example: str | None
 
 
-class ResponseUpdateExample(BaseModel):  # noqa: D101
+class ResponseUpdateExample(BaseModel):
     example: Example
 
 
@@ -53,7 +53,7 @@ async def update_example(
     return ResponseUpdateExample(example=response.example)
 
 
-class ResponseGetExample(BaseModel):  # noqa: D101
+class ResponseGetExample(BaseModel):
     example: Example
 
 
@@ -77,7 +77,7 @@ async def get_example(
     return ResponseGetExample(example=response.example)
 
 
-class ResponseDeleteExample(BaseModel):  # noqa: D101
+class ResponseDeleteExample(BaseModel):
     status: Literal["deleted"]
 
 
@@ -102,11 +102,11 @@ async def delete_example(
     return ResponseDeleteExample(status="deleted")
 
 
-class DeleteExamples(BaseModel):  # noqa: D101
+class DeleteExamples(BaseModel):
     example_ids: list[UUID]
 
 
-class ResponseDeleteExamples(BaseModel):  # noqa: D101
+class ResponseDeleteExamples(BaseModel):
     status: Literal["deleted"]
 
 
@@ -130,7 +130,7 @@ async def delete_examples(
     return ResponseDeleteExamples(status="deleted")
 
 
-class ResponseListExample(BaseModel):  # noqa: D101
+class ResponseListExample(BaseModel):
     examples: list[Example]
 
 
@@ -154,11 +154,11 @@ async def list_examples(
     return ResponseListExample(examples=response.examples)
 
 
-class CreateExamples(BaseModel):  # noqa: D101
+class CreateExamples(BaseModel):
     examples: list[str]
 
 
-class ResponseCreateExamples(BaseModel):  # noqa: D101
+class ResponseCreateExamples(BaseModel):
     example_ids: list[UUID]
 
 
@@ -185,12 +185,12 @@ async def create_example(
     return ResponseCreateExamples(example_ids=response.example_ids)
 
 
-class CreateAutomaticResponse(BaseModel):  # noqa: D101
+class CreateAutomaticResponse(BaseModel):
     name: str
     response: str
 
 
-class ResponseCreateAutomaticResponse(BaseModel):  # noqa: D101
+class ResponseCreateAutomaticResponse(BaseModel):
     automatic_response_id: UUID
 
 
@@ -218,7 +218,7 @@ async def create_automatic_response(
     )
 
 
-class ResponseGetAutomaticResponse(BaseModel):  # noqa: D101
+class ResponseGetAutomaticResponse(BaseModel):
     automatic_response: AutomaticResponse
 
 
@@ -249,17 +249,17 @@ async def get_automatic_response(
     )
 
 
-class PatchAutomaticResponse(BaseModel):  # noqa: D101
+class PatchAutomaticResponse(BaseModel):
     name: str | None
     response: str | None
 
 
-class ResponsePatchAutomaticResponse(BaseModel):  # noqa: D101
+class ResponsePatchAutomaticResponse(BaseModel):
     updated_automatic_response: AutomaticResponse
 
 
 @router.patch("/{automatic_response_id}")
-async def patch_automatic_response(  # noqa: D103
+async def patch_automatic_response(
     auth_token: BearerToken,
     automatic_response_id: UUID,
     req: PatchAutomaticResponse,
@@ -283,12 +283,12 @@ async def patch_automatic_response(  # noqa: D103
     )
 
 
-class ResponseListAutomaticResponse(BaseModel):  # noqa: D101
+class ResponseListAutomaticResponse(BaseModel):
     automatic_response: list[AutomaticResponse]
 
 
 @router.get("")
-async def list_automatic_responses(  # noqa: D103
+async def list_automatic_responses(
     auth_token: BearerToken,
 ) -> ResponseListAutomaticResponse:
     auth_response = await process_token(token=auth_token, current_time=time.now())
@@ -310,12 +310,12 @@ async def list_automatic_responses(  # noqa: D103
     )
 
 
-class ResponseDeleteAutomaticResponse(BaseModel):  # noqa: D101
+class ResponseDeleteAutomaticResponse(BaseModel):
     status: Literal["deleted"]
 
 
 @router.delete("/{automatic_response_id}")
-async def delete_automatic_response(  # noqa: D103
+async def delete_automatic_response(
     auth_token: BearerToken,
     automatic_response_id: UUID,
 ) -> ResponseDeleteAutomaticResponse:
@@ -335,11 +335,11 @@ async def delete_automatic_response(  # noqa: D103
     return ResponseDeleteAutomaticResponse(status="deleted")
 
 
-class SearchByPrompt(BaseModel):  # noqa: D101
+class SearchByPrompt(BaseModel):
     prompt: str
 
 
-class ResponseSearchByPrompt(BaseModel):  # noqa: D101
+class ResponseSearchByPrompt(BaseModel):
     automatic_response: AutomaticResponse
 
 

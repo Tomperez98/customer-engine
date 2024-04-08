@@ -25,11 +25,11 @@ if TYPE_CHECKING:
 
 
 @dataclass(frozen=True)
-class ExampleUpdated(DomainEvent):  # noqa: D101
+class ExampleUpdated(DomainEvent):
     org_code: str
     example_id: UUID
 
-    async def publish(self) -> None:  # noqa: D102
+    async def publish(self) -> None:
         logger.info(
             "Example {example_id} from org {org_code} has been updated",
             example_id=self.example_id,
@@ -38,12 +38,12 @@ class ExampleUpdated(DomainEvent):  # noqa: D101
 
 
 @dataclass(frozen=True)
-class Response(ResponseComponent):  # noqa: D101
+class Response(ResponseComponent):
     example: Example
 
 
 @dataclass(frozen=True)
-class Command(CommandComponent[Response]):  # noqa: D101
+class Command(CommandComponent[Response]):
     org_code: str
     automatic_response_id: UUID
     example_id: UUID
@@ -52,7 +52,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
     qdrant_client: AsyncQdrantClient
     cohere_client: cohere.AsyncClient
 
-    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: D102
+    async def run(self, events: list[DomainEvent]) -> Response:
         response_get_example, _ = await lego_workflows.run_and_collect_events(
             cmd=get_example.Command(
                 self.org_code,

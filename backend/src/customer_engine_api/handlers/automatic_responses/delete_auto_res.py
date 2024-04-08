@@ -31,7 +31,7 @@ class AutomaticResponseDeleted(DomainEvent):
     automatic_response_id: UUID
     deleted_at: datetime.datetime
 
-    async def publish(self) -> None:  # noqa: D102
+    async def publish(self) -> None:
         logger.info(
             "Automatic response with ID {automatic_response_id} from organization {org_code} has been deleted at {deleted_at}",
             automatic_response_id=self.automatic_response_id,
@@ -41,17 +41,17 @@ class AutomaticResponseDeleted(DomainEvent):
 
 
 @dataclass(frozen=True)
-class Response(ResponseComponent): ...  # noqa: D101
+class Response(ResponseComponent): ...
 
 
 @dataclass(frozen=True)
-class Command(CommandComponent[Response]):  # noqa: D101
+class Command(CommandComponent[Response]):
     org_code: str
     automatic_response_id: UUID
     sql_conn: Connection
     qdrant_client: qdrant_client.AsyncQdrantClient
 
-    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: D102
+    async def run(self, events: list[DomainEvent]) -> Response:
         stmt = text(
             """
             DELETE FROM automatic_responses

@@ -24,11 +24,11 @@ if TYPE_CHECKING:
 
 
 @dataclass(frozen=True)
-class ExampleCreated(DomainEvent):  # noqa: D101
+class ExampleCreated(DomainEvent):
     org_code: str
     example_id: UUID
 
-    async def publish(self) -> None:  # noqa: D102
+    async def publish(self) -> None:
         logger.info(
             "New example created with id {example_id} on org {org_code}",
             example_id=self.example_id,
@@ -37,12 +37,12 @@ class ExampleCreated(DomainEvent):  # noqa: D101
 
 
 @dataclass(frozen=True)
-class Response(ResponseComponent):  # noqa: D101
+class Response(ResponseComponent):
     example_ids: list[UUID]
 
 
 @dataclass(frozen=True)
-class Command(CommandComponent[Response]):  # noqa: D101
+class Command(CommandComponent[Response]):
     org_code: str
     examples: list[str]
     automatic_response_id: UUID
@@ -101,7 +101,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
 
         return example_id
 
-    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: D102
+    async def run(self, events: list[DomainEvent]) -> Response:
         await lego_workflows.run_and_collect_events(
             cmd=get_auto_res.Command(
                 org_code=self.org_code,

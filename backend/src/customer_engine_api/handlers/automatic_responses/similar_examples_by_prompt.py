@@ -32,17 +32,17 @@ if TYPE_CHECKING:
 class NoSimilarExampleFoundError(DomainError):
     """Raised when no similar example is found."""
 
-    def __init__(self, org_code: str) -> None:  # noqa: D107
+    def __init__(self, org_code: str) -> None:
         super().__init__(f"No similar example found in org {org_code}")
 
 
 @dataclass(frozen=True)
-class Response(ResponseComponent):  # noqa: D101
+class Response(ResponseComponent):
     examples: list[Example]
 
 
 @dataclass(frozen=True)
-class Command(CommandComponent[Response]):  # noqa: D101
+class Command(CommandComponent[Response]):
     org_code: str
     prompt: str
     qdrant_client: AsyncQdrantClient
@@ -80,7 +80,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
 
         return similar_points[:up_to_n_points]
 
-    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002, D102
+    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002
         embedding_model_to_use = (
             await lego_workflows.run_and_collect_events(
                 cmd=get_or_default.Command(
@@ -89,12 +89,12 @@ class Command(CommandComponent[Response]):  # noqa: D101
             )
         )[0].settings.embeddings_model
 
-        prompt_embeddings: list[
-            list[float]
-        ] = await automatic_responses.embeddings.embed_prompt_or_examples(
-            client=self.cohere_client,
-            model=embedding_model_to_use,
-            prompt_or_examples=self.prompt,
+        prompt_embeddings = (
+            await automatic_responses.embeddings.embed_prompt_or_examples(
+                client=self.cohere_client,
+                model=embedding_model_to_use,
+                prompt_or_examples=self.prompt,
+            )
         )
 
         similar_points = await self._get_similar_points_from_qdrant(

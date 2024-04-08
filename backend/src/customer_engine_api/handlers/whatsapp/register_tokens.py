@@ -25,25 +25,25 @@ if TYPE_CHECKING:
 
 
 @dataclass(frozen=True)
-class WhatsappTokenRegistered(DomainEvent):  # noqa: D101
+class WhatsappTokenRegistered(DomainEvent):
     org_code: str
 
-    async def publish(self) -> None:  # noqa: D102
+    async def publish(self) -> None:
         logger.info("Whatsapp token registered for org {org}", org=self.org_code)
 
 
-class WhatsappTokenAlreadyExistsError(DomainError):  # noqa: D101
-    def __init__(self, org_code: str) -> None:  # noqa: D107
+class WhatsappTokenAlreadyExistsError(DomainError):
+    def __init__(self, org_code: str) -> None:
         super().__init__(f"Whatsapp token data already exists for org {org_code}.")
 
 
 @dataclass(frozen=True)
-class Response(ResponseComponent):  # noqa: D101
+class Response(ResponseComponent):
     token: whatsapp.WhatsappTokens
 
 
 @dataclass(frozen=True)
-class Command(CommandComponent[Response]):  # noqa: D101
+class Command(CommandComponent[Response]):
     org_code: str
     access_token: str
     user_token: str
@@ -96,7 +96,7 @@ class Command(CommandComponent[Response]):  # noqa: D101
         )
         return Response(token=whatsapp_token)
 
-    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: D102
+    async def run(self, events: list[DomainEvent]) -> Response:
         try:
             await lego_workflows.run_and_collect_events(
                 cmd=get_tokens.Command(org_code=self.org_code, sql_conn=self.sql_conn)

@@ -24,29 +24,29 @@ if TYPE_CHECKING:
 class TokenExpiredError(DomainError):
     """Raised when token has expired."""
 
-    def __init__(self) -> None:  # noqa: D107
+    def __init__(self) -> None:
         super().__init__("Token expired.")
 
 
 @dataclass(frozen=True)
-class TokenValidated(DomainEvent):  # noqa: D101
+class TokenValidated(DomainEvent):
     org_code: str
 
-    async def publish(self) -> None:  # noqa: D102
+    async def publish(self) -> None:
         logger.debug("Token validated for org {org_code}", org_code=self.org_code)
 
 
 @dataclass(frozen=True)
-class Response(ResponseComponent):  # noqa: D101
+class Response(ResponseComponent):
     org_code: str
 
 
 @dataclass(frozen=True)
-class Command(CommandComponent[Response]):  # noqa: D101
+class Command(CommandComponent[Response]):
     token: HTTPAuthorizationCredentials
     current_time: datetime.datetime
 
-    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: D102
+    async def run(self, events: list[DomainEvent]) -> Response:
         decoded_token: jwt.KindeToken = jwt.decode_token(
             encoded_token=self.token.credentials
         )
