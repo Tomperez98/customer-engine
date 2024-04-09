@@ -12,69 +12,6 @@ from customer_engine_api.core.time import now
 
 
 @pytest.mark.e2e()
-async def test_retrieve_unmatched_prompt() -> None:
-    org_code = "test"
-    current_time = now()
-    with (
-        resources.db_engine.begin() as conn,
-    ):
-        response_register, _ = await lego_workflows.run_and_collect_events(
-            handlers.automatic_responses.register_unmatched_prompt.Command(
-                org_code=org_code,
-                prompt="I'm an unmatched prompt",
-                current_time=current_time,
-                sql_conn=conn,
-            )
-        )
-        response_get, _ = await lego_workflows.run_and_collect_events(
-            cmd=handlers.automatic_responses.get_unmatched_prompt.Command(
-                org_code=org_code,
-                prompt_id=response_register.umatched_prompt_id,
-                sql_conn=conn,
-            )
-        )
-
-        assert response_get.unmatched_prompt.created_at == current_time.replace(
-            tzinfo=None
-        )
-        assert response_get.unmatched_prompt.prompt == "I'm an unmatched prompt"
-
-        await lego_workflows.run_and_collect_events(
-            cmd=handlers.automatic_responses.delete_unmatched_prompt.Command(
-                org_code=org_code,
-                prompt_id=response_register.umatched_prompt_id,
-                sql_conn=conn,
-            )
-        )
-
-        with pytest.raises(
-            handlers.automatic_responses.get_unmatched_prompt.UnmatchedPromptNotFoundError
-        ):
-            await lego_workflows.run_and_collect_events(
-                cmd=handlers.automatic_responses.get_unmatched_prompt.Command(
-                    org_code=org_code,
-                    prompt_id=response_register.umatched_prompt_id,
-                    sql_conn=conn,
-                )
-            )
-
-
-@pytest.mark.e2e()
-async def test_not_existing_unmatched_prompt() -> None:
-    with (
-        resources.db_engine.begin() as conn,
-        pytest.raises(
-            handlers.automatic_responses.get_unmatched_prompt.UnmatchedPromptNotFoundError
-        ),
-    ):
-        await lego_workflows.run_and_collect_events(
-            cmd=handlers.automatic_responses.get_unmatched_prompt.Command(
-                org_code="test", prompt_id=uuid4(), sql_conn=conn
-            )
-        )
-
-
-@pytest.mark.e2e()
 async def test_get_not_existing_example() -> None:
     with (
         resources.db_engine.begin() as conn,
@@ -223,6 +160,7 @@ async def test_update_example() -> None:
                 qdrant_client=resources.clients.qdrant,
                 cohere_client=resources.clients.cohere,
                 sql_conn=conn,
+                current_time=now(),
             )
         )
 
@@ -304,6 +242,7 @@ async def test_get_existing_example() -> None:
                 qdrant_client=resources.clients.qdrant,
                 cohere_client=resources.clients.cohere,
                 sql_conn=conn,
+                current_time=now(),
             )
         )
 
@@ -322,6 +261,7 @@ async def test_get_existing_example() -> None:
                 qdrant_client=resources.clients.qdrant,
                 cohere_client=resources.clients.cohere,
                 sql_conn=conn,
+                current_time=now(),
             )
         )
 

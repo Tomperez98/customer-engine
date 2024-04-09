@@ -17,13 +17,12 @@ from customer_engine_api.core.api_clients.whatsapp import AsyncWhatsappClient
 from customer_engine_api.handlers.automatic_responses import (
     get_auto_res_owns_example,
 )
-from customer_engine_api.handlers.automatic_responses.similar_examples_by_prompt import (
-    NoSimilarExampleFoundError,
-)
 from customer_engine_api.handlers.org_settings import get_or_default
 from customer_engine_api.handlers.whatsapp import get_tokens
 
 if TYPE_CHECKING:
+    import datetime
+
     import cohere
     from qdrant_client import AsyncQdrantClient
     from sqlalchemy import Connection
@@ -42,6 +41,7 @@ class Command(CommandComponent[Response]):
     qdrant_client: AsyncQdrantClient
     cohere_client: cohere.AsyncClient
     sql_conn: Connection
+    current_time: datetime.datetime
 
     async def run(self, events: list[DomainEvent]) -> Response:
         identified_payload = whatsapp.payloads.identify_payload(payload=self.payload)
@@ -72,6 +72,7 @@ class Command(CommandComponent[Response]):
                     qdrant_client=self.qdrant_client,
                     cohere_client=self.cohere_client,
                     sql_conn=self.sql_conn,
+                    current_time=self.current_time,
                 )
             )
 
@@ -79,7 +80,7 @@ class Command(CommandComponent[Response]):
 
             msg_to_send = auto_res_response.automatic_response.response
 
-        except NoSimilarExampleFoundError:
+        except get_auto_res_owns_example.UnableToMatchPromptWithAutomaticResponseError:
             (
                 org_settings,
                 get_or_default_events,

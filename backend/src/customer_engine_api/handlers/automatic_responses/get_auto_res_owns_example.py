@@ -6,7 +6,12 @@ from typing import TYPE_CHECKING, assert_never
 from uuid import UUID
 
 import lego_workflows
-from lego_workflows.components import CommandComponent, DomainEvent, ResponseComponent
+from lego_workflows.components import (
+    CommandComponent,
+    DomainError,
+    DomainEvent,
+    ResponseComponent,
+)
 
 from customer_engine_api.handlers.automatic_responses import (
     get_auto_res,
@@ -15,11 +20,18 @@ from customer_engine_api.handlers.automatic_responses import (
 )
 
 if TYPE_CHECKING:
+    import datetime
+
     import cohere
     from qdrant_client import AsyncQdrantClient
     from sqlalchemy import Connection
 
     from customer_engine_api.core.automatic_responses import AutomaticResponse
+
+
+class UnableToMatchPromptWithAutomaticResponseError(DomainError):
+    def __init__(self) -> None:
+        super().__init__("Unable to match prompt with automatic response.")
 
 
 @dataclass(frozen=True)
@@ -34,6 +46,7 @@ class Command(CommandComponent[Response]):
     qdrant_client: AsyncQdrantClient
     cohere_client: cohere.AsyncClient
     sql_conn: Connection
+    current_time: datetime.datetime
 
     async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002
         automatic_response_id: UUID
@@ -60,9 +73,12 @@ class Command(CommandComponent[Response]):
                             sql_conn=self.sql_conn,
                             qdrant_client=self.qdrant_client,
                             cohere_client=self.cohere_client,
+                            current_time=self.current_time,
                         )
                     )
                 )[0].examples
+                if len(examples) == 0:
+                    raise UnableToMatchPromptWithAutomaticResponseError
 
                 automatic_response_id = Counter(
                     example.automatic_response_id for example in examples

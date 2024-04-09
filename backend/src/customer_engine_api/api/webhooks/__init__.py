@@ -13,6 +13,7 @@ from lego_workflows.components import DomainError
 from customer_engine_api import handlers
 from customer_engine_api.core import whatsapp
 from customer_engine_api.core.config import resources
+from customer_engine_api.core.time import now
 
 if TYPE_CHECKING:
     from customer_engine_api.core.typing import JsonResponse
@@ -49,6 +50,7 @@ async def whatsapp_webhooks(org_code: str, req: Request) -> Response:
                 qdrant_client=resources.clients.qdrant,
                 cohere_client=resources.clients.cohere,
                 sql_conn=conn,
+                current_time=now(),
             )
         )
 

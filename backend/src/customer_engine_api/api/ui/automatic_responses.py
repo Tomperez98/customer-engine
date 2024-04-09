@@ -358,6 +358,7 @@ async def search_automatic_response_by_prompt(
                 sql_conn=conn,
                 qdrant_client=resources.clients.qdrant,
                 cohere_client=resources.clients.cohere,
+                current_time=time.now(),
             )
         )
 

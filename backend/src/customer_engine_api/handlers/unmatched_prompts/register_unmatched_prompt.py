@@ -12,7 +12,7 @@ from lego_workflows.components import CommandComponent, DomainEvent, ResponseCom
 from sqlalchemy import Connection, bindparam, text
 
 from customer_engine_api.core.logging import logger
-from customer_engine_api.handlers.automatic_responses import get_unmatched_prompt
+from customer_engine_api.handlers.unmatched_prompts import get_unmatched_prompt
 
 if TYPE_CHECKING:
     import datetime

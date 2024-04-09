@@ -9,7 +9,6 @@ from uuid import UUID
 import lego_workflows
 from lego_workflows.components import (
     CommandComponent,
-    DomainError,
     DomainEvent,
     ResponseComponent,
 )
@@ -20,20 +19,16 @@ from customer_engine_api.handlers.automatic_responses import (
     get_bulk_examples,
 )
 from customer_engine_api.handlers.org_settings import get_or_default
+from customer_engine_api.handlers.unmatched_prompts import register_unmatched_prompt
 
 if TYPE_CHECKING:
+    import datetime
+
     import cohere
     from qdrant_client import AsyncQdrantClient
     from sqlalchemy import Connection
 
     from customer_engine_api.core.automatic_responses import Example
-
-
-class NoSimilarExampleFoundError(DomainError):
-    """Raised when no similar example is found."""
-
-    def __init__(self, org_code: str) -> None:
-        super().__init__(f"No similar example found in org {org_code}")
 
 
 @dataclass(frozen=True)
@@ -45,6 +40,7 @@ class Response(ResponseComponent):
 class Command(CommandComponent[Response]):
     org_code: str
     prompt: str
+    current_time: datetime.datetime
     qdrant_client: AsyncQdrantClient
     cohere_client: cohere.AsyncClient
     sql_conn: Connection
@@ -80,6 +76,17 @@ class Command(CommandComponent[Response]):
 
         return similar_points[:up_to_n_points]
 
+    async def _register_unmatched_prompt(self) -> Response:
+        await lego_workflows.run_and_collect_events(
+            register_unmatched_prompt.Command(
+                org_code=self.org_code,
+                prompt=self.prompt,
+                current_time=self.current_time,
+                sql_conn=self.sql_conn,
+            )
+        )
+        return Response(examples=[])
+
     async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002
         embedding_model_to_use = (
             await lego_workflows.run_and_collect_events(
@@ -103,7 +110,7 @@ class Command(CommandComponent[Response]):
             score_threshold=0.80,
         )
         if len(similar_points) == 0:
-            raise NoSimilarExampleFoundError(org_code=self.org_code)
+            return await self._register_unmatched_prompt()
 
         examples = (
             await lego_workflows.run_and_collect_events(
@@ -129,6 +136,6 @@ class Command(CommandComponent[Response]):
             )
 
         if len(examples) == 0:
-            raise NoSimilarExampleFoundError(org_code=self.org_code)
+            return await self._register_unmatched_prompt()
 
         return Response(examples=examples)
