@@ -54,6 +54,7 @@ dev-dependencies = [
 check-types = "dmypy run --timeout 60 -- src tests"
 stop-deamon = "dmypy stop"
 dev = "uvicorn customer_engine_api.api:app --port 8000 --reload"
+new-release = "python scripts/new-release.py"
 
 [tool.hatch.metadata]
 allow-direct-references = true
