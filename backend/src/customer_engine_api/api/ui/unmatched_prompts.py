@@ -91,3 +91,24 @@ async def delete_unmatched_prompt(
 
     await lego_workflows.publish_events(events=events)
     return ResponseDeleteUnmatchedPrompt(status="deleted")
+
+
+class ResponseDeleteAllUnmatchedPrompts(BaseModel):
+    status: Literal["deleted"]
+
+
+@router.delete(path="")
+async def delete_all_unmatched_prompt(
+    auth_token: BearerToken,
+) -> ResponseDeleteAllUnmatchedPrompts:
+    auth_response = await process_token(token=auth_token, current_time=now())
+    with resources.db_engine.begin() as conn:
+        _, events = await lego_workflows.run_and_collect_events(
+            handlers.unmatched_prompts.delete_all.Command(
+                org_code=auth_response.org_code,
+                sql_conn=conn,
+            )
+        )
+
+    await lego_workflows.publish_events(events=events)
+    return ResponseDeleteAllUnmatchedPrompts(status="deleted")
