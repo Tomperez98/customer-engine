@@ -2,16 +2,12 @@
 
 from __future__ import annotations
 
-import contextlib
-from typing import TYPE_CHECKING, assert_never
+from typing import TYPE_CHECKING
 
 from cohere.responses.embeddings import EmbeddingsByType
-from qdrant_client.http.exceptions import UnexpectedResponse
 from qdrant_client.http.models import (
     Batch,
-    Distance,
     UpdateStatus,
-    VectorParams,
 )
 
 if TYPE_CHECKING:
@@ -52,12 +48,6 @@ async def embed_prompt_or_examples(
     return embeddings
 
 
-def _qdrant_vectored_params_per_model(model: EmbeddingModels) -> VectorParams:
-    if model == "cohere:embed-multilingual-light-v3.0":
-        return VectorParams(size=384, distance=Distance.COSINE)
-    assert_never(model)
-
-
 async def upsert_examples(  # noqa: PLR0913
     *,
     embedding_model: EmbeddingModels,
@@ -71,11 +61,6 @@ async def upsert_examples(  # noqa: PLR0913
     if len(example_ids) != len(examples):
         msg = "Len of example ids and len of example must be equal"
         raise ValueError(msg)
-    with contextlib.suppress(UnexpectedResponse):
-        await qdrant_client.create_collection(
-            collection_name=org_code,
-            vectors_config=_qdrant_vectored_params_per_model(model=embedding_model),
-        )
 
     example_embeddings = await embed_prompt_or_examples(
         client=cohere_client, model=embedding_model, prompt_or_examples=examples
