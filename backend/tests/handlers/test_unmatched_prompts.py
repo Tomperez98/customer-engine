@@ -27,6 +27,14 @@ async def test_bulk_delete_unmatched_prompts() -> None:
             )
             registered_prompts.append(register_response.umatched_prompt_id)
 
+        subset_response, _ = await lego_workflows.run_and_collect_events(
+            handlers.unmatched_prompts.get_subset_unmatched_prompts.Command(
+                org_code=org_code, prompt_ids=registered_prompts, sql_conn=conn
+            )
+        )
+
+        assert len(subset_response.unmatched_prompts) == 2  # noqa: PLR2004
+
         await lego_workflows.run_and_collect_events(
             handlers.unmatched_prompts.bulk_delete_unmatched_prompts.Command(
                 org_code=org_code, prompt_ids=registered_prompts, sql_conn=conn
