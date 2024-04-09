@@ -39,6 +39,14 @@ class Command(CommandComponent[Response]):
     sql_conn: Connection
 
     async def run(self, events: list[DomainEvent]) -> Response:
+        prompt_deleted_events: list[UnmatchedPromptDeleted] = []
+        prompt_hexs: list[str] = []
+        for prompt_id in self.prompt_ids:
+            prompt_hexs.append(prompt_id.hex)
+            prompt_deleted_events.append(
+                UnmatchedPromptDeleted(org_code=self.org_code, prompt_id=prompt_id)
+            )
+
         stmt = text(
             """
             DELETE FROM unmatched_prompts
@@ -49,7 +57,7 @@ class Command(CommandComponent[Response]):
             bindparam(key="org_code", value=self.org_code, type_=sqlalchemy.String()),
             bindparam(
                 key="prompt_ids",
-                value=(prompt_id.hex for prompt_id in self.prompt_ids),
+                value=prompt_hexs,
                 type_=sqlalchemy.ARRAY(sqlalchemy.UUID()),
                 expanding=True,
             ),
@@ -57,9 +65,6 @@ class Command(CommandComponent[Response]):
 
         self.sql_conn.execute(stmt)
 
-        events.extend(
-            UnmatchedPromptDeleted(org_code=self.org_code, prompt_id=prompt_id)
-            for prompt_id in self.prompt_ids
-        )
+        events.extend(prompt_deleted_events)
 
         return Response()

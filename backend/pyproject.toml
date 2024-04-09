@@ -1,6 +1,6 @@
 [project]
 name = "customer-engine-api"
-version = "0.1.56"
+version = "0.1.57"
 description = "Add your description here"
 authors = [{ name = "Tomperez98", email = "tomasperezalvarez@gmail.com" }]
 dependencies = [
