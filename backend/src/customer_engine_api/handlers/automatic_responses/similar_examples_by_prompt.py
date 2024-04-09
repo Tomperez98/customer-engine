@@ -76,8 +76,11 @@ class Command(CommandComponent[Response]):
 
         return similar_points[:up_to_n_points]
 
-    async def _register_unmatched_prompt(self) -> Response:
-        await lego_workflows.run_and_collect_events(
+    async def _register_unmatched_prompt(self, events: list[DomainEvent]) -> Response:
+        (
+            _,
+            register_unmatched_prompt_events,
+        ) = await lego_workflows.run_and_collect_events(
             register_unmatched_prompt.Command(
                 org_code=self.org_code,
                 prompt=self.prompt,
@@ -85,9 +88,15 @@ class Command(CommandComponent[Response]):
                 sql_conn=self.sql_conn,
             )
         )
+        events.extend(register_unmatched_prompt_events)
         return Response(examples=[])
 
-    async def run(self, events: list[DomainEvent]) -> Response:  # noqa: ARG002
+    async def run(self, events: list[DomainEvent]) -> Response:
+        if not (
+            await self.qdrant_client.collection_exists(collection_name=self.org_code)
+        ):
+            return await self._register_unmatched_prompt(events=events)
+
         embedding_model_to_use = (
             await lego_workflows.run_and_collect_events(
                 cmd=get_or_default.Command(
@@ -109,8 +118,9 @@ class Command(CommandComponent[Response]):
             up_to_n_points=10,
             score_threshold=0.80,
         )
+
         if len(similar_points) == 0:
-            return await self._register_unmatched_prompt()
+            return await self._register_unmatched_prompt(events=events)
 
         examples = (
             await lego_workflows.run_and_collect_events(
@@ -136,6 +146,6 @@ class Command(CommandComponent[Response]):
             )
 
         if len(examples) == 0:
-            return await self._register_unmatched_prompt()
+            return await self._register_unmatched_prompt(events=events)
 
         return Response(examples=examples)

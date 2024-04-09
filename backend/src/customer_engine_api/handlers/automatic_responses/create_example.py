@@ -3,12 +3,16 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, assert_never
 from uuid import uuid4
 
 import lego_workflows
 import sqlalchemy
 from lego_workflows.components import CommandComponent, DomainEvent, ResponseComponent
+from qdrant_client.http.models import (
+    Distance,
+    VectorParams,
+)
 from sqlalchemy import Connection, bindparam, text
 
 from customer_engine_api.core import automatic_responses
@@ -21,6 +25,14 @@ if TYPE_CHECKING:
 
     import cohere
     from qdrant_client import AsyncQdrantClient
+
+    from customer_engine_api.core.typing import EmbeddingModels
+
+
+def _qdrant_vectored_params_per_model(model: EmbeddingModels) -> VectorParams:
+    if model == "cohere:embed-multilingual-light-v3.0":
+        return VectorParams(size=384, distance=Distance.COSINE)
+    assert_never(model)
 
 
 @dataclass(frozen=True)
@@ -125,6 +137,17 @@ class Command(CommandComponent[Response]):
                 )
             )
         )[0].settings.embeddings_model
+
+        if not (
+            await self.qdrant_client.collection_exists(collection_name=self.org_code)
+        ):
+            await self.qdrant_client.create_collection(
+                collection_name=self.org_code,
+                vectors_config=_qdrant_vectored_params_per_model(
+                    model=embedding_model_to_use
+                ),
+            )
+
         return await automatic_responses.embeddings.upsert_examples(
             embedding_model=embedding_model_to_use,
             qdrant_client=self.qdrant_client,
