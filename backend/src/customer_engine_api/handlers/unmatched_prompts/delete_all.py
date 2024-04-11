@@ -32,13 +32,17 @@ class Command(CommandComponent[Response]):
     sql_conn: Connection
 
     async def run(self, events: list[DomainEvent]) -> Response:
-        text(
-            """
+        self.sql_conn.execute(
+            text(
+                """
                 DELETE FROM unmatched_prompts
                 WHERE org_code = :org_code
                 """
-        ).bindparams(
-            bindparam(key="org_code", value=self.org_code, type_=sqlalchemy.String())
+            ).bindparams(
+                bindparam(
+                    key="org_code", value=self.org_code, type_=sqlalchemy.String()
+                )
+            )
         )
 
         events.append(AllUnmatchedPromptsDeleted(org_code=self.org_code))

@@ -16,6 +16,7 @@ from qdrant_client.models import PointIdsList
 
 from customer_engine_api.core import automatic_responses
 from customer_engine_api.handlers.automatic_responses import (
+    create_qdrant_collection,
     get_bulk_examples,
 )
 from customer_engine_api.handlers.org_settings import get_or_default
@@ -95,6 +96,22 @@ class Command(CommandComponent[Response]):
         if not (
             await self.qdrant_client.collection_exists(collection_name=self.org_code)
         ):
+            embedding_model_to_use = (
+                await lego_workflows.run_and_collect_events(
+                    cmd=get_or_default.Command(
+                        org_code=self.org_code, sql_conn=self.sql_conn
+                    )
+                )
+            )[0].settings.embeddings_model
+
+            _, events_qdrant_collection = await lego_workflows.run_and_collect_events(
+                cmd=create_qdrant_collection.Command(
+                    org_code=self.org_code,
+                    qdrant_client=self.qdrant_client,
+                    embedding_model=embedding_model_to_use,
+                )
+            )
+            events.extend(events_qdrant_collection)
             return await self._register_unmatched_prompt(events=events)
 
         embedding_model_to_use = (

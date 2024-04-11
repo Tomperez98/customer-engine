@@ -11,6 +11,49 @@ from customer_engine_api.core.time import now
 
 
 @pytest.mark.e2e()
+async def test_delete_all() -> None:
+    org_code = "test"
+    with resources.db_engine.begin() as conn:
+        response_create, _ = await lego_workflows.run_and_collect_events(
+            handlers.unmatched_prompts.register_unmatched_prompt.Command(
+                org_code=org_code,
+                prompt="I'll be deleted",
+                current_time=now(),
+                sql_conn=conn,
+            )
+        )
+
+        response_get, _ = await lego_workflows.run_and_collect_events(
+            handlers.unmatched_prompts.get_unmatched_prompt.Command(
+                org_code=org_code,
+                prompt_id=response_create.umatched_prompt_id,
+                sql_conn=conn,
+            )
+        )
+        assert (
+            response_get.unmatched_prompt.prompt_id
+            == response_create.umatched_prompt_id
+        )
+        assert response_get.unmatched_prompt.prompt == "I'll be deleted"
+
+        await lego_workflows.run_and_collect_events(
+            handlers.unmatched_prompts.delete_all.Command(
+                org_code=org_code, sql_conn=conn
+            )
+        )
+        with pytest.raises(
+            handlers.unmatched_prompts.get_unmatched_prompt.UnmatchedPromptNotFoundError
+        ):
+            await lego_workflows.run_and_collect_events(
+                handlers.unmatched_prompts.get_unmatched_prompt.Command(
+                    org_code=org_code,
+                    prompt_id=response_create.umatched_prompt_id,
+                    sql_conn=conn,
+                )
+            )
+
+
+@pytest.mark.e2e()
 async def test_bulk_delete_unmatched_prompts() -> None:
     org_code = "test"
     current_time = now()

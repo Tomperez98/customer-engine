@@ -213,7 +213,7 @@ async def test_get_existing_example() -> None:
             cohere_client=resources.clients.cohere,
         )
 
-        await create_example_command._upsert_example(example_ids=[uuid4()])  # noqa: SLF001
+        await create_example_command._upsert_example(example_ids=[uuid4()], events=[])  # noqa: SLF001
 
         response_create_example, _ = await lego_workflows.run_and_collect_events(
             cmd=create_example_command

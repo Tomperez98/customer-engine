@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, assert_never
 
 from cohere.responses.embeddings import EmbeddingsByType
 from qdrant_client.http.models import (
     Batch,
+    Distance,
     UpdateStatus,
+    VectorParams,
 )
 
 if TYPE_CHECKING:
@@ -17,6 +19,13 @@ if TYPE_CHECKING:
     from qdrant_client import AsyncQdrantClient
 
     from customer_engine_api.core.typing import EmbeddingModels
+
+
+def qdrant_vector_params_per_model(model: EmbeddingModels) -> VectorParams:
+    """Qdrant vector params per model."""
+    if model == "cohere:embed-multilingual-light-v3.0":
+        return VectorParams(size=384, distance=Distance.COSINE)
+    assert_never(model)
 
 
 async def embed_prompt_or_examples(
