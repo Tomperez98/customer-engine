@@ -1,6 +1,6 @@
 [project]
 name = "customer-engine-api"
-version = "0.1.59"
+version = "0.1.60"
 description = "Add your description here"
 authors = [{ name = "Tomperez98", email = "tomasperezalvarez@gmail.com" }]
 dependencies = [
@@ -45,7 +45,6 @@ dev-dependencies = [
     "alembic",
     "pytest-cov",
     "click",
-    "ruff",
     "toml>=0.10.2",
     "mypy>=1.9.0",
 ]

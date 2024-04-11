@@ -10,12 +10,10 @@ HashAlgorithms: TypeAlias = Literal["sha256"]
 
 def hash_string(string: str, algo: HashAlgorithms) -> str:
     """Hash string."""
-    hashed_string: str
     if algo == "sha256":
-        hashed_string = hashlib.sha256(string.encode()).hexdigest()
-    else:
-        assert_never(algo)
-    return hashed_string
+        return hashlib.sha256(string.encode()).hexdigest()
+
+    assert_never(algo)
 
 
 def check_same_hashed(hashed: str, string: str, algo: HashAlgorithms) -> bool:
