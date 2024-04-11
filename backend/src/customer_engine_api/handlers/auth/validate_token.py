@@ -47,7 +47,7 @@ class Command(CommandComponent[Response]):
     current_time: datetime.datetime
 
     async def run(self, events: list[DomainEvent]) -> Response:
-        decoded_token: jwt.KindeToken = jwt.decode_token(
+        decoded_token = jwt.KindeToken.from_enconded_token(
             encoded_token=self.token.credentials
         )
         if decoded_token.is_expired(current_time=self.current_time):

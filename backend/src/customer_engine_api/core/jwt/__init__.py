@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import datetime
 from dataclasses import dataclass, field
+from typing import Self
 
 import jwt
 from mashumaro import field_options
@@ -26,13 +27,13 @@ class KindeToken(DataClassORJSONMixin):
             self.expiration_time, tz=datetime.UTC
         )
 
-
-def decode_token(encoded_token: str) -> KindeToken:
-    """Decode JWT token."""
-    return KindeToken.from_dict(
-        jwt.decode(
-            encoded_token,
-            options={"verify_signature": False},
-            algorithms=[jwt.get_unverified_header(encoded_token)["alg"]],
+    @classmethod
+    def from_enconded_token(cls, encoded_token: str) -> Self:
+        """Instantiate from encoded token."""
+        return cls.from_dict(
+            jwt.decode(
+                encoded_token,
+                options={"verify_signature": False},
+                algorithms=[jwt.get_unverified_header(encoded_token)["alg"]],
+            )
         )
-    )
