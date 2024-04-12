@@ -31,6 +31,8 @@ Documentation = "https://github.com/Tomperez98/customer-engine/backend#readme"
 Issues = "https://github.com/Tomperez98/customer-engine/issues"
 Source = "https://github.com/Tomperez98/customer-engine"
 
+[project.scripts]
+"customer-engine" = "customer_engine_api.cli:main"
 
 [build-system]
 requires = ["hatchling"]
