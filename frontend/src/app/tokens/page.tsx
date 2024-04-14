@@ -1,6 +1,5 @@
 'use client'
 
-import Button from '@/components/Button'
 import Layout from '@/components/layout'
 import useGetToken from '@/hooks/tokens/useGetTokens'
 import {useEffect, useState} from 'react'

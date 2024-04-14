@@ -3,7 +3,7 @@ import useGetForms from '@/hooks/forms/useGetForms'
 import {createColumnHelper, Row} from '@tanstack/react-table'
 import {Form, FormKeys} from '@/types/Forms'
 import Link from 'next/link'
-import {useMemo, useEffect, useState} from 'react'
+import {useEffect, useState} from 'react'
 import useDeleteForm from '@/hooks/forms/useDeleteForm'
 import IconButton from '@/components/IconButton'
 import {MdDelete, MdInfo} from 'react-icons/md'
@@ -19,7 +19,7 @@ const FormsTableSection: React.FC = () => {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false)
     const [deleteFormId, setDeleteFormId] = useState<string>('')
     const {data, isLoading, refetch} = useGetForms()
-    const forms = useMemo(() => data?.automatic_response, [data])
+    const forms = data?.automatic_response || []
     const {deleteForm} = useDeleteForm()
     const [shouldRefetch, setShouldRefetch] = useState<boolean>(false)
 
