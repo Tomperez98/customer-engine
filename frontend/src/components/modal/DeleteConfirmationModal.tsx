@@ -18,7 +18,7 @@ const DeleteConfirmationModal = ({
         <Modal isOpen={isOpen} setIsOpen={setIsOpen}>
             <div className='flex flex-col gap-2'>
                 <h3 className='mt-2 text-2xl font-extrabold text-neutral-800'>
-                    ¡Atención! Estás a punto de borrar un {elementName}.
+                    ¡Atención! Estás a punto de borrar uno o más {elementName}.
                 </h3>
                 <p>
                     Esta acción es permanente y no podrá deshacerse una vez

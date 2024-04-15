@@ -8,13 +8,27 @@ import {
 interface TableProps<T> {
     columns: ColumnDef<T, string>[]
     data: T[]
+    rowSelection?: any
+    setRowSelection?: (rowSelection: any) => void
 }
 
-const Table = <T extends {}>({columns, data}: TableProps<T>) => {
+const Table = <T extends {}>({
+    columns,
+    data,
+    rowSelection,
+    setRowSelection,
+}: TableProps<T>) => {
     const table = useReactTable<T>({
         data,
         columns,
         getCoreRowModel: getCoreRowModel(),
+        enableRowSelection: true,
+        state: rowSelection
+            ? {
+                  rowSelection,
+              }
+            : undefined,
+        onRowSelectionChange: setRowSelection ? setRowSelection : undefined,
     })
 
     return (
