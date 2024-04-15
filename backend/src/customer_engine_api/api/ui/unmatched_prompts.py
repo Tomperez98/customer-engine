@@ -19,6 +19,37 @@ from customer_engine_api.core.time import now
 router = APIRouter(prefix="/unmatched-prompts", tags=["unmatched-prompts"])
 
 
+class CreateUnmatchedPrompt(BaseModel):
+    prompt: str
+
+
+class ResponseCreateUnmatchedPrompt(BaseModel):
+    unmatched_prompt_id: UUID
+
+
+@router.post("")
+async def create_unmatched_prompt(
+    auth_token: BearerToken, req: CreateUnmatchedPrompt
+) -> ResponseCreateUnmatchedPrompt:
+    """Create unmatched prompt response."""
+    current_time = now()
+    auth_response = await process_token(token=auth_token, current_time=current_time)
+
+    with resources.db_engine.begin() as conn:
+        response, events = await lego_workflows.run_and_collect_events(
+            cmd=handlers.unmatched_prompts.register_unmatched_prompt.Command(
+                org_code=auth_response.org_code,
+                prompt=req.prompt,
+                current_time=current_time,
+                sql_conn=conn,
+            )
+        )
+    await lego_workflows.publish_events(events=events)
+    return ResponseCreateUnmatchedPrompt(
+        unmatched_prompt_id=response.umatched_prompt_id
+    )
+
+
 class ResponseListUnmatchedPrompts(BaseModel):
     unmatched_prompts: list[UnmatchedPrompt]
 
