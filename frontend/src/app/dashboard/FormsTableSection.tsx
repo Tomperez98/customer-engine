@@ -6,13 +6,12 @@ import Link from 'next/link'
 import {useEffect, useState} from 'react'
 import useDeleteForm from '@/hooks/forms/useDeleteForm'
 import IconButton from '@/components/IconButton'
-import {MdDelete, MdInfo} from 'react-icons/md'
+import {MdAddCircle, MdDelete, MdInfo} from 'react-icons/md'
 import CallToAction from '@/components/CallToAction'
 import ClipLoader from 'react-spinners/ClipLoader'
 import DeleteConfirmationModal from '@/components/modal/DeleteConfirmationModal'
 import {cyan400} from '@/constants/colors'
 import FormCreationModal from './FormCreationModal'
-import {MdAddCircle} from 'react-icons/md'
 
 const FormsTableSection: React.FC = () => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false)
@@ -90,14 +89,12 @@ const FormsTableSection: React.FC = () => {
                 setIsOpen={setIsCreateModalOpen}
                 setShouldRefetch={setShouldRefetch}
             />
-
             <DeleteConfirmationModal
                 deleteAction={() => handleDeleteForm(deleteFormId)}
-                elementName='formulario'
+                elementName='formularios'
                 isOpen={isDeleteModalOpen}
                 setIsOpen={setIsDeleteModalOpen}
             />
-
             <section className='w-full'>
                 <div className='mb-4 flex items-center gap-2'>
                     <h1 className='pb-1 text-3xl font-extrabold text-neutral-800'>

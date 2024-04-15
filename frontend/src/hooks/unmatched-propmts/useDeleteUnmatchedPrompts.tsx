@@ -1,43 +1,44 @@
+'use client'
 import {useState} from 'react'
 import {BASE_URL} from '@/constants/url'
 import {useKindeBrowserClient} from '@kinde-oss/kinde-auth-nextjs'
+
+type PostBody = {
+    prompt_ids: string[]
+}
 
 const useDeleteUnmatchedPrompts = () => {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState(null)
     const {accessTokenEncoded} = useKindeBrowserClient()
 
-    const deleteUnmatchedPrompts = async (id?: string) => {
+    const submit = async (data: PostBody) => {
         const headers = {
-            Authorization: `Bearer ${accessTokenEncoded}`,
+            'Authorization': `Bearer ${accessTokenEncoded}`,
+            'Content-Type': 'application/json',
         }
-        const url = id
-            ? `${BASE_URL}/unmatched-prompts/${id}`
-            : `${BASE_URL}/unmatched-prompts`
-
         setIsLoading(true)
         setError(null)
 
         try {
-            const response = await fetch(url, {
-                method: 'DELETE',
-                headers: headers,
-            })
+            const response = await fetch(
+                `${BASE_URL}/unmatched-prompts/delete`,
+                {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(data),
+                }
+            )
             setIsLoading(false)
-            if (!response.ok) {
-                throw new Error('Failed to delete form')
-            }
             return await response.json()
         } catch (error: any) {
-            setError(
-                error.message || 'An error occurred while deleting the form'
-            )
+            setError(error)
             setIsLoading(false)
             throw error
         }
     }
 
-    return {deleteUnmatchedPrompts, isLoading, error}
+    return {submit, isLoading, error}
 }
 
 export default useDeleteUnmatchedPrompts

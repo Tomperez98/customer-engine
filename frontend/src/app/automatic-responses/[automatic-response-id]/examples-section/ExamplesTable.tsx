@@ -140,7 +140,7 @@ const ExamplesTable = ({
                 deleteAction={() =>
                     handleDeleteExample(formId, deleteExampleId)
                 }
-                elementName='ejemplo'
+                elementName='ejemplos'
                 isOpen={isDeleteModalOpen}
                 setIsOpen={setIsDeleteModalOpen}
             />
