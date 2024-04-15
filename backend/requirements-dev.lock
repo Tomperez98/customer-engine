@@ -100,7 +100,7 @@ mypy-extensions==1.0.0
     # via mypy
 numpy==1.26.4
     # via qdrant-client
-orjson==3.10.0
+orjson==3.10.1
     # via customer-engine-api
 packaging==24.0
     # via pytest

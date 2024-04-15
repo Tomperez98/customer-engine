@@ -89,7 +89,7 @@ multidict==6.0.5
     # via yarl
 numpy==1.26.4
     # via qdrant-client
-orjson==3.10.0
+orjson==3.10.1
     # via customer-engine-api
 portalocker==2.8.2
     # via qdrant-client
