@@ -10,7 +10,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 4.65"
+      version = "~> 5.0"
     }
   }
 
@@ -19,8 +19,7 @@ terraform {
 
 
 provider "aws" {
-  profile = "tomp-aws"
-  region  = "us-east-1"
+  region = "us-east-1"
   default_tags {
     tags = {
       Terraform      = true

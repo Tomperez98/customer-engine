@@ -101,27 +101,31 @@ async def add_to_automatic_response_as_example(
     return ResponseAddToAutomaticResponseAsExample(example_ids=response.example_ids)
 
 
-class ResponseDeleteUnmatchedPrompt(BaseModel):
+class DeleteUnmatchedPrompts(BaseModel):
+    prompt_ids: list[UUID]
+
+
+class ResponseDeleteUnmatchedPrompts(BaseModel):
     status: Literal["deleted"]
 
 
-@router.delete(path="/{unmatched_prompt_id}")
+@router.post(path="/delete")
 async def delete_unmatched_prompt(
-    unmatched_prompt_id: UUID,
+    req: DeleteUnmatchedPrompts,
     auth_token: BearerToken,
-) -> ResponseDeleteUnmatchedPrompt:
+) -> ResponseDeleteUnmatchedPrompts:
     auth_response = await process_token(token=auth_token, current_time=now())
     with resources.db_engine.begin() as conn:
         _, events = await lego_workflows.run_and_collect_events(
-            handlers.unmatched_prompts.delete_unmatched_prompt.Command(
+            handlers.unmatched_prompts.bulk_delete_unmatched_prompts.Command(
                 org_code=auth_response.org_code,
-                prompt_id=unmatched_prompt_id,
+                prompt_ids=req.prompt_ids,
                 sql_conn=conn,
             )
         )
 
     await lego_workflows.publish_events(events=events)
-    return ResponseDeleteUnmatchedPrompt(status="deleted")
+    return ResponseDeleteUnmatchedPrompts(status="deleted")
 
 
 class ResponseDeleteAllUnmatchedPrompts(BaseModel):
