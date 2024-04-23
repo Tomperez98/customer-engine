@@ -188,7 +188,7 @@ async def create_example(
 class CreateAutomaticResponse(BaseModel):
     name: str
     response: str
-    examples: list[str] | None
+    examples: list[str] | None = None
 
 
 class ResponseCreateAutomaticResponse(BaseModel):
