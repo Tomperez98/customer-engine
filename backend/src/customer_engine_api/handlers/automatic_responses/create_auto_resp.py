@@ -12,11 +12,16 @@ from lego_workflows.components import CommandComponent, DomainEvent, ResponseCom
 from sqlalchemy import bindparam, text
 
 from customer_engine_api.core.logging import logger
-from customer_engine_api.handlers.automatic_responses import get_auto_res
+from customer_engine_api.handlers.automatic_responses import (
+    create_example,
+    get_auto_res,
+)
 
 if TYPE_CHECKING:
     from uuid import UUID
 
+    import cohere
+    from qdrant_client import AsyncQdrantClient
     from sqlalchemy import Connection
 
 
@@ -49,6 +54,9 @@ class Command(CommandComponent[Response]):
     org_code: str
     name: str
     response: str
+    examples: list[str] | None
+    qdrant_client: AsyncQdrantClient
+    cohere_client: cohere.AsyncClient
     sql_conn: Connection
 
     async def run(self, events: list[DomainEvent]) -> Response:
@@ -97,5 +105,20 @@ class Command(CommandComponent[Response]):
                 org_code=self.org_code, automatic_response_id=random_id
             )
         )
+        if self.examples is not None:
+            (
+                _,
+                examples_created_events,
+            ) = await lego_workflows.run_and_collect_events(
+                create_example.Command(
+                    org_code=self.org_code,
+                    examples=self.examples,
+                    automatic_response_id=random_id,
+                    qdrant_client=self.qdrant_client,
+                    cohere_client=self.cohere_client,
+                    sql_conn=self.sql_conn,
+                )
+            )
+            events.extend(examples_created_events)
 
         return Response(automatic_response_id=random_id)

@@ -188,6 +188,7 @@ async def create_example(
 class CreateAutomaticResponse(BaseModel):
     name: str
     response: str
+    examples: list[str] | None = None
 
 
 class ResponseCreateAutomaticResponse(BaseModel):
@@ -209,6 +210,9 @@ async def create_automatic_response(
                 name=req.name,
                 response=req.response,
                 sql_conn=conn,
+                examples=req.examples,
+                qdrant_client=resources.clients.qdrant,
+                cohere_client=resources.clients.cohere,
             )
         )
 

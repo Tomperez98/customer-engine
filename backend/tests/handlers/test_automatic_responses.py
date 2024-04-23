@@ -39,6 +39,9 @@ async def test_list_examples() -> None:
                 name="Example",
                 response="Response",
                 sql_conn=conn,
+                examples=None,
+                qdrant_client=resources.clients.qdrant,
+                cohere_client=resources.clients.cohere,
             )
         )
 
@@ -123,6 +126,9 @@ async def test_update_example() -> None:
                 name="Example",
                 response="Response",
                 sql_conn=conn,
+                examples=None,
+                qdrant_client=resources.clients.qdrant,
+                cohere_client=resources.clients.cohere,
             )
         )
         response_create_example, _ = await lego_workflows.run_and_collect_events(
@@ -201,6 +207,9 @@ async def test_get_existing_example() -> None:
                 name="Example",
                 response="Response",
                 sql_conn=conn,
+                examples=None,
+                qdrant_client=resources.clients.qdrant,
+                cohere_client=resources.clients.cohere,
             )
         )
 
@@ -328,6 +337,9 @@ async def test_list_org_automated_responses() -> None:
                     name=name_to_use,
                     response="Text automated response",
                     sql_conn=conn,
+                    examples=None,
+                    qdrant_client=resources.clients.qdrant,
+                    cohere_client=resources.clients.cohere,
                 )
             )
             created_automated_responses.add(created_response.automatic_response_id)
@@ -365,6 +377,9 @@ async def test_update_automatic_response() -> None:
                 name="test automatic response",
                 response="I know you are a test case",
                 sql_conn=conn,
+                examples=None,
+                qdrant_client=resources.clients.qdrant,
+                cohere_client=resources.clients.cohere,
             )
         )
 
@@ -422,6 +437,9 @@ async def test_get_existing_automatic_response() -> None:
                 name="test automatic response",
                 response="I know you are a test case",
                 sql_conn=conn,
+                examples=None,
+                qdrant_client=resources.clients.qdrant,
+                cohere_client=resources.clients.cohere,
             )
         )
 

@@ -28,7 +28,7 @@ app = FastAPI(
 
 
 @app.exception_handler(DomainError)
-async def handle_domain_error(req: Request, exc: DomainError) -> ORJSONResponse:
+def handle_domain_error(req: Request, exc: DomainError) -> ORJSONResponse:
     """Handle domain error."""
     _ = req
 
